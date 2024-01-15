@@ -1,6 +1,6 @@
 # OppoGames
 
-This is my personal extension of the [Oppo Games final group project at Makers Academy](https://github.com/clairep94/oppo-games-group6).
+This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).
 
 ![Screenshot 2024-01-12 at 02 33 41](https://github.com/clairep94/fp_team6_battleships/assets/128436909/1bd288a9-7537-4ca7-9165-0f002f89bb73)
 
