@@ -8,6 +8,22 @@ OppoGames is a fullstack social-gaming site, showcasing use of the MERN stack, S
 
 Users can sign up, log in, and play a number of mini-games 1v1 with other users. Users can see their opponents moves in real-time.
 
+## Demo Video
+https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-4050-81b2-360373d5b208
+
+- Users can view a description of each of our games
+- Users can register and see errors if they do not have a unique email and username, or if their password does not have a set length and char set
+- Users can see a game lobby, filter by game type or open status or ownership
+- Users can create a game
+- Users can see errors if they try to play without an opponent
+- Users can join games, play and message opponents in realtime
+- Users can see errors if they try to play out-of-turn or play out-of-bounds moves
+- Users can go back to past games to see the last game-state and message history
+
+
+
+## Screenshots
+
 ![Screenshot 2024-01-12 at 05 27 24](https://github.com/clairep94/fp_team6_battleships/assets/128436909/ef000121-91e2-40d4-a5ae-e8da95a4dca4)
 ![Screenshot 2024-01-12 at 05 27 34](https://github.com/clairep94/fp_team6_battleships/assets/128436909/7c1f3a23-fbeb-4e99-8214-46dae82ed911)
 
