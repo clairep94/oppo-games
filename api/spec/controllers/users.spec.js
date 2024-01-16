@@ -247,23 +247,28 @@ describe("/users", () => {
 
   describe("GET /users/:id when token is valid and ID does not exist", () => {
     let response;
-    let userId = "nonexistentID";
+    let userId = "65a5303a0aaf4a563f531d92";
 
     beforeEach(async () => {
       response = await request(app)
         .get(`/users/${userId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ token: token });
     });
 
-    test("returns a status code of 401", () => {
-      expect(response.statusCode).toBe(401);
+    test("returns a status code of 200", () => {
+      expect(response.statusCode).toBe(200);
     });
 
-    test("returns the correct user by ID", () => {
-      expect(response.body.user).toEqual(undefined);
+    test("returns an empty object", () => {
+      expect(response.body.user).toEqual(null);
     });
 
-    test("returns no token", () => {
-      expect(response.body.token).toEqual(undefined);
+    test("returns a valid token", () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
   });
 
