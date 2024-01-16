@@ -9,7 +9,7 @@ const secret = process.env.JWT_SECRET;
 let token;
 let usersList;
 
-// ======== NON AUTHENTICATION SIGNUP ROUTE =================
+// ======== NON AUTHENTICATION SIGNUP ROUTE ===========================
 describe("/signup", () => {
   beforeEach( async () => {
     await User.deleteMany({});
@@ -70,12 +70,11 @@ describe("/signup", () => {
 
 });
 
-// ======== AUTHENTICATION ONLY USERS ROUTES =================
+// ======== AUTHENTICATION ONLY USERS ROUTES ============================
 // Mock user ID for testing
 const mockUserId = '123456789';
 
 describe("/users", () => {
-  // New beforeAll hook to create a list of users before all tests
   beforeAll(async () => {
     usersList = [
       {
@@ -88,7 +87,6 @@ describe("/users", () => {
         username: "user2",
         password: "password2",
       },
-      // Add more users as needed
     ];
 
     // Save the users to the database
@@ -98,16 +96,19 @@ describe("/users", () => {
   beforeEach(() => {
     token = JWT.sign({
       user_id: mockUserId,
-      // Backdate this token of 5 minutes
       iat: Math.floor(Date.now() / 1000) - (5 * 60),
-      // Set the JWT token to expire in 10 minutes
       exp: Math.floor(Date.now() / 1000) + (10 * 60)
     }, secret);
-  })
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+  });
 
   // ========== FIND ALL USERS: =================
   describe("GET /users when token is valid", () => {
     let response;
+
     beforeEach(async () => {
       response = await request(app)
         .get("/users")
@@ -124,6 +125,37 @@ describe("/users", () => {
   
       let users = response.body.users.map((user) => (user.username));
       expect(users).toEqual(["user1", "user2"]);
+    });
+  
+    test("returns a valid token", () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+
+    });
+  });
+
+  describe("GET /users when there are no users", () => {
+    let response;
+    beforeEach(async () => {
+      await User.deleteMany({});
+
+      response = await request(app)
+        .get("/users")
+        .set('Authorization', `Bearer ${token}`)
+        .send({ token: token });
+    });
+
+    test("returns a status code of 200", () => {
+      expect(response.statusCode).toBe(200);
+    });
+  
+    test("returns an empty list of users", () => {
+      expect(response.body.users).toBeDefined();
+      expect(response.body.users).toEqual([]);
+      let users = response.body.users.map((user) => (user.username));
+      expect(users).toEqual([]);
     });
   
     test("returns a valid token", () => {
@@ -156,33 +188,53 @@ describe("/users", () => {
   });
 
   // ========== FIND USER BY ID: =================
-  describe("GET /users/:id when token is valid", () => {
+  describe("GET /users/:id when token is valid & user is valid", () => {
     let response;
+    let allUsers;
     let userId;
 
-    beforeEach(async () => {
-      // Get all the users
-      const allUsers = await User.find()
+    beforeAll(async() => {
+      usersList = [
+        {
+          email: "user1@example.com",
+          username: "user1",
+          password: "password1",
+        },
+        {
+          email: "user2@example.com",
+          username: "user2",
+          password: "password2",
+        },
+      ];
+    
+      // Save the users to the database -- have to repeat from above, not sure why
+      await User.insertMany(usersList);
+      // get all users
+      allUsers = await User.find();
       const firstUser = allUsers[0];
       userId = firstUser._id;
 
       response = await request(app)
-        .get(`/users/${userId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({token: token});
-    });
+          .get(`/users/${userId}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({token: token});
+      });
+
+    test("check that allUsers worked", () => {
+        expect(allUsers).toBeDefined();
+        expect(allUsers).toHaveLength(2);
+    })
 
     test("returns a status code of 200", () => {
-      expect(response.statusCode).toBe(200);
-    });
+        expect(response.statusCode).toBe(200);
+      });
 
-    test("returns the correct user by ID", () => {
+      test("returns the correct user by ID", () => {
       expect(response.body.user).toBeDefined();
       expect(response.body.user._id.toString()).toEqual(userId.toString());
       expect(response.body.user.username.toString()).toEqual("user1");
       expect(response.body.user.password.toString()).toEqual("password1");
       expect(response.body.user.email.toString()).toEqual("user1@example.com");
-
     });
 
     test("returns a valid token", () => {
@@ -190,7 +242,28 @@ describe("/users", () => {
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+  });
 
+  describe("GET /users/:id when token is valid and ID does not exist", () => {
+    let response;
+    let userId = "nonexistentID";
+
+    beforeEach(async () => {
+      response = await request(app)
+        .get(`/users/${userId}`)
+    });
+
+    test("returns a status code of 401", () => {
+      expect(response.statusCode).toBe(401);
+    });
+
+    test("returns the correct user by ID", () => {
+      expect(response.body.user).toEqual(undefined);
+    });
+
+    test("returns no token", () => {
+      expect(response.body.token).toEqual(undefined);
     });
   });
 
@@ -220,7 +293,6 @@ describe("/users", () => {
       expect(response.body.token).toEqual(undefined);
     });
   });
-
 
 })
 
