@@ -3,6 +3,7 @@ const TokenGenerator = require("../lib/token_generator");
 
 
 const UsersController = {
+  // CREATE A USER ===============
   Create: (req, res) => {
     const user = new User(req.body);
     user.save((err) => {
@@ -15,7 +16,7 @@ const UsersController = {
         } 
       }
       else {
-        res.status(201).json({ message: 'OK' });
+        res.status(201).json({ user: user, message: 'OK' });
       }
     });
   },
