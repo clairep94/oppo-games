@@ -40,6 +40,7 @@ describe("TicTacToe model", () => {
     expect(tictactoe.playerOne).toEqual(playerOneMock._id);
     expect(tictactoe.title).toEqual("Tic-Tac-Toe");
     expect(tictactoe.endpoint).toEqual("tictactoe");
+    // expect(tictactoe.winner).toEqual([]); 
     expect(tictactoe.winner).toHaveLength(0); // empty array vs coreMongooseArray
     expect(tictactoe.finished).toEqual(false);
     expect(tictactoe.turn).toEqual(0);
