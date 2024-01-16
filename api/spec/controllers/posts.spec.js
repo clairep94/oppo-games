@@ -48,6 +48,7 @@ describe("/posts", () => {
       let posts = await Post.find();
       expect(posts.length).toEqual(1);
       expect(posts[0].message).toEqual("hello world");
+      // expect(posts[0]).toEqual({message: "hello world", author: ""}) // obj.toMatchObject(smallerObject)
     });
   
     test("returns a new token", async () => {
