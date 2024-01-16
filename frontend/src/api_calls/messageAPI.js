@@ -1,6 +1,6 @@
 const endpoint = '/messages';
 
-const addMessage = async (newMessagePayload) => {
+const addMessage = async (newMessagePayload, token) => {
   //message payload
   //gameID: req.body.gameID,
   //author: req.body.authorID,
@@ -11,6 +11,7 @@ const addMessage = async (newMessagePayload) => {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(newMessagePayload)
         });
@@ -22,11 +23,12 @@ const addMessage = async (newMessagePayload) => {
     }
 }
 
-const fetchMessages = async (gameID) => {
+const fetchMessages = async (gameID, token) => {
     try {
     const response = await fetch(`${endpoint}/${gameID}`, {
         headers: {
-
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
         },
         });
         const messagesData = await response.json();

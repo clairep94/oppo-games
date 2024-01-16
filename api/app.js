@@ -57,11 +57,12 @@ app.use("/tokens", authenticationRouter);
 
 // routes with no authentication:
 app.use("/signup", signUpRouter);
-app.use("/messages", messagesRouter);
+
 
 
 // routes with authentication:
 app.use("/tictactoe", tokenChecker, tictactoeRouter);
+app.use("/messages", tokenChecker, messagesRouter);
 // app.use("/rps", tokenChecker, rockPaperScissorsRouter);
 // app.use("/battleships", tokenChecker, battleshipsRouter);
 app.use("/users", tokenChecker, usersRouter);
