@@ -19,6 +19,13 @@ const UserSchema = new mongoose.Schema({
     type: Number, 
     default: 0 
   },
+  // gameHistory: {
+  //   type: [{
+  //     gameType: { type: String, enum: ['TicTacToe', 'RockPaperScissors', 'BattleShips'] }, // TODO,
+  //     game: { type: mongoose.Schema.Types.ObjectId, ref: 'gameType' }
+  //   }],
+  //   default: []
+  // }
   //TODO add gameHistory: list of games
 },
 {
