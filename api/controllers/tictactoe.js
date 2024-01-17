@@ -61,23 +61,28 @@ const TicTacToeController = {
       res.status(201).json({ token: token, game: populatedTicTacToe });
       // res.status(201).json({ game: populatedTicTacToe });
 
-
     } catch (error) {
       console.log('Error in TTT.Create', error);
       res.status(501).json(error);
     }
   },
 
+  
   Join: async (req, res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
     
     try {
-      const game = await TicTacToe.findById(gameID);
+      const game = await TicTacToe.findById(gameID)
+      .populate('playerOne', '_id username points') 
+      .populate('playerTwo', '_id username points') 
+      .populate('winner', '_id username points')
 
       if (game.playerTwo) {
         console.log("ERROR: GAME ALREADY FULL");
-        return res.status(403).json({error: 'Game already full.', game: game})
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+
+        return res.status(403).json({error: 'Game already full.', game: game, token: token})
       
       } else {
         const joinedGame = await TicTacToe.findOneAndUpdate( 
