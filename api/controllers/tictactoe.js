@@ -217,20 +217,28 @@ const TicTacToeController = {
       const game = await TicTacToe.findById(gameID); // NOT .populated document
       const whoseTurnID = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
 
+      const populatedGame = await TicTacToe.findById(gameID) // adding this on because the unpopulated game is used too many times below.
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points')
+
       // Users cannot play on finished games.
       if (game.finished === true) {
         console.log("ERROR: GAME FINISHED");
-        return res.status(403).json({error: 'Game already finished.', game: game}); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({error: 'Game already finished.', game: populatedGame, token:token }); //return the old game so as to not mess up the rendering
       }
       // Users cannot play outside of their turn.
       if (userID != whoseTurnID) { // NOTE by Claire: this is != and not !== on purpose. game.whose_turn and userID are not the same datatype but can be compared this way.
         console.log("ERROR: IT IS NOT YOUR TURN");
-        return res.status(403).json({ error: 'It is not your turn.', game: game }); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({ error: 'It is not your turn.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
 
       } // Users cannot play on occupied spaces.
       if (game.xPlacements.includes(coordinate) || game.oPlacements.includes(coordinate)){
         console.log("ERROR: THERE IS ALREADY A PIECE HERE");
-        return res.status(403).json({ error: 'Cannot place piece on occupied tile.', game: game }); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({ error: 'Cannot place piece on occupied tile.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
       }
 
       // 2) ============ Place the piece & get the updated game data ==================
