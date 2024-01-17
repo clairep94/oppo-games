@@ -337,17 +337,108 @@ describe("/tictactoe/:gameID/forfeit, FORFEIT", () => {
 
 // ==================== DELETE ================================
 describe("/tictactoe/:gameID/delete, DELETE", () => {
-//   // -------------- DELETE WITH TOKEN & NO ERRORS -------------------
-//   // -------------- DELETE WITH TOKEN & GAME ALREADY FULL -------------------
-//   // -------------- DELETE WITH TOKEN & GAME NOT FOUND -------------------
-//   // -------------- DELETE WITH NO TOKEN ----------------------
+
+  // ---------------- ARRANGE: DB cleanup, create 3 Users & token ------------- //
+  beforeAll(async () => {
+    // create 3 users. user1 is our sessionUser
+    user1 = new User({ email: "user1@test.com", username: "first_user123", password: "12345678" });
+    await user1.save();
+    user2 = new User({ email: "user2@test.com", username: "second_user123", password: "12345678" });
+    await user2.save();
+    user3 = new User({ email: "user3@test.com", username: "third_user123", password: "12345678" });
+    await user3.save();
+
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  });
+
+  // reset database;
+  beforeEach(async () => {
+    await TicTacToe.deleteMany({});
+  });
+  afterAll(async () => {
+    await User.deleteMany({});
+    await TicTacToe.deleteMany({});
+  });
+
+  // -------------- DELETE WITH TOKEN & NO ERRORS -------------------
+  describe("When a token is present and no errors (sessionUser is playerOne && playerTwo does not exist)", () => {
+    // ------- ARRANGE: create a game with user1 as playerOne ---------
+    beforeEach(async() => {
+      game = new TicTacToe({ playerOne: user1._id })
+      await game.save()
+
+      // get id of the created game:
+      allGames = await TicTacToe.find();
+      firstGame = allGames[0];
+
+    // ------- ACT: user1 deletes the game ----------------
+      response = await request(app)
+        .delete(`/tictactoe/${firstGame._id}/`)
+        .set('Authorization', `Bearer ${token}`)
+    });
+
+    // ------- ASSERT: response code 200, returns a valid token, and an allGames list that does not include the original game --------------
+    test("responds with a 200", async () => {
+      expect(response.statusCode).toBe(200);
+    })
+    test("returns a games list with the game removed", async () => {
+      expect(response.body.games).toEqual([]);
+    })
+    test("generates a valid token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    })
+    test("removes game from allGames", async () => {
+      const updatedAllGames = await TicTacToe.find();
+      expect(updatedAllGames).toHaveLength(0);
+    })
+  })
+
+  // -------------- DELETE WITH NO TOKEN ----------------------
+  describe("When a token is not present", () => {
+
+    // ------- ARRANGE: create a game with user1 as playerOne ---------
+    beforeEach(async() => {
+      game = new TicTacToe({ playerOne: user1._id })
+      await game.save()
+
+      // get id of the created game:
+      allGames = await TicTacToe.find();
+      firstGame = allGames[0];
+
+    // ------- ACT: user1 deletes the game ----------------
+      response = await request(app)
+        .delete(`/tictactoe/${firstGame._id}/`)
+    });
+
+    // ------- ASSERT: response code 401, returns no token, no gamesList, and the game has not been removed --------------
+    test("responds with a 401", async () => {
+      expect(response.statusCode).toBe(401);
+    })
+    test("no token generated", async () => {
+      expect(response.body.token).toEqual(undefined);
+    })
+    test("no gamesList returned", async () => {
+      expect(response.body.games).toEqual(undefined);
+    })
+    test("does not removes game from allGames", async () => {
+      const updatedAllGames = await TicTacToe.find();
+      expect(updatedAllGames).toHaveLength(1);
+    })
+  })
+
+  // The following cases are controlled in the Front-end -- buttons will appear conditionally.
+  // -------------- DELETE WITH TOKEN & GAME ALREADY FULL -------------------
+  // -------------- DELETE WITH TOKEN & SESSION USER IS NOT THE HOST (playerOne) -------------------
+  // -------------- DELETE WITH TOKEN & GAME NOT FOUND -------------------
 })
 
-// ==================== PLACE PIECE ===========================
-// See tictactoe_gameplay.spec.js for gameplay testing
-// describe("/tictactoe/:gameID/place_piece, JOIN", () => {
-//   // -------------- JOIN WITH TOKEN & NO ERRORS -------------------
-//   // -------------- JOIN WITH TOKEN & GAME ALREADY FULL -------------------
-//   // -------------- JOIN WITH TOKEN & GAME NOT FOUND -------------------
-//   // -------------- JOIN WITH NO TOKEN ----------------------
-// })

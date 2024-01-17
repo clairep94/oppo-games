@@ -13,4 +13,6 @@ router.put("/:id/place_piece", TicTacToeController.PlacePiece);
 router.put("/:id/join", TicTacToeController.Join);
 router.put("/:id/forfeit", TicTacToeController.Forfeit);
 
+router.delete("/:id", TicTacToeController.Delete);
+
 module.exports = router;
