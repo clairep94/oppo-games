@@ -296,6 +296,74 @@ describe("/tictactoe/:gameID/forfeit, FORFEIT", () => {
     });
   })
 
+  // -------------- FORFEIT WITH TOKEN & NOT PART OF GAME -------------------
+  describe("When token is present, but sessionUser is not playerOne or playerTwo", () => {
+
+    // ------- ARRANGE: create a game with user2 and user3, and game.finished = false ---------
+    beforeEach(async() => {
+      game = new TicTacToe({ playerOne: user2._id, playerTwo: user3._id })
+      await game.save()
+
+      // get id of the created game:
+      allGames = await TicTacToe.find();
+      firstGame = allGames[0];
+
+    // ------- ACT: user1 forfeits ----------------
+      response = await request(app)
+        .put(`/tictactoe/${firstGame._id}/forfeit`)
+        .set('Authorization', `Bearer ${token}`)
+    });
+    // ---------- ASSERT: response code 403, error message, return the original game, original game has not changed ------------
+    test("responds with a 403", async () => {
+      expect(response.statusCode).toBe(403);
+    });
+    test("responds an error message 'Only players can forfeit the game'", async () => {
+      expect(response.body.error).toBe('Only players can forfeit the game.');
+    });
+    test("returns the original TTT game", () => {
+      // comparing with expectedResponse not working, so comparing manually:
+      expect(response.body.game.playerOne.username).toBe("second_user123")
+      expect(response.body.game.playerTwo.username).toBe("third_user123")
+      expect(response.body.game.winner).toEqual([]);
+      expect(response.body.game.finished).toBe(false);
+      expect(response.body.game.turn).toBe(0);
+      expect(response.body.game.xPlacements).toEqual([]);
+      expect(response.body.game.oPlacements).toEqual([]);
+      expect(response.body.game.gameBoard).toEqual({
+        A: { 1: " ", 2: " ", 3: " " },
+        B: { 1: " ", 2: " ", 3: " " },
+        C: { 1: " ", 2: " ", 3: " " },
+      })
+    });
+    test("the original game does not change", async () => {
+      const checkGame = await TicTacToe.findById(game._id)
+        .populate('playerOne', '_id username points')
+        .populate('playerTwo', '_id username points')
+        .populate('winner', '_id username points');
+
+      // comparing with expectedResponse not working, so comparing manually:
+      expect(checkGame.playerOne.username).toBe('second_user123')
+      expect(checkGame.playerTwo.username).toBe("third_user123")
+      expect(checkGame.winner).toHaveLength(0);
+      expect(checkGame.finished).toBe(false);
+      expect(checkGame.turn).toBe(0);
+      expect(checkGame.xPlacements).toHaveLength(0);
+      expect(checkGame.oPlacements).toHaveLength(0);
+      expect(checkGame.gameBoard).toEqual({
+        A: { 1: " ", 2: " ", 3: " " },
+        B: { 1: " ", 2: " ", 3: " " },
+        C: { 1: " ", 2: " ", 3: " " },
+      })
+    })
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+  })
+
+
   // -------------- FORFEIT WITH NO TOKEN --------------------------------- //
   describe("When not token is present", () => {
     let response;
@@ -327,7 +395,6 @@ describe("/tictactoe/:gameID/forfeit, FORFEIT", () => {
   });
 
   // The following cases are controlled in the Front-end -- buttons will appear conditionally.
-  // -------------- FORFEIT WITH TOKEN & NOT PART OF GAME -------------------
   // -------------- FORFEIT WITH TOKEN & GAME ALREADY FINISHED -------------------
   // -------------- FORFEIT WITH TOKEN & GAME NOT JOINED BY PLAYER TWO -------------------
   // -------------- FORFEIT WITH TOKEN & GAME NOT FOUND -------------------
@@ -402,6 +469,7 @@ describe("/tictactoe/:gameID/delete, DELETE", () => {
       expect(updatedAllGames).toHaveLength(0);
     })
   })
+
 
   // -------------- DELETE WITH NO TOKEN ----------------------
   describe("When a token is not present", () => {

@@ -124,7 +124,8 @@ const TicTacToeController = {
       // Throw error if sessionUser is not in the game:
       if ((sessionUser != game.playerOne._id) && (sessionUser != game.playerTwo._id)){
         console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
-        return res.status(403).json({error: 'Only players can forfeit the game.', game: game}); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({error: 'Only players can forfeit the game.', game: game, token: token}); //return the old game so as to not mess up the rendering
       }
 
       const winner = sessionUser == game.playerOne._id ? game.playerTwo._id : game.playerOne._id
