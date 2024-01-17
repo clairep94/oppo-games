@@ -12,7 +12,7 @@ let messagesList;
 describe("/messages", () => {
   let user
 
-  // ========== SETTING UP TESTS =============== //
+  // ========== ARRANGE: DB cleanup, create User & token =============== //
   beforeAll( async () => {
     user = new User({email: "test@test.com", username: "user123", password: "12345678"});
     await user.save();
@@ -35,11 +35,11 @@ describe("/messages", () => {
     await Message.deleteMany({});
   })
 
-  // ========== CREATE A MESSAGE: valid, errors =============== //
+  // ========== CREATE A MESSAGE: token & no errors =============== //
   describe("POST /messages, when token is present", () => {
     let response;
 
-    // create message
+    // -------- ACT: create message ----------
     beforeEach( async() => {
       response = await request(app)
         .post("/messages")
@@ -47,10 +47,10 @@ describe("/messages", () => {
         .send({ gameID: "123", author: user._id, body: "Some message" });
     })
 
+    // ------- ASSERT: Response code 201, Returns valid token & new message --------------
     test("returns a status code of 201", () => {
       expect(response.statusCode).toBe(201);
     })
-
     test("returns a message object with populated author", () => {
     const expectedResponse = {
         gameID: "123",
@@ -62,7 +62,6 @@ describe("/messages", () => {
     };
     expect(response.body.newMessage).toMatchObject(expectedResponse);
   });
-
     test("returns a valid token", () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
@@ -71,17 +70,17 @@ describe("/messages", () => {
     });
   })
 
-  // ------------ ERRORS FOR NO TOKEN ----------------------- //
+  // ========== CREATE A MESSAGE: no token =============== //
   describe("POST /messages, when token is not present", () => {
     let response;
 
-    // create message without token;
+    // -------- ACT: create message without a token ----------
     beforeEach( async() => {
       response = await request(app)
         .post("/messages")
         .send({ gameID: "123", author: user._id, body: "Some message" });
     })
-
+    // ------- ASSERT: Returns Response code 401, does not create new message, does not return new token --------------
     test("returns a status code of 401", () => {
       expect(response.statusCode).toBe(401);
     })
@@ -93,20 +92,18 @@ describe("/messages", () => {
     test("returns no new token", async () => {
       expect(response.body.token).toEqual(undefined);    
     });
-
   })
 
-  // ========== FIND A MESSAGE THREAD: valid, empty, errors =============== //
+
+  // ========== FIND A MESSAGE THREAD: token & no errors & not empty result =============== //
   describe("GET /messages/:gameID, when token is present", () => {
     let messageResponse1;
     let messageResponse2;
     let response;
-    // let allMessages;
-    // let userID;
     let user2;
     const gameID = "123";
 
-    // Setup: create 2 messages in the same game chat
+    // ------ ARRANGE: create 2 messages in the same game chat ------------//
     beforeEach( async() => {
       
       // save 2 messages in the same game chat
@@ -120,18 +117,17 @@ describe("/messages", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({ gameID: gameID, author: user._id, body: "Replying to myself" });
 
-      // fetch all messages under this game ID
+      // ------ ACT: fetch all messages under this game ID ------------//
       response = await request(app)
         .get(`/messages/${gameID}`)
         .set('Authorization', `Bearer ${token}`)
         .send({token: token});
       })
 
-    // -------- Tests: RESPONSE CODE -----------------
+    // -------- ASSERT: Response Code 200, Returns messages array & valid token ----------------- //
     test("returns a status code of 200", () => {
       expect(response.statusCode).toBe(200);
     })
-    // -------- Tests: BODY -----------------
     test("returns an array with message objects with populated authors", () => {
       const expectedMessage1 = {
           gameID: "123",
@@ -141,7 +137,6 @@ describe("/messages", () => {
           },
           body: "Some message",
       };
-
       const expectedMessage2 = {
           gameID: "123",
           author: {
@@ -150,13 +145,10 @@ describe("/messages", () => {
           },
           body: "Replying to myself",
       };
-      
       expect(response.body.allMessages).toHaveLength(2);
       expect(response.body.allMessages[0]).toMatchObject(expectedMessage1);
       expect(response.body.allMessages[1]).toMatchObject(expectedMessage2);
     });
-
-    // -------- Tests: TOKEN -----------------
     test("returns a valid token", () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
@@ -166,12 +158,15 @@ describe("/messages", () => {
   })
 
 
-  // ------------ FIND AN EMPTY THREAD ------------------------//
+  // ========== FIND AN EMPTY MESSAGE THREAD: token & no errors & empty array result =============== //
   describe("GET /messages/:gameID, when token is present but thread is empty", () => {
     let response;
     const gameID = "123";
 
-    // Setup: create 2 messages in the same game chat
+    // ------ ARRANGE: No chats added under this game ID --------
+    // do nothing
+
+    // ------ ACT: Search for chats under this game ID --------
     beforeEach( async() => {
       // fetch all messages under this game ID
       response = await request(app)
@@ -180,16 +175,13 @@ describe("/messages", () => {
         .send({token: token});
       })
 
-    // -------- Tests: RESPONSE CODE -----------------
+    // -------- ASSERT: Response code 200, return empty array and a valid token -----------------
     test("returns a status code of 200", () => {
       expect(response.statusCode).toBe(200);
     })
-    // -------- Tests: BODY -----------------
     test("returns an empty array with message objects with populated authors", () => {
       expect(response.body.allMessages).toHaveLength(0);
     });
-
-    // -------- Tests: TOKEN -----------------
     test("returns a valid token", () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
@@ -199,22 +191,31 @@ describe("/messages", () => {
   })
 
 
-  // ------------ ERRORS FOR NO TOKEN ----------------------- //
+  // ========== FIND A MESSAGE THREAD: no token =============== //
   describe("GET /messages/:gameID, when token is not present", () => {
     let response;
 
+    // ------ ARRANGE:  --------
+    // do nothing
+
+    // ------ ACT: Search for chats under this game ID with no token --------
     beforeEach( async() => {
       response = await request(app)
         .get('/messages')
     })
+
+    // -------- ASSERT: Response code 401, return no object in body and no token -----------------
     test("returns a status code of 401", () => {
       expect(response.statusCode).toBe(401);
     });
+    test("does not return an array of messages", () => {
+      expect(response.body.allMessages).toEqual(undefined);
+    })
     test("returns no new token", async () => {
       expect(response.body.token).toEqual(undefined);    
     });
   })
-
 })
+
 
 
