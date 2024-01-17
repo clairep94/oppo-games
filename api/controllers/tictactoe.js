@@ -333,7 +333,7 @@ const TicTacToeController = {
           await TicTacToe.populate(populatedNextTurnGame, { path: 'winner', select: '_id username points' });
 
           const token = TokenGenerator.jsonwebtoken(req.user_id)
-          res.status(201).json({ token: token, game: populatedNextTurnGame });
+          res.status(200).json({ token: token, game: populatedNextTurnGame });
           // res.status(200).json({game: populatedNextTurnGame});
 
         }

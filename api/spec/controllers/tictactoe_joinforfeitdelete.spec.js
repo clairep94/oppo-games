@@ -14,6 +14,9 @@ let user3;
 let game;
 let response;
 
+// For edgecases with a token, I will check only the cases where they would be the most harmful/malicious. 
+// The rest will be handled by FE conditional rendering of buttons.
+
 // ============================= JOIN ========================================= //
 describe("JOIN - /tictactoe/:gameID/join ", () => {
 
