@@ -15,7 +15,7 @@ let game;
 let response;
 
 // This test file contains all the normal, non-auth and edgecases for gameplay
-// TODO add winner getting points for win conditions.
+// TODO add winner getting points for the two win conditions.
 
 // ==================== PLACE PIECE ===========================
 describe("/tictactoe/:gameID/place_piece, PLACE PIECE - with and without token", () => {
@@ -405,20 +405,20 @@ describe("/tictactoe/:gameID/place_piece, PLACE PIECE - with token, but errors",
 })
 
 // =============== PLACE PIECE - GAMEPLAY TO CHECK WIN - X WIN ================= //
-describe("/tictactoe/:gameID/place_piece, PLACE PIECE - gameplay with x-win", () => {
+describe("Gameplay with x-win", () => {
   // this also checks for the 'already a piece there' and 'out of turn' error
   // this playthrough purposely sets the xPlacements in a certain order to test that the checkWins function tests of winning combinations in ANY order and as any portion of a longer xPlacements array.
   
   /* GAMEPLAY:
-    turn 0-1: user1 places X in C3 (24 ms)
-    turn 1-2: user1 tries to play again - out of turn error (15 ms)
-    turn 1-2: user2 places O in C2 (16 ms)
-    turn 2-3: user1 places X in C2 - occupied tile error (16 ms)
-    turn 2-3: user1 places X in A1 (16 ms)
-    turn 3-4: user2 places O in A2 (20 ms)
-    turn 4-5: user1 places X in A3 (23 ms)
-    turn 5-6: user2 places O in B3 (17 ms)
-    turn 6-7: user1 places X in B2 - X WINS (17 ms)
+    turn 1: user1 places X in C3 (24 ms)
+    turn 2: user1 tries to play again - out of turn error (15 ms)
+    turn 2: user2 places O in C2 (16 ms)
+    turn 3: user1 places X in C2 - occupied tile error (16 ms)
+    turn 3: user1 places X in A1 (16 ms)
+    turn 4: user2 places O in A2 (20 ms)
+    turn 5: user1 places X in A3 (23 ms)
+    turn 6: user2 places O in B3 (17 ms)
+    turn 7: user1 places X in B2 - X WINS (17 ms)
     turn 7 & game over: user1 tries to play after the game is over (13 ms)
   */ 
 
@@ -723,20 +723,20 @@ describe("/tictactoe/:gameID/place_piece, PLACE PIECE - gameplay with x-win", ()
   })
 })
 
-// // =============== PLACE PIECE - GAMEPLAY TO CHECK WIN - O WIN ================= //
-describe("/tictactoe/:gameID/place_piece, PLACE PIECE - gameplay with o-win", () => {
+// =============== PLACE PIECE - GAMEPLAY TO CHECK WIN - O WIN ================= //
+describe("Gameplay with o-win", () => {
   // this also checks for the 'already a piece there' and 'out of turn' error
   // this playthrough purposely sets the xPlacements in a certain order to test that the checkWins function tests of winning combinations in ANY order and as any portion of a longer xPlacements array.
   
   /* GAMEPLAY:
-    turn 0-1: user1 places X in C3 (24 ms)
-    turn 1-2: user1 tries to play again - out of turn error (15 ms)
-    turn 1-2: user2 places O in C2 (16 ms)
-    turn 2-3: user1 places X in C2 - occupied tile error (16 ms)
-    turn 2-3: user1 places X in A1 (16 ms)
-    turn 3-4: user2 places O in A2 (20 ms)
-    turn 4-5: user1 places X in A3 (23 ms)
-    turn 5-6: user2 places O in B2 -- O WIN (17 ms)
+    turn 1: user1 places X in C3 (24 ms)
+    turn 2: user1 tries to play again - out of turn error (15 ms)
+    turn 2: user2 places O in C2 (16 ms)
+    turn 3: user1 places X in C2 - occupied tile error (16 ms)
+    turn 3: user1 places X in A1 (16 ms)
+    turn 4: user2 places O in A2 (20 ms)
+    turn 5: user1 places X in A3 (23 ms)
+    turn 6: user2 places O in B2 -- O WIN (17 ms)
     turn 6 & game over: user1 tries to play after the game is over (13 ms)
   */ 
 
@@ -1012,38 +1012,651 @@ describe("/tictactoe/:gameID/place_piece, PLACE PIECE - gameplay with o-win", ()
   })
 })
 
-
-// // =============== PLACE PIECE - GAMEPLAY TO DRAW ================= //
-// describe("/tictactoe/:gameID/place_piece, PLACE PIECE - gameplay with draw", () => {
-
-//     // ---------------- ARRANGE: DB cleanup, create 3 Users & token -------------
-//     beforeAll(async () => {
-//       // create 3 users. user1 is our sessionUser
-//       user1 = new User({ email: "user1@test.com", username: "first_user123", password: "12345678" });
-//       await user1.save();
-//       user2 = new User({ email: "user2@test.com", username: "second_user123", password: "12345678" });
-//       await user2.save();
-//       user3 = new User({ email: "user3@test.com", username: "third_user123", password: "12345678" });
-//       await user3.save();
+// =============== PLACE PIECE - GAMEPLAY TO CHECK DRAW ================= //
+describe("Gameplay with draw", () => {
+  // this also checks for the 'already a piece there' and 'out of turn' error
+  // this playthrough purposely sets the xPlacements in a certain order to test that the checkWins function tests of winning combinations in ANY order and as any portion of a longer xPlacements array.
   
-//       // generate token, logged in with user1;
-//       token = JWT.sign({
-//         user_id: user1.id,
-//         // Backdate this token of 5 minutes
-//         iat: Math.floor(Date.now() / 1000) - (5 * 60),
-//         // Set the JWT token to expire in 10 minutes
-//         exp: Math.floor(Date.now() / 1000) + (10 * 60),
-//       }, secret);
-//     });
+  /* GAMEPLAY:
+    turn 1: user1 places X in C3 (16 ms)
+    turn 2: user1 tries to play again - out of turn error (12 ms)
+    turn 2: user2 places O in C2 (13 ms)
+    turn 3: user1 places X in C2 - occupied tile error (11 ms)
+    turn 3: user1 places X in C1 (14 ms)
+    turn 4: user2 places O in B2 (15 ms)
+    turn 5: user1 places X in A2 (18 ms)
+    turn 6: user2 places O in B3 (14 ms)
+    turn 7: user1 places X in B1 (14 ms)
+    turn 8: user2 places O in A1 (14 ms)
+    turn 9: user1 places X in A3 -- DRAW (15 ms)
+    turn 7 & game over: user1 tries to play after the game is over (13 ms)
+  */ 
+
+  // ---------------- ARRANGE: DB cleanup, create 3 Users & token, create a blank game with user1 and user2 -------------
+  beforeAll(async () => {
+    // create 3 users. user1 is our sessionUser
+    user1 = new User({ email: "user1@test.com", username: "first_user123", password: "12345678" });
+    await user1.save();
+    user2 = new User({ email: "user2@test.com", username: "second_user123", password: "12345678" });
+    await user2.save();
+    user3 = new User({ email: "user3@test.com", username: "third_user123", password: "12345678" });
+    await user3.save();
+
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+
+    // create a game with user1 and user2
+    game = new TicTacToe({ playerOne: user1._id, playerTwo: user2._id })
+    await game.save();
+
+    // get the id of the game;
+    allGames = await TicTacToe.find();
+    firstGame = allGames[0];
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+    await TicTacToe.deleteMany({});
+  });
+
+  // ------------- ACT & ASSERT GAMEPLAY: --------------------
+  // TURN 1: -------------
+  test("turn 1: user1 places X in C3", async() => {
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "3"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(1);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual([]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: " ", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 2: -----------
+  test("turn 2: user1 tries to play again - out of turn error", async() => {
+    // user1 still logged in:
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(403);
+    expect(response.body.error).toBe('It is not your turn.');
+    expect(response.body.game.turn).toBe(1);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual([]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: " ", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  test("turn 2: user2 places O in C2", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
   
-//     // reset database;
-//     beforeEach(async () => {
-//       await TicTacToe.deleteMany({});
-//     });
-//     afterAll(async () => {
-//       await User.deleteMany({});
-//       await TicTacToe.deleteMany({});
-//     });
+    // user 2 places O in C2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(2);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 3: -----------
+  test("turn 3: user1 places X in C2 - occupied tile error", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user 2 places O in C2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(403);
+    expect(response.body.error).toBe('Cannot place piece on occupied tile.');
+    expect(response.body.game.turn).toBe(2);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  test("turn 3: user1 places X in C1", async() => {
+    // user 1 places X in C1
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "1"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(3);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 4: -----------
+  test("turn 4: user2 places O in B2", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user 2 places O in B2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "B", col: "2"})
 
-// })
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(4);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: "O", 3: " " },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 5: -----------
+  test("turn 5: user1 places X in A2", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user1 places X in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "2"})
 
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(5);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: "X", 3: " " },
+      B: { 1: " ", 2: "O", 3: " " },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 6: -----------
+  test("turn 6: user2 places O in B3", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user2 places O in B3
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "B", col: "3"})
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(6);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2", "B3"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: "X", 3: " " },
+      B: { 1: " ", 2: "O", 3: "O" },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 7: ---------
+  test("turn 7: user1 places X in B1", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user1 places X in B1
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "B", col: "1"})
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(7);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2", "B1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2", "B3"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: "X", 3: " " },
+      B: { 1: "X", 2: "O", 3: "O" },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 8: ---------
+  test("turn 8: user2 places O in A1", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user1 places X in B1
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "1"})
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(8);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2", "B1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2", "B3", "A1"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "O", 2: "X", 3: " " },
+      B: { 1: "X", 2: "O", 3: "O" },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+    expect(response.body.game.finished).toBe(false);
+    expect(response.body.game.winner).toHaveLength(0);
+  })
+
+  // TURN 9: --------- DRAW NO WINNERS --------
+  test("turn 9: user1 places X in A3 -- DRAW", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user1 places X in A3
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "3"})
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(9);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2", "B1", "A3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2", "B3", "A1"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "O", 2: "X", 3: "X" },
+      B: { 1: "X", 2: "O", 3: "O" },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+    // ADDITIONAL DRAW PROPERTIES:
+    expect(response.body.game.finished).toBe(true);
+    expect(response.body.game.winner).toHaveLength(2);
+    expect(response.body.game.winner[0]).toMatchObject({
+        _id: expect.any(String),
+        username: "first_user123",
+        points: 0
+      })
+    expect(response.body.game.winner[1]).toMatchObject({
+        _id: expect.any(String),
+        username: "second_user123",
+        points: 0
+      })
+  })
+
+  // GAME OVER-------- Try to play after game is over -- error ------------------
+  test("turn 9+ & game over: user1 tries to play after the game is over", async() => {
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+
+    // user2 places X in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "2"})
+    
+    expect(response.statusCode).toBe(403);
+    expect(response.body.error).toBe("Game already finished.")
+    expect(response.body.game.turn).toBe(9);
+    expect(response.body.game.xPlacements).toEqual(["C3", "C1", "A2", "B1", "A3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "B2", "B3", "A1"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "O", 2: "X", 3: "X" },
+      B: { 1: "X", 2: "O", 3: "O" },
+      C: { 1: "X", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+    // ADDITIONAL DRAW PROPERTIES:
+    expect(response.body.game.finished).toBe(true);
+    expect(response.body.game.winner).toHaveLength(2);
+    expect(response.body.game.winner[0]).toMatchObject({
+        _id: expect.any(String),
+        username: "first_user123",
+        points: 0
+      })
+    expect(response.body.game.winner[1]).toMatchObject({
+        _id: expect.any(String),
+        username: "second_user123",
+        points: 0
+      })
+  })
+})
+
+// =============== PLACE PIECE - GAMEPLAY TO FORFEIT - X FORFEITS, O WINS ================= //
+describe("Gameplay with x-forfeit and o-win", () => {
+  // this also checks for the 'already a piece there' and 'out of turn' error
+  // this playthrough purposely sets the xPlacements in a certain order to test that the checkWins function tests of winning combinations in ANY order and as any portion of a longer xPlacements array.
+  
+  /* GAMEPLAY:
+    turn 1: user1 places X in C3 (24 ms)
+    turn 2: user1 tries to play again - out of turn error (15 ms)
+    turn 2: user2 places O in C2 (16 ms)
+    turn 3: user1 places X in C2 - occupied tile error (16 ms)
+    turn 3: user1 places X in A1 (16 ms)
+    turn 4: user2 places O in A2 (20 ms)
+    turn 5: user1 forfeits
+    turn 5 & game over: user1 tries to play after the game is over (13 ms)
+  */ 
+
+  // ---------------- ARRANGE: DB cleanup, create 3 Users & token, create a blank game with user1 and user2 -------------
+  beforeAll(async () => {
+    // create 3 users. user1 is our sessionUser
+    user1 = new User({ email: "user1@test.com", username: "first_user123", password: "12345678" });
+    await user1.save();
+    user2 = new User({ email: "user2@test.com", username: "second_user123", password: "12345678" });
+    await user2.save();
+    user3 = new User({ email: "user3@test.com", username: "third_user123", password: "12345678" });
+    await user3.save();
+
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+
+    // create a game with user1 and user2
+    game = new TicTacToe({ playerOne: user1._id, playerTwo: user2._id })
+    await game.save();
+
+    // get the id of the game;
+    allGames = await TicTacToe.find();
+    firstGame = allGames[0];
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+    await TicTacToe.deleteMany({});
+  });
+
+  // ------------- ACT & ASSERT GAMEPLAY: --------------------
+  // TURN 1: -------------
+  test("turn 1: user1 places X in C3", async() => {
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "3"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(1);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual([]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: " ", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 2: -----------
+  test("turn 2: user1 tries to play again - out of turn error", async() => {
+    // user1 still logged in:
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(403);
+    expect(response.body.error).toBe('It is not your turn.');
+    expect(response.body.game.turn).toBe(1);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual([]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: " ", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  test("turn 2: user2 places O in C2", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user 2 places O in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(2);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 3: -----------
+  test("turn 3: user1 places X in C2 - occupied tile error", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user 2 places O in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "C", col: "2"})
+    expect(response.statusCode).toBe(403);
+    expect(response.body.error).toBe('Cannot place piece on occupied tile.');
+    expect(response.body.game.turn).toBe(2);
+    expect(response.body.game.xPlacements).toEqual(["C3"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: " ", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  test("turn 3: user1 places X in A1", async() => {
+    // user 1 places X in A1
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "1"})
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(3);
+    expect(response.body.game.xPlacements).toEqual(["C3", "A1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "X", 2: " ", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 4: -----------
+  test("turn 4: user2 places O in A2", async() => {
+    // generate token, logged in with user2;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user 2 places O in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "2"})
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(4);
+    expect(response.body.game.xPlacements).toEqual(["C3", "A1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "A2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "X", 2: "O", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+  })
+  // TURN 4-5: X FORFEITS, O WINS -----------
+  test("turn 4-5: user1 forfeits - O WINS", async() => {
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user1.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+  
+    // user1 places X in A3
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/forfeit`)
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.game.turn).toBe(4);
+    expect(response.body.game.xPlacements).toEqual(["C3", "A1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "A2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "X", 2: "O", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+    // ADDITIONAL WIN PROPERTIES:
+    expect(response.body.game.finished).toBe(true);
+    expect(response.body.game.winner).toEqual([{
+      _id: expect.any(String),
+      username: "second_user123",
+      points: 0
+    }]);
+  })
+  // TODO add user updates to add points to user2
+
+  // GAME OVER-------- Try to play after game is over -- error ------------------
+  test("turn 4-5 & game over: user1 tries to play after the game is over", async() => {
+    // generate token, logged in with user1;
+    token = JWT.sign({
+      user_id: user2.id,
+      // Backdate this token of 5 minutes
+      iat: Math.floor(Date.now() / 1000) - (5 * 60),
+      // Set the JWT token to expire in 10 minutes
+      exp: Math.floor(Date.now() / 1000) + (10 * 60),
+    }, secret);
+
+    // user2 places X in A2
+    response = await request(app)
+      .put(`/tictactoe/${firstGame._id}/place_piece`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({row: "A", col: "2"})
+    
+    expect(response.statusCode).toBe(403);
+    expect(response.body.game.turn).toBe(4);
+    expect(response.body.error).toBe("Game already finished.")
+    expect(response.body.game.xPlacements).toEqual(["C3", "A1"]);
+    expect(response.body.game.oPlacements).toEqual(["C2", "A2"]);
+    expect(response.body.game.gameBoard).toEqual({
+      A: { 1: "X", 2: "O", 3: " " },
+      B: { 1: " ", 2: " ", 3: " " },
+      C: { 1: " ", 2: "O", 3: "X" },
+    })
+    expect(response.body.token).toBeDefined();
+    // ADDITIONAL WIN PROPERTIES:
+    expect(response.body.game.finished).toBe(true);
+    expect(response.body.game.winner).toEqual([{
+      _id: expect.any(String),
+      username: "second_user123",
+      points: 0
+    }]);
+  })
+})
