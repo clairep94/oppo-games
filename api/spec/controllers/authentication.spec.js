@@ -4,15 +4,9 @@ require("../mongodb_helper");
 const User = require('../../models/user');
 
 describe("/tokens", () => {
+  // ARRANGE
   beforeAll(async () => {
     const user = new User({ email: "test@test.com", username: "testacc123", password: "12345678" })
-
-    // We need to use `await` so the
-    // "beforeAll" setup function waits for the
-    // asynchronous user.save() to be done before exiting.
-    // Otherwise, the tests below
-    // could run without the user being actually saved.
-    // This could cause tests to fail inconsistently.
     await user.save()
   });
 
@@ -21,9 +15,12 @@ describe("/tokens", () => {
   })
 
   test("a token is returned when creds are valid", async () => {
+    // ACT
     let response = await request(app)
       .post("/tokens")
       .send({email: "test@test.com", username: "testacc123", password: "12345678"})
+
+    // ASSERT
     expect(response.status).toEqual(201)
     expect(response.body.token).not.toEqual(undefined)
     expect(response.body.message).toEqual("OK")
@@ -31,9 +28,12 @@ describe("/tokens", () => {
 
 
   test("a token is not returned when creds are invalid", async () => {
+    // ACT
     let response = await request(app)
       .post("/tokens")
       .send({email: "test@test.com", username: "testacc123", password: "1234"})
+    
+    // ASSERT
     expect(response.status).toEqual(401)
     expect(response.body.token).toEqual(undefined)
     expect(response.body.message).toEqual("auth error")

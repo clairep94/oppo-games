@@ -61,23 +61,28 @@ const TicTacToeController = {
       res.status(201).json({ token: token, game: populatedTicTacToe });
       // res.status(201).json({ game: populatedTicTacToe });
 
-
     } catch (error) {
       console.log('Error in TTT.Create', error);
       res.status(501).json(error);
     }
   },
 
+
   Join: async (req, res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
     
     try {
-      const game = await TicTacToe.findById(gameID);
+      const game = await TicTacToe.findById(gameID)
+      .populate('playerOne', '_id username points') 
+      .populate('playerTwo', '_id username points') 
+      .populate('winner', '_id username points')
 
       if (game.playerTwo) {
         console.log("ERROR: GAME ALREADY FULL");
-        return res.status(403).json({error: 'Game already full.', game: game})
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+
+        return res.status(403).json({error: 'Game already full.', game: game, token: token})
       
       } else {
         const joinedGame = await TicTacToe.findOneAndUpdate( 
@@ -102,9 +107,100 @@ const TicTacToeController = {
       res.status(501).json(error);
       
     }
-
-
   },
+
+
+
+  Forfeit: async (req, res) => {
+    try {
+      const sessionUser = req.user_id;
+      // const sessionUser = req.body.user;  // postman testing purposes only
+      const gameID = req.params.id;
+      const game = await TicTacToe.findById(gameID)
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points');
+
+      // Throw error if sessionUser is not in the game:
+      if ((sessionUser != game.playerOne._id) && (sessionUser != game.playerTwo._id)){
+        console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({error: 'Only players can forfeit the game.', game: game, token: token}); //return the old game so as to not mess up the rendering
+      }
+
+      const winner = sessionUser == game.playerOne._id ? game.playerTwo._id : game.playerOne._id
+
+      const forfeitedGame = await TicTacToe.findOneAndUpdate(
+        { _id: gameID },
+        {
+          $push: {winner: winner},
+          $set: {finished: true }
+        },
+        { new: true }
+      )            
+      .populate('playerOne', '_id username points') 
+      .populate('playerTwo', '_id username points') 
+      .populate('winner', '_id username points')
+
+      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      res.status(200).json({token: token, game: forfeitedGame});
+      // res.status(200).json({game: forfeitedGame});
+
+
+    } catch (error) {
+      console.error('Error forfeiting: ', error);
+      res.status(500).json(error);
+    }
+  },
+
+
+
+  Delete: async (req, res) => {
+    try {
+      const sessionUser = req.user_id;
+      const gameID = req.params.id;
+      const game = await TicTacToe.findById(gameID)
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points');
+
+      const allGames = await TicTacToe.find()
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points')
+
+      // Throw error if sessionUser is not playerOne (host)
+      if ((sessionUser != game.playerOne._id)){
+        console.log("ERROR: ONLY HOSTS CAN DELETE GAMES");
+        return res.status(403).json({error: 'Only hosts can delete the game.', game: game, games: allGames}); //return the old game & games list so as to not mess up the rendering
+      }
+      // Throw error if game is full (has playerTwo):
+      if (game.playerTwo){
+        console.log("ERROR: CANNOT DELETE NON-OPEN GAMES");
+        return res.status(403).json({error: 'Only games awaiting player Two can be deleted.', game: game, games: allGames}); //return the old game & games list so as to not mess up the rendering
+      }
+
+      // Delete the game
+      await TicTacToe.findByIdAndDelete(gameID);
+
+      // Get the updated game list
+      const updatedGames = await TicTacToe.find()
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points')
+
+      // Generate new token
+      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      res.status(200).json({token: token, games: updatedGames});
+
+    } catch (error) {
+      console.error('Error deleting: ', error);
+      res.status(500).json(error);
+    }
+  },
+
+
+
 
   PlacePiece: async (req, res) => {
     const gameID = req.params.id;
@@ -121,20 +217,28 @@ const TicTacToeController = {
       const game = await TicTacToe.findById(gameID); // NOT .populated document
       const whoseTurnID = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
 
+      const populatedGame = await TicTacToe.findById(gameID) // adding this on because the unpopulated game is used too many times below.
+        .populate('playerOne', '_id username points') 
+        .populate('playerTwo', '_id username points') 
+        .populate('winner', '_id username points')
+
       // Users cannot play on finished games.
       if (game.finished === true) {
         console.log("ERROR: GAME FINISHED");
-        return res.status(403).json({error: 'Game already finished.', game: game}); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({error: 'Game already finished.', game: populatedGame, token:token }); //return the old game so as to not mess up the rendering
       }
       // Users cannot play outside of their turn.
       if (userID != whoseTurnID) { // NOTE by Claire: this is != and not !== on purpose. game.whose_turn and userID are not the same datatype but can be compared this way.
         console.log("ERROR: IT IS NOT YOUR TURN");
-        return res.status(403).json({ error: 'It is not your turn.', game: game }); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({ error: 'It is not your turn.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
 
       } // Users cannot play on occupied spaces.
       if (game.xPlacements.includes(coordinate) || game.oPlacements.includes(coordinate)){
         console.log("ERROR: THERE IS ALREADY A PIECE HERE");
-        return res.status(403).json({ error: 'Cannot place piece on occupied tile.', game: game }); //return the old game so as to not mess up the rendering
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        return res.status(403).json({ error: 'Cannot place piece on occupied tile.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
       }
 
       // 2) ============ Place the piece & get the updated game data ==================
@@ -237,7 +341,7 @@ const TicTacToeController = {
           await TicTacToe.populate(populatedNextTurnGame, { path: 'winner', select: '_id username points' });
 
           const token = TokenGenerator.jsonwebtoken(req.user_id)
-          res.status(201).json({ token: token, game: populatedNextTurnGame });
+          res.status(200).json({ token: token, game: populatedNextTurnGame });
           // res.status(200).json({game: populatedNextTurnGame});
 
         }
@@ -247,45 +351,8 @@ const TicTacToeController = {
       console.error('Error placing piece: ', error);
       res.status(500).json(error);
     }
-  },
-
-  Forfeit: async (req, res) => {
-    try {
-      const sessionUser = req.user_id;
-      // const sessionUser = req.body.user;  // postman testing purposes only
-      const gameID = req.params.id;
-      const game = await TicTacToe.findById(gameID);
-
-      // Throw error if sessionUser is not in the game:
-      if ((sessionUser != game.playerOne) && (sessionUser != game.playerTwo)){
-        console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
-        return res.status(403).json({error: 'Only players can forfeit the game.', game: game}); //return the old game so as to not mess up the rendering
-      }
-
-      const winner = sessionUser == game.playerOne ? game.playerTwo : game.playerOne
-
-      const forfeitedGame = await TicTacToe.findOneAndUpdate(
-        { _id: gameID },
-        {
-          $push: {winner: winner},
-          $set: {finished: true }
-        },
-        { new: true }
-      )            
-      .populate('playerOne', '_id username points') 
-      .populate('playerTwo', '_id username points') 
-      .populate('winner', '_id username points')
-
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.status(200).json({token: token, game: forfeitedGame});
-      // res.status(200).json({game: forfeitedGame});
-
-
-    } catch (error) {
-      console.error('Error forfeiting: ', error);
-      res.status(500).json(error);
-    }
   }
+
 
 };
 

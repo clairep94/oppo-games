@@ -9,31 +9,41 @@ const secret = process.env.JWT_SECRET;
 let token;
 let usersList;
 
-// ======== NON AUTHENTICATION SIGNUP ROUTE ===========================
+// ======== NON AUTHENTICATION SIGNUP ROUTE ==================================== //
 describe("/signup", () => {
+
+  // ========== ARRANGE: DB cleanup =============== //
   beforeEach( async () => {
     await User.deleteMany({});
   });
 
-  // ========== CREATE USER =================
+  // ========== CREATE USER: no errors ================= //
   describe("POST, when email and password are provided", () => {
-    test("the response code is 201", async () => {
-      let response = await request(app)
+    let response;
+    let users;
+    let newUser;
+
+    // ----- ACT: Sign up with an email, username and password ------- ///
+    beforeEach( async() => {
+      response = await request(app)
         .post("/signup")
         .send({email: "poppy@email.com", username: "poppy123", password: "1234"})
-      expect(response.statusCode).toBe(201)
     })
 
+    // ----- ASSERT: Response code 201 & new user is created -----//
+    test("the response code is 201", () => {
+      expect(response.statusCode).toBe(201)
+    })
     test("a user is created", async () => {
-      await request(app)
-        .post("/signup")
-        .send({email: "scarlett@email.com",  username: "scarlett123", password: "1234"})
-      let users = await User.find()
-      let newUser = users[users.length - 1]
-      expect(newUser.email).toEqual("scarlett@email.com")
+      users = await User.find()
+      newUser = users[users.length - 1]
+      expect(newUser.email).toEqual("poppy@email.com")
+      expect(newUser.username).toEqual("poppy123")
+      expect(newUser.password).toEqual("1234")
     })
   })
-  // -------- CREATE USER: ERRORS -------------
+
+  // ========== CREATE USER: errors ================= //
   describe("POST, when password is missing", () => {
     test("response code is 400", async () => {
       let response = await request(app)
@@ -70,7 +80,7 @@ describe("/signup", () => {
 
 });
 
-// ======== AUTHENTICATION ONLY USERS ROUTES ============================
+// ======== AUTHENTICATION ONLY USERS ROUTES ============================ //
 // Mock user ID for testing
 const mockUserId = '123456789';
 
