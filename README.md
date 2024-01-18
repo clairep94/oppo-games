@@ -2,19 +2,19 @@
 
 ![Screenshot 2024-01-12 at 02 33 41](https://github.com/clairep94/fp_team6_battleships/assets/128436909/1bd288a9-7537-4ca7-9165-0f002f89bb73)
 
-**This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).**
-- Please see [**Future Addtions**](#future-additions) below for ongoing feature implementation updates.
-
 OppoGames is a fullstack social-gaming site, showcasing use of the MERN stack, Socket.io and Tailwind CSS.
 
 Users can sign up, log in, and play a number of mini-games 1v1 with other users. Users can see their opponents moves in real-time.
+
+**This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).**
+- Please see [**Feature Updates**](#feature-updates) below for ongoing feature implementation updates.
 
 <br>
 
 ## Table of Contents
 
 - [Demo](#demo)
-- [Future Addtions](#future-additions)
+- [Feature Updates](#feature-updates)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Running the App](#running-the-app)
@@ -37,7 +37,7 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
 
 <br>
 
-## Future Additions
+## Feature Updates
 
 - ✅ Backend Test coverage with Jest
   - ✅ Added 10 test suites and 185 tests for Users, Messages, Authentication & Tictactoe
