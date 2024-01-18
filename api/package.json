@@ -1,13 +1,13 @@
 {
-  "name": "acebook",
+  "name": "oppogames-backend",
   "version": "0.0.0",
-  "description": "Template for the AceBook project",
+  "description": "oppogames backend",
   "license": "CC BY-NC-SA",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "start:test": "MONGODB_URL='mongodb://0.0.0.0/acebook_test' npm start",
-    "test": "jest"
+    "start:test": "MONGODB_URL='mongodb://0.0.0.0/battleships_test' npm start",
+    "test": "jest --runInBand"
   },
   "engines": {
     "node": ">=18.1.0"
