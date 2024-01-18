@@ -37,11 +37,13 @@ describe("/signup", () => {
     test("a user is created", async () => {
       users = await User.find()
       newUser = users[users.length - 1]
-      expect(newUser.email).toEqual("scarlett@email.com")
+      expect(newUser.email).toEqual("poppy@email.com")
+      expect(newUser.username).toEqual("poppy123")
+      expect(newUser.password).toEqual("1234")
     })
   })
 
-  // ========== CREATE USER: no errors ================= //
+  // ========== CREATE USER: errors ================= //
   describe("POST, when password is missing", () => {
     test("response code is 400", async () => {
       let response = await request(app)

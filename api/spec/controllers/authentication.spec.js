@@ -31,7 +31,7 @@ describe("/tokens", () => {
     // ACT
     let response = await request(app)
       .post("/tokens")
-      .send({email: "test@test.com", username: "testacc123", password: "1234"})\
+      .send({email: "test@test.com", username: "testacc123", password: "1234"})
     
     // ASSERT
     expect(response.status).toEqual(401)
