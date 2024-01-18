@@ -1,9 +1,9 @@
-# OppoGames
+# OppoGames | Play Live Mini-Games with Friends
 
 ![Screenshot 2024-01-12 at 02 33 41](https://github.com/clairep94/fp_team6_battleships/assets/128436909/1bd288a9-7537-4ca7-9165-0f002f89bb73)
 
 **This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).**
-- Please see **Future Additions** below for ongoing feature implementation updates.
+- Please see [**Future Addtions**](#future-additions) below for ongoing feature implementation updates.
 
 OppoGames is a fullstack social-gaming site, showcasing use of the MERN stack, Socket.io and Tailwind CSS.
 
@@ -11,7 +11,18 @@ Users can sign up, log in, and play a number of mini-games 1v1 with other users.
 
 <br>
 
-## Demo Video
+## Table of Contents
+
+- [Demo](#demo)
+- [Future Addtions](#future-additions)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Running the App](#running-the-app)
+- [Running the Tests](#running-the-tests)
+
+<br>
+
+## Demo
 
 https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-4050-81b2-360373d5b208
 
@@ -90,7 +101,7 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
    ; npm install
    ```
 
-## Running the App:
+## Running the App
 
 1. Start the server application (in the `api` directory)
 
@@ -121,7 +132,7 @@ You should now be able to open your browser and go to `http://localhost:3000/`
 
 <br>
 
-## Running the Tests:
+## Running the Tests
 
 Currently, the project has test coverage for the API only via Jest. E2e frontend testing will be implemented in the future, please see future features list below.
 
