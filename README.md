@@ -4,7 +4,7 @@
 
 OppoGames is a fullstack social-gaming site, showcasing use of the MERN stack, Socket.io and Tailwind CSS.
 
-Users can sign up, log in, and play a number of mini-games 1v1 with other users. Users can see their opponents moves in real-time.
+Users can sign up, log in, and play a number of mini-games 1v1 with other users. Users can see their opponents moves and message in real-time.
 
 **This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).**
 - Please see [**Feature Updates**](#feature-updates) below for ongoing feature implementation updates.
