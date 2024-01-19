@@ -45,11 +45,16 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
     - ✅ Error handling: Out-of-Turn, Awaiting-Opponent, Game-Already-Over, You-Are-Not-In-This-Game, Already-A-Piece-There, Cannot-Delete-Ongoing-Game, Cannot-Join-Full-Game
     - ✅ TicTacToe game playthrough for 4 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win
 
-- Frontend Test E2e coverage with Cypress for Landing Page, Game Intro Pages, Lobby, TicTacToe
+- Frontend Test E2E coverage with Cypress
   - ✅ Landing Page
   - ✅ Signup Popup & Signup Page
   - ✅ Game Intro Pages: TTT, Battleships, RPS
   - Login Popup & Login Page
+  - Messaging in TicTacToe
+  - TicTacToe create, join, delete, forfeit & errors
+  - TicTacToe game playthrough for 5 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win, Leave-Mid-Game-And-Return
+  - Game Lobby
+  - User Page
     
 - Users can see notifications of joins in real-time
 - Users can send and see game invitations
