@@ -61,7 +61,8 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
   if (gameTitle === "Battleships") {
     return (
       <>
-      <div class="bg-auto min-h-screen " style={gameCardRPS}>
+      <div data-cy="background-image"
+      class="bg-auto min-h-screen " style={gameCardRPS}>
       
       <MiniNavBar />
         {/* <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 py-4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
@@ -73,7 +74,8 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
         
         
 
-        <div className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
+        <div data-cy="battleships-info-card"
+        className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
             <img 
                 src={battleSingle} 
                 alt="tic-tac-toe-image-card" 
@@ -83,7 +85,8 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
 
         <h1 className={h1Style}>Battleships</h1>
         <div class="container pr-60 pl-60">
-        <p className={basicFont}> 
+        <p data-cy="game-description"
+        className={basicFont}> 
         Embark on an exhilarating game of Battleships, where strategic cunning takes 
         center stage! Experience the thrill of simultaneous moves in our concealed information 
         gaming system. Engage in a battle of wits as you carefully plan your maneuvers, 
@@ -113,11 +116,12 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
         </div>
 
 
-        <h1 className={h2Style}>EXPLORE OUR LATEST GAMES</h1>
+        <h2 className={h2Style}>EXPLORE OUR LATEST GAMES</h2>
     <div class="grid grid-cols-2 gap-4 mr-20 ml-20 ">
 
         {/* RPS Card 2 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div data-cy="rock-paper-scissors-info-card"
+        class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
             <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
             <a aria-label="Link to Register" href="/rps">
@@ -139,7 +143,8 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
 
 
       {/* TTT - Card 1 */}
-      <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
+      <div data-cy="tic-tac-toe-info-card"
+      class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
       <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
       <a aria-label="Link to Register" href="/tictactoe"> 
           <img class="object-cover object-center w-full h-full rounded-xl" src={gameCardTTT} alt="nature image" />
@@ -164,7 +169,7 @@ const BattleInfoPage = ({ navigate, gameTitle }) => {
 
     <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
       <footer class="text-center py-7 text-white">
-      <p>&copy; 2024 OTTO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
+      <p>&copy; 2024 OPPO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
         </footer>
       </div>
 
