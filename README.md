@@ -46,6 +46,11 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
     - ✅ TicTacToe game playthrough for 4 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win
 
 - Frontend Test E2e coverage with Cypress for Landing Page, Game Intro Pages, Lobby, TicTacToe
+  - ✅ Landing Page
+  - ✅ Signup Popup & Signup Page
+  - ✅ Game Intro Pages: TTT, Battleships, RPS
+  - Login Popup & Login Page
+    
 - Users can see notifications of joins in real-time
 - Users can send and see game invitations
 - Users can play RPS & Battleships
