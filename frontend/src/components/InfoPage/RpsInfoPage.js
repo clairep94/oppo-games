@@ -19,7 +19,6 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
 
   const gameCardRPS = {
     backgroundImage: `url(${gameCardRPSImage})`,
- //color and opacity???
     backgroundSize: 'cover',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
@@ -62,7 +61,7 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
   if (gameTitle === "Rock Paper Scissors") {
     return (
       <>
-      <div class="bg-auto min-h-screen " style={gameCardRPS}>
+      <div class="bg-auto min-h-screen " data-cy="background-image" style={gameCardRPS}>
       
         <MiniNavBar />
         {/* <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 py-4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
@@ -74,7 +73,8 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
         
         
 
-        <div className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
+        <div data-cy="rock-paper-scissors-info-card"
+        className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
             <img 
                 src={rpsSingle} 
                 alt="3d-game-console-in-purple" 
@@ -82,9 +82,9 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
                 className="transition duration-500 ease-in-out transition-transform hover:scale-110"
                 ></img>
 
-        <h1 className={h1Style}>Rock Paper Scissors</h1>
+        <h1 className={h1Style}>Rock, Paper, Scissors</h1>
         <div class="container pr-60 pl-60">
-        <p className={basicFont}> 
+        <p data-cy="game-description" className={basicFont}> 
           Simultaneous moves? How does that work? With our hidden information game system,
           you can be sure that your opponent won't see what you're up to before they have
           to make their best move - and stick with it. If you're logged in, click the button
@@ -111,10 +111,12 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
         </div>
       
       {/* 2 cards for other games */}
-        <h1 className={h2Style}>EXPLORE OUR LATEST GAMES</h1>
+        <h2 className={h2Style}>EXPLORE OUR LATEST GAMES</h2>
         <div class="grid grid-cols-2 gap-4 mr-20 ml-20 ">
-  {/* TTT - Card 1 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
+
+      {/* TTT - Card 1 */}
+        <div data-cy="tic-tac-toe-info-card"
+        class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
         <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
         <a aria-label="Link to Register" href="/tictactoe"> 
             <img class="object-cover object-center w-full h-full rounded-xl" src={gameCardTTT} alt="nature image" />
@@ -133,7 +135,8 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
         </div>
 
         {/* BATTLESHIPS Card 3 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div data-cy="battleships-info-card"
+        class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
         <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
         <a aria-label="Link to Register" href="/battleships">
@@ -159,7 +162,7 @@ const RpsInfoPage = ({ navigate, gameTitle }) => {
 
     <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
       <footer class="text-center py-7 text-white">
-      <p>&copy; 2024 OTTO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
+      <p>&copy; 2024 OPPO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
         </footer>
       </div>
 

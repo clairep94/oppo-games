@@ -33,6 +33,7 @@ const Landing = ({ navigate }) => {
     return (
         <>
         <div
+            data-cy="background-image"
             className="flex flex-row items-center justify-center"
             style={{ backgroundImage: 'url(/backgrounds/islandfar.jpg)', backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center' }}>
 
@@ -40,9 +41,12 @@ const Landing = ({ navigate }) => {
 
             {/* MINI NAV BAR FOR LANDING PAGE ONLY*/}
             <nav class="absolute top-6 right-20 m-4">
-                <a class="bg-gray-700 mr-2 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/welcome">OPPO GAMES</a>
-                <a class="bg-purple-900 mr-2 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/login">Log in</a>
-                <a class="bg-purple-900 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/signup">Sign Up</a>
+                <a data-cy="oppo-games-button"
+                    class="bg-gray-700 mr-2 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/welcome">OPPO GAMES</a>
+                <a data-cy="log-in-button"
+                    class="bg-purple-900 mr-2 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/login">Log in</a>
+                <a data-cy="sign-up-button"
+                    class="bg-purple-900 text-xl text-white font-semibold rounded-lg py-2 px-4 hover:bg-purple-600 focus:shadow-outline-purple-900" href="/signup">Sign Up</a>
             </nav>
 
                 {/* MINI NAV BAR */}
@@ -54,7 +58,7 @@ const Landing = ({ navigate }) => {
                     <div className="flex flex-col h-dvh justify-center pr-40">
                         <h3 className="text-xl text-white font-semibold tracking-wider">ONLINE MULTIPLAYER GAMING</h3>
                         <h1 className={h1Style}>OPPO GAMES</h1>
-                        <h2 className={basicFont}>Welcome to Oppo Games. An online platform to participate in retro, multiplayer games in live time. Join a game, chat with your opponent and have fun!</h2>
+                        <p className={basicFont}>Welcome to Oppo Games. An online platform to participate in retro, multiplayer games in live time. Join a game, chat with your opponent and have fun!</p>
 
                         <div className="pt-6">
                             <button className={buttonStyle} onClick={viewLogin}>
@@ -67,7 +71,8 @@ const Landing = ({ navigate }) => {
                 </>):(
                     <>
                         {/* LOGIN/SIGNUP CONTAINER */}
-                        <div className={frostTexture + popupContainer}>
+                        <div id='login-signup-popup'
+                        className={frostTexture + popupContainer}>
                             {view === "Signup" && (<SignUpForm navigate={navigate} viewWelcome={viewWelcome} viewLogin={viewLogin}/>)}
                             {view === "Login" && (<LoginForm navigate={navigate} viewWelcome={viewWelcome} viewSignup={viewSignup}/>)}
                         </div>
@@ -75,12 +80,7 @@ const Landing = ({ navigate }) => {
                 )}
 
                 <div className="w-2/5 min-h-screen flex flex-col justify-center">
-                {/* <img
-                    src={landingBg}
-                    alt="3d-game-console-in-purple"
-                    width="700px"
-                    className="transition duration-500 ease-in-out transition-transform hover:scale-110"
-                ></img> */}
+
                 </div>
 
             </div>
@@ -89,19 +89,21 @@ const Landing = ({ navigate }) => {
 
 {/* 3 CARD IMAGES STARTS HERE  */}
 
-<h1 className={h2Style}>EXPLORE OUR LATEST GAMES</h1>
+<h2 className={h2Style}>EXPLORE OUR LATEST GAMES</h2>
  {/* <div class="grid grid-cols-3 gap-6 mr-20 ml-20 "> */}
     <div class="mr-20 ml-20 ">
   {/* TTT - Card 1 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
+        <div 
+            data-cy='tic-tac-toe-info-card'
+            class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
         <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
         <a aria-label="Link to Register" href="/tictactoe"> 
             <img class="object-cover object-center w-full h-full rounded-xl" src={gameCardTTT} alt="nature image" />
             <figcaption class="absolute bottom-8 left-2/4 transform -translate-x-2/4 flex w-[calc(100%-4rem)] -translate-x-2/4 justify-between rounded-xl border border-white bg-white/75 py-4 px-6 shadow-lg shadow-black/5 saturate-200 backdrop-blur-sm">
                 <div class="transition-opacity hover:opacity-0">
-                <h5 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+                <h4 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
                     Tic Tac Toe
-                </h5>
+                </h4>
                 <p class="block mt-2 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
                     play against a player and win
                 </p>
@@ -115,16 +117,17 @@ const Landing = ({ navigate }) => {
         </div>
 
         {/* RPS Card 2 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div data-cy='rock-paper-scissors-info-card' 
+            class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
             <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
             <a aria-label="Link to Register" href="/rps">
             <img class="object-cover object-center w-full h-full rounded-xl" src={gameCardRPS} alt="nature image" />
             <figcaption class="absolute bottom-8 left-2/4 transform -translate-x-2/4 flex w-[calc(100%-4rem)] -translate-x-2/4 justify-between rounded-xl border border-white bg-white/75 py-4 px-6 shadow-lg shadow-black/5 saturate-200 backdrop-blur-sm">
                 <div class="transition-opacity ">
-                <h5 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+                <h4 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
                     Rock, Paper, Scissors
-                </h5>
+                </h4>
                 <p class="block mt-2 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
                     play against a player and win
                 </p>
@@ -139,16 +142,17 @@ const Landing = ({ navigate }) => {
         </div>
 
         {/* BATTLESHIPS Card 3 */}
-        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div data-cy='battleships-info-card'
+            class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
         <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
         <a aria-label="Link to Register" href="/battleships">
             <img class="object-cover object-center w-full h-full rounded-xl" src={gameCardBattle} alt="nature image" />
             <figcaption class="absolute bottom-8 left-2/4 transform -translate-x-2/4 flex w-[calc(100%-4rem)] -translate-x-2/4 justify-between rounded-xl border border-white bg-white/75 py-4 px-6 shadow-lg shadow-black/5 saturate-200 backdrop-blur-sm">
                 <div class="transition-opacity hover:opacity-0">
-                <h5 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+                <h4 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
                     Battleships
-                </h5>
+                </h4>
                 <p class="block mt-2 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
                     play against a player and win
                 </p>
