@@ -105,13 +105,15 @@ const SignUpForm = ({ navigate, viewWelcome, viewLogin }) => {
 
       <div className="flex-1 p-[5rem] relative">
         <button
+          data-cy="close-div-x"
           className="absolute top-[3rem] right-[3rem] text-white text-3xl cursor-pointer"
           onClick={viewWelcome}
         >
           X
         </button>
         
-        <h2 className={h2Style}>Sign Up</h2>
+        <h2 data-cy="signup-header" 
+          className={h2Style}>Sign Up</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -177,15 +179,15 @@ const SignUpForm = ({ navigate, viewWelcome, viewLogin }) => {
         </form>
 
         {/* ERROR MESSAGES */}
-        {error && <p aria-label="Error Message" className={styles.errorMessage}>{error}</p>}
+        {error && <p aria-label="Error Message" id="error-message" className={styles.errorMessage}>{error}</p>}
 
-        {successMessage && <p className='font-semibold text-green-700/70 text-lg'>{successMessage}</p>}
+        {successMessage && <p id="success-message" className='font-semibold text-green-700/70 text-lg'>{successMessage}</p>}
 
 
         <p 
         aria-label="Already have an account? Log in" 
         className="mt-4 text-white text-left">Already have an account? <span
-        aria-label="Link to Log in" 
+        id="log-in-link" 
         className="underline"
         onClick={viewLogin}>Log in</span>
         </p>

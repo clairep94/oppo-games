@@ -145,7 +145,8 @@ const LogInForm = ({ navigate, viewWelcome, viewSignup }) => {
       {/* Register Link */}
       <p aria-label="Don't have an account? Register" className="mt-4 text-white">
         Don't have an account?{' '}
-        <a aria-label="Link to Register" onClick={viewSignup} className="underline">Register</a>
+        <a id='register-link'
+        aria-label="Link to Register" onClick={viewSignup} className="underline">Register</a>
       </p>
     </div>
 
