@@ -51,10 +51,12 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
   - ✅ Game Intro Pages: TTT, Battleships, RPS
   - Login Popup & Login Page
   - Messaging in TicTacToe
-  - TicTacToe create, join, delete, forfeit & errors
   - TicTacToe game playthrough for 5 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win, Leave-Mid-Game-And-Return
+ 
+  <!---
+  - TicTacToe create, join, delete, forfeit & errors
   - Game Lobby
-  - User Page
+  - User Page --->
     
 - Users can see notifications of joins in real-time
 - Users can send and see game invitations
