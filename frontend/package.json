@@ -21,6 +21,7 @@
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
     "build": "react-scripts build",
+    "test-open": "npx cypress open",
     "test": "npm run test:unit && npm run test:feature",
     "test:unit": "cypress run --component",
     "test:feature": "cypress run",
