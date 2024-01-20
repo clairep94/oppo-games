@@ -61,7 +61,8 @@ const Landing = ({ navigate }) => {
                         <p className={basicFont}>Welcome to Oppo Games. An online platform to participate in retro, multiplayer games in live time. Join a game, chat with your opponent and have fun!</p>
 
                         <div className="pt-6">
-                            <button className={buttonStyle} onClick={viewLogin}>
+                            <button data-cy="start-button"
+                            className={buttonStyle} onClick={viewLogin}>
                                 START PLAYING
                             </button>
                         </div>
