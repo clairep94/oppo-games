@@ -154,7 +154,7 @@ describe("INDEX - /battleships", () => {
         .set("Authorization", `Bearer ${token}`)
     });
 
-    // ------- ASSERT: Response code 200, returns an array of TTT populated games, and a new token -----
+    // ------- ASSERT: Response code 200, returns an array of Battleships populated games, and a new token -----
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
@@ -246,6 +246,8 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
   let user;
   let game1;
   let game2;
+
+  // TODO ADD HIDING INFO. Hash the boards according to who is looking (playerOne, playerTwo, outsider)
 
   beforeAll(async () => {
     // create a user

@@ -22,21 +22,49 @@ const BattleshipsController = {
   },
   
   FindByID: (req, res) => {
-    // TODO ADD HIDING INFO. Hash the boards according to who is looking (playerOne, playerTwo, outsider)
-    const battleshipsID = req.params.id;
+   const battleshipsID = req.params.id;
+    const userID = req.user_id; // userID of the viewer
+
+    // ========= 1) Find the game ====================
     Battleships.findById(battleshipsID)
     .populate('playerOne', '_id username points') 
     .populate('playerTwo', '_id username points') 
     .populate('winner', '_id username points')
-    .exec((err, battleships) => {
+    .exec((err, game) => {
       if (err) {
         throw err;
       }
+
+      // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+        // If the viewer is NOT the owner of the board (ie. a spectator or the opponent), they will get a concealed version of the board
+        // This concealed version checks for "s" and converts it to "".
+        // This concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
+
+      const concealBoard = (board) => {
+      // Iterate over all spaces and change all spaces with "s" to ""
+        for (let i = 0; i < board.length; i++) {
+          for (let j = 0; j < board[i].length; j++) {
+              if (board[i][j] === "s") {
+                  board[i][j] = "";
+              }
+            }
+          }
+        return board;
+      }
+
+      // TODO check == or ===
+      // Conceal playerOneBoard if viewer is not playerOne:
+      if (userID !== playerOne._id){
+        game.playerOneBoard = concealBoard(game.playerOneBoard);
+      }
+      // Conceal playerTwoBoard if viewer is not playerTwo:
+      if (userID !== playerTwo._id){
+        game.playerTwoBoard = concealBoard(game.playerTwoBoard);
+      }
+
       const token = TokenGenerator.jsonwebtoken(req.user_id)
       res.setHeader('Cache-Control', 'no-store, no-cache');
-      res.status(200).json({ game: battleships, token: token });
-      // res.status(200).json({ game: battleships });
-
+      res.status(200).json({ game: game, token: token });
     });
   },
 
@@ -60,7 +88,6 @@ const BattleshipsController = {
       const token = TokenGenerator.jsonwebtoken(req.user_id)
       res.setHeader('Cache-Control', 'no-store, no-cache');
       res.status(201).json({ token: token, game: populatedBattleships });
-      // res.status(201).json({ game: populatedBattleships });
 
     } catch (error) {
       console.log('Error in TTT.Create', error);
@@ -99,7 +126,6 @@ const BattleshipsController = {
 
         const token = TokenGenerator.jsonwebtoken(req.user_id);
         res.status(200).json({token: token, game: joinedGame});
-        // res.status(200).json({game: forfeitedGame});
 
       }
       
@@ -202,152 +228,82 @@ const BattleshipsController = {
 
 
 
-
-  PlacePiece: async (req, res) => {
+  // ===================== BATTLESHIP SPECIFIC GAMEPLAY METHODS ============================
+  SubmitShipPlacements: async (req,res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
-    // const userID = req.body.userID; // postman testing purposes only
-    const row = req.body.row;
-    const col = req.body.col;
-    const coordinate = `${row}${col}`
+
+    // Format of the placements payload will be a nested array with "C", "B" etc. corresponding to a 10x10 gameboard
+    // TODO See line ___ for usage.
+    const placements = req.body.placements; 
 
     try {
 
       // 1) =========== Find the current game and Catch Errors: =================
+        // Users cannot submit ship placements if ships have already been placed --> all ship placements are submitted at once.
+        // Users cannot submit incomplete ship placements
+        // Users cannot submit placements if they are not in the game
 
-      const game = await Battleships.findById(gameID); // NOT .populated document
-      const whoseTurnID = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
-
-      const populatedGame = await Battleships.findById(gameID) // adding this on because the unpopulated game is used too many times below.
-        .populate('playerOne', '_id username points') 
-        .populate('playerTwo', '_id username points') 
-        .populate('winner', '_id username points')
-
-      // Users cannot play on finished games.
-      if (game.finished === true) {
-        console.log("ERROR: GAME FINISHED");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        return res.status(403).json({error: 'Game already finished.', game: populatedGame, token:token }); //return the old game so as to not mess up the rendering
-      }
-      // Users cannot play outside of their turn.
-      if (userID != whoseTurnID) { // NOTE by Claire: this is != and not !== on purpose. game.whose_turn and userID are not the same datatype but can be compared this way.
-        console.log("ERROR: IT IS NOT YOUR TURN");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        return res.status(403).json({ error: 'It is not your turn.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
-
-      } // Users cannot play on occupied spaces.
-      if (game.xPlacements.includes(coordinate) || game.oPlacements.includes(coordinate)){
-        console.log("ERROR: THERE IS ALREADY A PIECE HERE");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        return res.status(403).json({ error: 'Cannot place piece on occupied tile.', game: populatedGame,  token:token }); //return the old game so as to not mess up the rendering
-      }
-
-      // 2) ============ Place the piece & get the updated game data ==================
-      const piece = (userID == game.playerOne) ? "X" : "O" // NOTE by Claire: this is == and not === on purpose, see line 80. do not change.
-      const placementField = (piece === "X") ? "xPlacements" : "oPlacements";
-
-      const placedPieceGame = await Battleships.findOneAndUpdate( // NOT .populated yet.
-        { _id: gameID },
-        {
-          $set: { [`gameBoard.${row}.${col}`]: piece },
-          $push: { [placementField]: coordinate },
-          $inc: { turn: 1 }  // Increment the turn property by 1
-        },
-        {new: true}
-      )
-
-      // 3) ============= Check for wins: ===========================
-      // ------- supportive functions for win-checking -------------
-      // Check if any of the game.winning_placements arrays in any order are in game.xPlacements and game.oPlacements:
-      const checkWin = (array) => {
-        console.log(`checking wins for ${array}`)
-
-        const winningCombinations = [
-          ["A1", "A2", "A3"],
-          ["B1", "B2", "B3"],
-          ["C1", "C2", "C3"],
-          ["A1", "B1", "C1"],
-          ["A2", "B2", "C2"],
-          ["A3", "B3", "C3"],
-          ["A1", "B2", "C3"],
-          ["A3", "B2", "C1"]
-        ];
-
-        const isSubset = (subset, superset) => subset.every(element => superset.includes(element));
-        return winningCombinations.some(winningCombo => isSubset(winningCombo, array))
-      };
-
-      // use checkWin on the last played the relevant placementField
-      const win = checkWin((piece === "X") ? placedPieceGame.xPlacements : placedPieceGame.oPlacements) // could not do placedPieceGame.placementField directly as it is a string.
-
-      // ------- IF WIN: -----------------------
-      if (win) { // if a player won, update the game and return the ID
-        try {
-          const wonGame = await Battleships.findOneAndUpdate(
-            { _id: gameID },
-            {
-              $push: {winner: userID},
-              $set: {finished: true }
-            },
-            { new: true }
-          )
-          .populate('playerOne', '_id username points') 
-          .populate('playerTwo', '_id username points') 
-          .populate('winner', '_id username points')
-
-          const token = TokenGenerator.jsonwebtoken(req.user_id);
-          res.status(200).json({token: token, game: wonGame});
-          // res.status(200).json({game: wonGame});
-
-
-        } catch (error) {
-          console.error('Error handling win: ', error);
-          res.status(500).json(error);
+      // 2) =========== Update the user's board with the ship placements: =================
+        const shipCodeMap = {
+          "C": "carrier",
+          "B": "battleship",
+          "R": "cruiser",
+          "S": "submarine",
+          "D": "destroyer"
         }
+        // Iterate over each unit of the placements payload gameboard:
+          // If the unit is not in shipCodeMap, skip
+          // Else:
+            // Update the units with {hit_status: false, units: [rowIndex, colIndex]}
+            // Update the board space to "s"
+          // Update the corresponding playerNumBoard with the changed placement board.
+        
+    } catch (error) {
+      console.error('Error submitting ship placements: ', error);
+      res.status(500).json(error);
+    }
+  },
+  ResetShipPlacements: async(req,res) => {
+    const gameID = req.params.id;
+    const userID = req.user_id;
 
-      // ------- IF NO WON: -----------------------
-      } else { // if no wins, increase the turn and check for a draw
+    try {
+      // 1) =========== Find the current game and Catch Errors: =================
+      const currentGame = Battleships.findById(gameID); // TODO not populated version.
 
-        // ------- IF DRAW: -----------------------
-        if (placedPieceGame.turn === 9) { // draw condition: update the game and return the draw game data
-          try {
-            const drawGame = await Battleships.findOneAndUpdate(
-              { _id: gameID },
-              {
-                $set: {
-                  winner: [placedPieceGame.playerOne, placedPieceGame.playerTwo],
-                  finished: true
-                }
-              },
-              { new: true }
-            )
-            .populate('playerOne', '_id username points') 
-            .populate('playerTwo', '_id username points') 
-            .populate('winner', '_id username points')
+        // Users cannot reset if the opponent has also submitted their ship placements
 
-            const token = TokenGenerator.jsonwebtoken(req.user_id);
-            res.status(200).json({token: token, game: drawGame});
-            // res.status(200).json({game: drawGame});
+      // 2) =========== Reset the player's board: ====================
+      if (userID === currentGame.playerOne) {
 
-          } catch (error) {
-            console.error('Error handling draw: ', error);
-            res.status(500).json(error);
-          }
-          
+      } else if (userID === currentGame.playerTwo) {
 
-        // ------- ELSE: -----------------------
-        } else { // populate the placedPieceGame data and return the game data
-          const populatedNextTurnGame = await Battleships.populate(placedPieceGame, { path: 'playerOne', select: '_id username points' });
-          await Battleships.populate(populatedNextTurnGame, { path: 'playerTwo', select: '_id username points' });
-          await Battleships.populate(populatedNextTurnGame, { path: 'winner', select: '_id username points' });
-
-          const token = TokenGenerator.jsonwebtoken(req.user_id)
-          res.status(200).json({ token: token, game: populatedNextTurnGame });
-          // res.status(200).json({game: populatedNextTurnGame});
-
-        }
+      } else {
+        // Users cannot reset if they are not in the game
       }
-      
+
+
+    } catch (error) {
+      console.error('Error resetting ship placements: ', error);
+      res.status(500).json(error);
+    }
+  },
+  LaunchMissile: async (req, res) => {
+    const gameID = req.params.id;
+    const userID = req.user_id;
+    const row = req.body.row; //index
+    const col = req.body.col;  //index
+
+    try {
+
+      // 1) ============= Find the current game and Catch Errors: =================
+        // 
+
+      // 2) ============= Place the piece & get the updated game data ==================
+      // 3) ============= Check for sank ships: ===========================
+      // 4) ============= Check for wins: =============================
+
     } catch (error) {
       console.error('Error placing piece: ', error);
       res.status(500).json(error);

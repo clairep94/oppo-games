@@ -43,13 +43,42 @@ const BattleshipsSchema = new mongoose.Schema({
   },
 
   // =========== PROPERTIES SPECIFIC TO BATTLESHIPS ==================
-  
-  // ----------- SHIPS -----------------
-  playerOneShips:{
 
+  // ----------- SHIPS -----------------
+  // Storing player one's ships
+  playerOneShips: {
+      type: Map,
+      of: {
+          sank_status: { type: Boolean, default: false },
+          units: [{
+              hit_status: { type: Boolean, default: null },
+              coordinate: [Number, Number]
+          }]
+      },
+      default: new Map(Object.entries({
+          carrier: { sank_status: false, units: Array.from({ length: 5 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+          battleship: { sank_status: false, units: Array.from({ length: 4 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+          cruiser: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+          submarine: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+          destroyer: { sank_status: false, units: Array.from({ length: 2 }, () => ({ hit_status: null, coordinate: [null, null] })) }
+      }))
   },
   playerTwoShips:{
-
+    type: Map,
+    of: {
+        sank_status: { type: Boolean, default: false },
+        units: [{
+            hit_status: { type: Boolean, default: null },
+            coordinate: [Number, Number]
+        }]
+    },
+    default: new Map(Object.entries({
+        carrier: { sank_status: false, units: Array.from({ length: 5 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+        battleship: { sank_status: false, units: Array.from({ length: 4 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+        cruiser: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+        submarine: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
+        destroyer: { sank_status: false, units: Array.from({ length: 2 }, () => ({ hit_status: null, coordinate: [null, null] })) }
+    }))
   },
 
   // ----------- BOARDS -----------------
