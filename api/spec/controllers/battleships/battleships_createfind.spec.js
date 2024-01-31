@@ -1,15 +1,15 @@
-const app = require("../../app");
+const app = require("../../../app");
 const request = require("supertest");
-require("../mongodb_helper");
-const TicTacToe = require('../../models/tictactoe');
-const User = require('../../models/user');
+require("../../mongodb_helper");
+const Battleships = require('../../../models/battleships');
+const User = require('../../../models/user');
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
 let token;
 
 // ==================== CREATE A GAME ================================= //
-describe("CREATE - /tictactoe", () => {
+describe("CREATE - /battleships", () => {
   let user;
   
   // ---------------- ARRANGE: DB cleanup, create User & token ------------- //
@@ -30,12 +30,12 @@ describe("CREATE - /tictactoe", () => {
 
   beforeEach(async () => {
     // reset database;
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   afterAll(async () => {
     await User.deleteMany({});
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   // --------------------------- CREATE WITH A TOKEN --------------------------- //
@@ -45,7 +45,7 @@ describe("CREATE - /tictactoe", () => {
     // ---------------- ACT: create game with a token; ------------- 
     beforeEach(async () => {
       response = await request(app)
-        .post("/tictactoe") // Correct endpoint
+        .post("/battleships") // Correct endpoint
         .set("Authorization", `Bearer ${token}`)
         .send({ playerOne: user._id });
     });
@@ -54,26 +54,19 @@ describe("CREATE - /tictactoe", () => {
     test("responds with a 201", async () => {
       expect(response.statusCode).toBe(201);
     });
-    test("returns a tictactoe object with a populated playerOne", () => {
+    test("returns a battleships object with a populated playerOne", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
           points: 0
         },
-        title: "Tic-Tac-Toe",
-        endpoint: "tictactoe",
+        title: "Battleships",
+        endpoint: "battleships",
         turn: 0,
         winner: [],
         finished: false,
-        xPlacements: [],
-        oPlacements: [],
-        gameBoard: {
-          A: { 1: " ", 2: " ", 3: " " },
-          B: { 1: " ", 2: " ", 3: " " },
-          C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        //TODO BS PROPERTIES
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     })
@@ -92,7 +85,7 @@ describe("CREATE - /tictactoe", () => {
     // ---------------- ACT: create game with no token; -------------
     beforeEach(async () => {
       response = await request(app)
-        .post("/tictactoe") 
+        .post("/battleships") 
         .send({ playerOne: user._id });
     });
 
@@ -101,7 +94,7 @@ describe("CREATE - /tictactoe", () => {
       expect(response.statusCode).toBe(401);
     });
     test("does not create a game", async () => {
-      let games = await TicTacToe.find()
+      let games = await Battleships.find()
       expect(games.length).toEqual(0);
       // expect(response.body).toEqual({"message": "auth error"});
     })
@@ -114,7 +107,7 @@ describe("CREATE - /tictactoe", () => {
 
 
 // ==================== INDEX ========================================== //
-describe("INDEX - /tictactoe", () => {
+describe("INDEX - /battleships", () => {
   let user;
   let game1;
   let game2;
@@ -136,12 +129,12 @@ describe("INDEX - /tictactoe", () => {
 
   beforeEach(async () => {
     // reset database;
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   afterAll(async () => {
     await User.deleteMany({});
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   // ------------------ INDEX WITH TOKEN --------------------- //
@@ -150,14 +143,14 @@ describe("INDEX - /tictactoe", () => {
 
     beforeEach(async () => {
       // -------- ARRANGE: create 2 games -------------
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new Battleships({playerOne: user._id})
+      game2 = new Battleships({playerOne: user._id})
       await game1.save();
       await game2.save();
 
       // ------ ACT: fetch all games with a token -------------
       response = await request(app)
-        .get("/tictactoe") 
+        .get("/battleships") 
         .set("Authorization", `Bearer ${token}`)
     });
 
@@ -165,26 +158,19 @@ describe("INDEX - /tictactoe", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns an array of tictactoe object with a populated playerOne", () => {
+    test("returns an array of battleships object with a populated playerOne", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
           points: 0
         },
-        title: "Tic-Tac-Toe",
-        endpoint: "tictactoe",
+        title: "Battleships",
+        endpoint: "battleships",
         turn: 0,
         winner: [],
         finished: false,
-        xPlacements: [],
-        oPlacements: [],
-        gameBoard: {
-          A: { 1: " ", 2: " ", 3: " " },
-          B: { 1: " ", 2: " ", 3: " " },
-          C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        //TODO BS PROPERTIES
       };
       expect(response.body.games).toHaveLength(2);
       expect(response.body.games[0]).toMatchObject(expectedResponse);
@@ -205,7 +191,7 @@ describe("INDEX - /tictactoe", () => {
     // ------ ACT: search games with a token ---------
     beforeEach(async () => {
       response = await request(app)
-        .get("/tictactoe") // Correct endpoint
+        .get("/battleships") // Correct endpoint
         .set("Authorization", `Bearer ${token}`)
         .send({ playerOne: user._id });
     });
@@ -214,7 +200,7 @@ describe("INDEX - /tictactoe", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns an empty array of tictactoe object with a populated playerOne", () => {
+    test("returns an empty array of battleships object with a populated playerOne", () => {
       expect(response.body.games).toHaveLength(0);
     })
     test("generates a new token", async () => {
@@ -231,14 +217,14 @@ describe("INDEX - /tictactoe", () => {
 
     beforeEach(async () => {
       // ------ ARRANGE: create 2 games -------
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new Battleships({playerOne: user._id})
+      game2 = new Battleships({playerOne: user._id})
       await game1.save();
       await game2.save();
 
       // ------ ACT: search games with no token ---------
       response = await request(app)
-        .get("/tictactoe") 
+        .get("/battleships") 
     });
 
     // --------- ASSERT: status 401, return no games and no token -----------
@@ -256,7 +242,7 @@ describe("INDEX - /tictactoe", () => {
 
 
 // ==================== FIND BY ID ==================================== //
-describe(".FINDBYID - /tictactoe/:gameID ", () => {
+describe(".FINDBYID - /battleships/:gameID ", () => {
   let user;
   let game1;
   let game2;
@@ -278,12 +264,12 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
 
   beforeEach(async () => {
     // reset database;
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   afterAll(async () => {
     await User.deleteMany({});
-    await TicTacToe.deleteMany({});
+    await Battleships.deleteMany({});
   });
 
   // -------------- FIND BY ID WITH TOKEN ------------------
@@ -295,18 +281,18 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new Battleships({playerOne: user._id})
+      game2 = new Battleships({playerOne: user._id})
       await game1.save();
       await game2.save();
 
       // get all games and find the id of the first game
-      allGames = await TicTacToe.find();
+      allGames = await Battleships.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/tictactoe/${firstGame._id}`)
+        .get(`/battleships/${firstGame._id}`)
         .set('Authorization', `Bearer ${token}`)
 
     });
@@ -315,26 +301,19 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a tictactoe object with a populated playerOne", () => {
+    test("returns a battleships object with a populated playerOne", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
           points: 0
         },
-        title: "Tic-Tac-Toe",
-        endpoint: "tictactoe",
+        title: "Battleships",
+        endpoint: "battleships",
         turn: 0,
         winner: [],
         finished: false,
-        xPlacements: [],
-        oPlacements: [],
-        gameBoard: {
-          A: { 1: " ", 2: " ", 3: " " },
-          B: { 1: " ", 2: " ", 3: " " },
-          C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        //TODO BS PROPERTIES
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     })
@@ -356,18 +335,18 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new Battleships({playerOne: user._id})
+      game2 = new Battleships({playerOne: user._id})
       await game1.save();
       await game2.save();
 
       // get all games and find the id of the first game
-      allGames = await TicTacToe.find();
+      allGames = await Battleships.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/tictactoe/${fakeGameID}`)
+        .get(`/battleships/${fakeGameID}`)
         .set('Authorization', `Bearer ${token}`)
 
     });
@@ -376,7 +355,7 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a tictactoe object with a populated playerOne", () => {
+    test("returns a battleships object with a populated playerOne", () => {
       expect(response.body.game).toEqual(null);
     })
     test("generates a new token", async () => {
@@ -394,18 +373,18 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new Battleships({playerOne: user._id})
+      game2 = new Battleships({playerOne: user._id})
       await game1.save();
       await game2.save();
 
       // get all games and find the id of the first game
-      allGames = await TicTacToe.find();
+      allGames = await Battleships.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/tictactoe/${firstGame._id}`)
+        .get(`/battleships/${firstGame._id}`)
         // .set('Authorization', `Bearer ${token}`)
 
     });

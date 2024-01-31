@@ -7,19 +7,15 @@ const JWT = require("jsonwebtoken");
 const authenticationRouter = require("./routes/authentication");
 const signUpRouter = require("./routes/signup");
 const usersRouter = require("./routes/users");
-const tictactoeRouter = require("./routes/tictactoe");
 const messagesRouter = require("./routes/messages");
 
+const tictactoeRouter = require("./routes/tictactoe");
+const battleshipsRouter = require("./routes/battleships");
+
 // const rockPaperScissorsRouter = require("./routes/rock-paper-scissors-games");
-// const battleshipsRouter = require("./routes/battleships-games");
 
 
 const app = express();
-// const server = require('http').Server(app);
-
-// dotenv.config();
-// const port = process.env.PORT || 5001;
-
 
 // setup for receiving JSON
 app.use(express.json())
@@ -61,11 +57,12 @@ app.use("/signup", signUpRouter);
 
 
 // routes with authentication:
-app.use("/tictactoe", tokenChecker, tictactoeRouter);
 app.use("/messages", tokenChecker, messagesRouter);
-// app.use("/rps", tokenChecker, rockPaperScissorsRouter);
-// app.use("/battleships", tokenChecker, battleshipsRouter);
 app.use("/users", tokenChecker, usersRouter);
+app.use("/tictactoe", tokenChecker, tictactoeRouter);
+app.use("/battleships", tokenChecker, battleshipsRouter)
+// app.use("/rps", tokenChecker, rockPaperScissorsRouter);
+
 
 
 // catch 404 and forward to error handler
