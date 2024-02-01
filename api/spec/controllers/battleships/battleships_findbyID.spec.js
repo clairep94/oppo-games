@@ -6,51 +6,50 @@ const User = require('../../../models/user');
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
+// ----------- DECLARE VARIABLES -----------------
+let token;
+let user;
+let user2;
+let game1;
+let response;
+let firstGame;
+let allGames;
+
+const playedBoard = [
+  ["","","","","","","","","","",],
+  ["","s","","","","","","","","",],
+  ["","s","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","s","s","s","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","X","","",],
+  ["","","","","","","","","","S",],
+  ["","","","","","O","O","O","","",],
+  ["","","","","","","","","S","",],
+]
+const concealedBoard = [
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","X","","",],
+  ["","","","","","","","","","S",],
+  ["","","","","","O","O","O","","",],
+  ["","","","","","","","","S","",],
+]
+const unplacedShips = { 
+  carrier: { sank_status: false, units: [] },
+  battleship: { sank_status: false, units: [] },
+  cruiser: { sank_status: false, units: [] },
+  submarine: { sank_status: false, units: [] },
+  destroyer: { sank_status: false, units: [] },
+}
 
 // ==================== FIND BY ID -- with conceal function ==================================== //
 describe(".FINDBYID - /battleships/:gameID ", () => {
   
-  // ----------- DECLARE VARIABLES -----------------
-  let token;
-  let user;
-  let user2;
-  let game1;
-  let response;
-  let firstGame;
-  let allGames;
-
-  const playedBoard = [
-    ["","","","","","","","","","",],
-    ["","s","","","","","","","","",],
-    ["","s","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","s","s","s","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","X","","",],
-    ["","","","","","","","","","S",],
-    ["","","","","","O","O","O","","",],
-    ["","","","","","","","","S","",],
-  ]
-  const concealedBoard = [
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","X","","",],
-    ["","","","","","","","","","S",],
-    ["","","","","","O","O","O","","",],
-    ["","","","","","","","","S","",],
-  ]
-  const unplacedShips = { 
-    carrier: { sank_status: false, units: [] },
-    battleship: { sank_status: false, units: [] },
-    cruiser: { sank_status: false, units: [] },
-    submarine: { sank_status: false, units: [] },
-    destroyer: { sank_status: false, units: [] },
-  }
-
   // ----------- ARRANGE: DB SETUP/CLEANUP, CREATE USER, & TOKEN -----------------
   beforeAll(async () => {
     // create a user
@@ -85,7 +84,6 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
   // -------------- FIND BY ID WITH TOKEN, sessionUser is playerOne. ------------------
   describe("When a token is present & the sessionUser is playerOne", () => {
     
-
     // search games with a token
     beforeEach(async () => {
       // create game
@@ -137,33 +135,6 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
 
   // -------------- FIND BY ID WITH TOKEN, sessionUser is playerTwo. ------------------
   describe("When a token is present & the sessionUser is playerOne", () => {
-    let response;
-    let firstGame;
-    let allGames;
-    const playedBoard = [
-      ["","","","","","","","","","",],
-      ["","s","","","","","","","","",],
-      ["","s","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","s","s","s","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","X","","",],
-      ["","","","","","","","","","S",],
-      ["","","","","","O","O","O","","",],
-      ["","","","","","","","","S","",],
-    ]
-    const concealedBoard = [
-      ["","","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","","","",],
-      ["","","","","","","","X","","",],
-      ["","","","","","","","","","S",],
-      ["","","","","","O","O","O","","",],
-      ["","","","","","","","","S","",],
-    ]
 
     // search games with a token
     beforeEach(async () => {
@@ -217,9 +188,6 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
 
   // ------------- FIND BY ID WITH NO RESULT ------------------
   describe("When a token is present but no matching ID", () => {
-    let response;
-    let firstGame;
-    let allGames;
     const fakeGameID = "65a5303a0aaf4a563f531d92";
 
     // search games with a token
@@ -258,7 +226,6 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
 
   // ------------- WHEN NO TOKEN --------------------
   describe("When not token is present", () => {
-    let response;
 
     // search games with a token
     beforeEach(async () => {
