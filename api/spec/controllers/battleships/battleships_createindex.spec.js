@@ -6,32 +6,36 @@ const User = require('../../../models/user');
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
+// ---------- DECLARE VARIABLES --------------  
 let token;
+let user;
+let game1;
+let game2;
+const emptyBoard = [
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+  ["","","","","","","","","","",],
+];
+const unplacedShips = { 
+  carrier: { sank_status: false, units: [] },
+  battleship: { sank_status: false, units: [] },
+  cruiser: { sank_status: false, units: [] },
+  submarine: { sank_status: false, units: [] },
+  destroyer: { sank_status: false, units: [] },
+};  
+
+
 
 // ==================== CREATE A GAME ================================= //
 describe("CREATE - /battleships", () => {
 
-  // ---------- DECLARE VARIABLES --------------
-  let user;
-  const emptyBoard = [
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-  ];
-  const unplacedShips = { 
-    carrier: { sank_status: false, units: [] },
-    battleship: { sank_status: false, units: [] },
-    cruiser: { sank_status: false, units: [] },
-    submarine: { sank_status: false, units: [] },
-    destroyer: { sank_status: false, units: [] },
-  };  
 
   // ---------------- ARRANGE: DB cleanup, create User & token ------------- //
   beforeAll(async () => {
@@ -134,29 +138,7 @@ describe("CREATE - /battleships", () => {
 
 // ==================== INDEX ========================================== //
 describe("INDEX - /battleships", () => {
-  // ---------- DECLARE VARIABLES --------------  
-  let user;
-  let game1;
-  let game2;
-  const emptyBoard = [
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-    ["","","","","","","","","","",],
-  ];
-  const unplacedShips = { 
-    carrier: { sank_status: false, units: [] },
-    battleship: { sank_status: false, units: [] },
-    cruiser: { sank_status: false, units: [] },
-    submarine: { sank_status: false, units: [] },
-    destroyer: { sank_status: false, units: [] },
-  };  
+  
   // -------- ARRANGE: DB cleanup, create User & token ----------
   beforeAll(async () => {
     // create a user
