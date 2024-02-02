@@ -41,6 +41,19 @@ const submittedPlacementsBoard = [
   ["", "", "D", "", "", "", "", "", "", ""],
 ];
 
+const incompletePlacementsBoard = [
+  ["", "", "S", "", "", "", "", "", "", ""],
+  ["", "", "S", "", "", "", "", "B", "", ""],
+  ["", "", "S", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "D", "", "", "", "R", "R", "R", ""],
+  ["", "", "D", "", "", "", "", "", "", ""],
+];
+
 const concealedBoard = emptyBoard;
 
 const unconcealedBoard = [
@@ -229,82 +242,339 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
   });
+
+  // -------------- SUBMIT PLACEMENTS WHEN YOU ARE NOT IN THE GAME -------------------
+  describe("When sessionUser is not a player in the game", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to submit placements with a token ---------
+      response = await request(app)
+        .put(`/battleships/${firstGame._id}/submit_placements`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ placements: submittedPlacementsBoard });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & error message -----------
+    test("responds with a 403 with a error message: Observers cannot place ships ", async () => {
+      expect(response.statusCode).toBe(403);
+      expect(response.body.error).toBe("Observers cannot place ships");
+    });
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "second_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "third_user123",
+          points: 0,
+        },
+
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: emptyBoard,
+        playerTwoBoard: emptyBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
+  // -------------- SUBMIT PLACEMENTS WITHOUT PLAYER TWO -------------------
+  describe("When player two has not joined", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to submit placements with a token ---------
+      response = await request(app)
+        .put(`/battleships/${firstGame._id}/submit_placements`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ placements: submittedPlacementsBoard });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & error message -----------
+    test("responds with a 403 with a error message: Cannot place ships till player two joins. ", async () => {
+      expect(response.statusCode).toBe(403);
+      expect(response.body.error).toBe(
+        "Cannot place ships till player two joins."
+      );
+    });
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: emptyBoard,
+        playerTwoBoard: emptyBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
+  // -------------- SUBMIT PLACEMENTS WHEN GAME IS ALREADY OVER -------------------
+  describe("When the game is already over", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        finished: true,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to submit placements with a token ---------
+      response = await request(app)
+        .put(`/battleships/${firstGame._id}/submit_placements`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ placements: submittedPlacementsBoard });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & error message -----------
+    test("responds with a 403 with a error message: Game already finished. ", async () => {
+      expect(response.statusCode).toBe(403);
+      expect(response.body.error).toBe("Game already finished.");
+    });
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "second_user123",
+          points: 0,
+        },
+
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: true,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: emptyBoard,
+        playerTwoBoard: emptyBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
+  // -------------- SUBMIT INCOMPLETE PLACEMENTS  -------------------
+  describe("When an incomplete board is submitted", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        playerTwoBoard: unconcealedBoard,
+        playerTwoShips: unconcealedShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to submit placements with a token ---------
+      response = await request(app)
+        .put(`/battleships/${firstGame._id}/submit_placements`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ placements: incompletePlacementsBoard });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & error message -----------
+    test("responds with a 403 with a error message: Please place all ships ", async () => {
+      expect(response.statusCode).toBe(403);
+      expect(response.body.error).toBe("Please place all ships");
+    });
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unconcealedShips,
+        playerOneBoard: emptyBoard,
+        playerTwoBoard: unconcealedBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
+  // -------------- SUBMIT PLACEMENTS WHEN OPPONENT HAS ALREADY PLACED/GAME STARTED -------------------
+  // TODO
+
+  // -------------- SUBMIT PLACEMENTS NO TOKEN -------------------
+  describe("When no token is present", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo,
+    beforeEach(async () => {
+      game = new Battleships({ playerOne: user1._id, playerTwo: user2._id });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 makes the put request to submit placements with no token ---------
+      response = await request(app)
+        .put(`/battleships/${firstGame._id}/submit_placements`)
+        .send({ placements: submittedPlacementsBoard });
+    });
+
+    // ---------- ASSERT: response code 401, return no game object && no token && game has not been updated in the DB ------------
+    test("responds with a 401", async () => {
+      expect(response.statusCode).toBe(401);
+    });
+    test("does not return a tictactoe game object", () => {
+      expect(response.body.game).toEqual(undefined);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: emptyBoard,
+        playerTwoBoard: emptyBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 });
-
-// -------------- SUBMIT INCOMPLETE PLACEMENTS  -------------------
-
-// -------------- SUBMIT PLACEMENTS WITHOUT PLAYER TWO -------------------
-// -------------- SUBMIT PLACEMENTS WHEN OPPONENT HAS ALREADY PLACED/GAME STARTED -------------------
-// -------------- SUBMIT PLACEMENTS WHEN YOU ARE NOT IN THE GAME -------------------
-// -------------- SUBMIT PLACEMENTS WHEN GAME IS ALREADY OVER -------------------
-
-// -------------- SUBMIT PLACEMENTS NO TOKEN -------------------
-// describe("When no token is present", () => {
-//   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo,
-//   beforeEach(async () => {
-//     game = new Battleships({ playerOne: user1._id, playerTwo: user2._id });
-//     await game.save();
-
-//     // get the id of the game
-//     allGames = await Battleships.find();
-//     firstGame = allGames[0];
-
-//     // ------ ACT: user1 makes the put request to submit placements with no token ---------
-//     response = await request(app)
-//       .put(`/battleships/${firstGame._id}/submit_placements`)
-//       .send({ row: 1, col: 1 });
-//   });
-
-//   // ---------- ASSERT: response code 401, return no game object && no token && game has not been updated in the DB ------------
-//   test("responds with a 401", async () => {
-//     expect(response.statusCode).toBe(401);
-//   });
-//   test("does not return a tictactoe game object", () => {
-//     expect(response.body.game).toEqual(undefined);
-//   });
-//   test("the game in the database is unaffected", async () => {
-//     const checkGame = await Battleships.findById(game._id)
-//       .populate("playerOne", "_id username points")
-//       .populate("playerTwo", "_id username points")
-//       .populate("winner", "_id username points");
-
-//     // Convert Mongoose document to a plain JavaScript object
-//     const checkGameObject = checkGame.toObject();
-
-//     const expectedResponse = {
-//       playerOne: {
-//         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-//         username: "first_user123",
-//         points: 0,
-//       },
-//       playerTwo: {
-//         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-//         username: "second_user123",
-//         points: 0,
-//       },
-//       title: "Battleships",
-//       endpoint: "battleships",
-//       turn: 0,
-//       winner: [],
-//       finished: false,
-
-//       // === BATTLESHIP PROPERTIES ====== //
-//       playerOneShips: unplacedShips,
-//       playerTwoShips: unplacedShips,
-//       playerOneBoard: emptyBoard,
-//       playerTwoBoard: emptyBoard,
-//     };
-//     expect(checkGameObject).toMatchObject(expectedResponse);
-//   });
-// });
-
-// Error handling in FE? (overlapping ships)
-// token & no errors
-// no token
-// need player two to join
-// game already commenced/placement already finalised
-// you're not in this game
-// Incomplete ship placements
 
 // ==================== RESET BOARD ============================
 // token & no errors

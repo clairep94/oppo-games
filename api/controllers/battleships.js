@@ -6,7 +6,6 @@ const TokenGenerator = require("../lib/token_generator");
 // ============ HELPER FUNCTIONS FOR CONCEALMENT: ===================
 // All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
 // If the viewer is not the owner of a board or shipyard, they will get a concealed version of each.
-
 const concealedGameView = (populatedGame, viewerID) => {
   // The structure below allows for concealment for both opponents and observers.
   const concealBoard = (board) => {
@@ -78,6 +77,29 @@ const BattleshipsController = {
         const token = TokenGenerator.jsonwebtoken(req.user_id);
         res.setHeader("Cache-Control", "no-store, no-cache");
         res.status(200).json({ games: battleshipsGames, token: token });
+      });
+  },
+
+  // This FindByID method conceals the game according to the viewer prior to returning the game data.
+  FindByID: (req, res) => {
+    const battleshipsID = req.params.id;
+    const userID = req.user_id; // userID of the viewer
+
+    // ========= 1) Find the game ====================
+    Battleships.findById(battleshipsID)
+      .populate("playerOne", "_id username points")
+      .populate("playerTwo", "_id username points")
+      .populate("winner", "_id username points")
+      .exec((err, game) => {
+        if (err) {
+          throw err;
+        }
+
+        // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+        game = concealedGameView(game, userID);
+        const token = TokenGenerator.jsonwebtoken(req.user_id);
+        res.setHeader("Cache-Control", "no-store, no-cache");
+        res.status(200).json({ game: game, token: token });
       });
   },
 
@@ -247,30 +269,6 @@ const BattleshipsController = {
   },
 
   // ===================== BATTLESHIP SPECIFIC GAMEPLAY METHODS ============================
-
-  // ======= This findByID method includes an extra concealBoard function necessary for battleships =========
-  FindByID: (req, res) => {
-    const battleshipsID = req.params.id;
-    const userID = req.user_id; // userID of the viewer
-
-    // ========= 1) Find the game ====================
-    Battleships.findById(battleshipsID)
-      .populate("playerOne", "_id username points")
-      .populate("playerTwo", "_id username points")
-      .populate("winner", "_id username points")
-      .exec((err, game) => {
-        if (err) {
-          throw err;
-        }
-
-        // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
-        game = concealedGameView(game, userID);
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        res.setHeader("Cache-Control", "no-store, no-cache");
-        res.status(200).json({ game: game, token: token });
-      });
-  },
-
   // ======= PLACING SHIPS ============
   SubmitShipPlacements: async (req, res) => {
     const gameID = req.params.id;
@@ -290,14 +288,6 @@ const BattleshipsController = {
           .json({ error: "Observers cannot place ships", token: token });
       }
 
-      // Users cannot submit on completed games.
-      if (game.finished === true) {
-        console.log("ERROR: GAME FINISHED");
-        return res
-          .status(403)
-          .json({ error: "Game already finished.", token: token });
-      }
-
       // Users cannot submit placements without a playerTwo
       if (!game.playerTwo) {
         console.log("ERROR: AWAITING PLAYER TWO");
@@ -307,8 +297,42 @@ const BattleshipsController = {
         });
       }
 
-      // Users cannot submit ship placements if ships have already been placed --> all ship placements are submitted at once.
+      // Users cannot submit on completed games.
+      if (game.finished === true) {
+        console.log("ERROR: GAME FINISHED");
+        return res
+          .status(403)
+          .json({ error: "Game already finished.", token: token });
+      }
+
       // Users cannot submit incomplete ship placements
+      const checkPlacementCompletion = (placements) => {
+        const counts = {
+          C: 5,
+          B: 4,
+          R: 3,
+          S: 3,
+          D: 2,
+        };
+
+        for (let i = 0; i < placements.length; i++) {
+          for (let j = 0; j < placements[i].length; j++) {
+            if (placements[i][j] in counts) {
+              counts[placements[i][j]]--; // Decrement the count for the corresponding ship type
+            }
+          }
+        }
+
+        // Check if all counts are 0
+        return Object.values(counts).every((count) => count === 0);
+      };
+      if (!checkPlacementCompletion(placements)) {
+        console.log("ERROR: INCOMPLETE PLACEMENTS");
+        return res.status(403).json({
+          error: "Please place all ships",
+          token: token,
+        });
+      }
 
       // 2) =========== Update the user's board with the ship placements: =================
       const shipCodeMap = {
@@ -319,20 +343,47 @@ const BattleshipsController = {
         D: "destroyer",
       };
 
-      // Find corresponding Board & Shipyard -- case for sessionUser not being in this game is handled in line 263.
+      // Find corresponding Board & Shipyard -- case for sessionUser not being in this game is handled in line 285.
       const targetBoardVar =
         userID == game.playerOne ? "playerOneBoard" : "playerTwoBoard";
 
       const targetBoard =
         userID == game.playerOne ? game.playerOneBoard : game.playerTwoBoard;
-      // console.log("board: ", JSON.stringify(targetBoard));
 
       const targetShipyardVar =
         userID == game.playerOne ? "playerOneShips" : "playerTwoShips";
 
       const targetShipyard =
         userID == game.playerOne ? game.playerOneShips : game.playerTwoShips;
-      // console.log("shipyard: ", JSON.stringify(targetShipyard));
+
+      // Users cannot submit ship placements if ships have already been placed --> all ship placements are submitted at once.
+      const emptyBoard = [
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", "", "", ""],
+      ];
+      const unplacedShips = {
+        carrier: { sank_status: false, units: [] },
+        battleship: { sank_status: false, units: [] },
+        cruiser: { sank_status: false, units: [] },
+        submarine: { sank_status: false, units: [] },
+        destroyer: { sank_status: false, units: [] },
+      };
+      // if (targetBoard != emptyBoard || targetShipyard != unplacedShips) {
+      //   console.log("ERROR: SHIPS ARE ALREADY PLACED");
+      //   return res.status(403).json({
+      //     error:
+      //       "Ship have already been placed. Please reset before placing ships.",
+      //     token: token,
+      //   });
+      // }
 
       let updatedBoard = targetBoard;
       let updatedShipyard = targetShipyard;
@@ -393,7 +444,7 @@ const BattleshipsController = {
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
 
-      // Users cannot reset if the opponent has also submitted their ship placements
+      // Users cannot reset if the opponent has also submitted their ship placements OR game is ready
       // Users cannot reset if they are not in the game
 
       // 2) =========== Reset the corresponding player's board: ====================
