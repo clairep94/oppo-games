@@ -1,8 +1,8 @@
-const app = require("../../../app");
+const app = require("../../../../app");
 const request = require("supertest");
-require("../../mongodb_helper");
-const Battleships = require('../../../models/battleships');
-const User = require('../../../models/user');
+require("../../../mongodb_helper");
+const Battleships = require('../../../../models/battleships');
+const User = require('../../../../models/user');
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
@@ -58,6 +58,10 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // create a second user
     user2 = new User({ email: "test2@test.com", username: "seconduser123", password: "123456789" });
     await user2.save();
+    // create a third user
+    user3 = new User({ email: "test3@test.com", username: "thirduser123", password: "123456789" });
+    await user3.save();
+    
     
     // generate token
     token = JWT.sign({
@@ -134,7 +138,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
   })
 
   // -------------- FIND BY ID WITH TOKEN, sessionUser is playerTwo. ------------------
-  describe("When a token is present & the sessionUser is playerOne", () => {
+  describe("When a token is present & the sessionUser is playerTwo", () => {
 
     // search games with a token
     beforeEach(async () => {
@@ -185,9 +189,66 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     });
   })
 
+  // -------------- FIND BY ID WITH TOKEN, sessionUser is an observer. ------------------
+  describe("When a token is present & the sessionUser is an observer", () => {
+
+    // search games with a token
+    beforeEach(async () => {
+      // create game
+      game1 = new Battleships({playerOne: user2._id, playerTwo: user3._id, playerOneBoard: playedBoard, playerTwoBoard: playedBoard}) // conceal both boards
+      await game1.save();
+
+      // get all games and find the id of the first game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // fetch by gameID
+      response = await request(app)
+        .get(`/battleships/${firstGame._id}`)
+        .set('Authorization', `Bearer ${token}`)
+
+    });
+
+    // --------- ASSERTIONS -----------
+    test("responds with a 200", async () => {
+      expect(response.statusCode).toBe(200);
+    });
+    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "seconduser123",
+          points: 0
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "thirduser123",
+          points: 0
+        },
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: concealedBoard, 
+        playerTwoBoard: concealedBoard
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    })
+    test("generates a new token", async () => {
+      expect(response.body.token).toBeDefined();
+      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    });
+  })
+
 
   // ------------- FIND BY ID WITH NO RESULT ------------------
-  describe("When a token is present but no matching ID", () => {
+  describe("When a token is present but no matching ID", () => { // TODO change to 404 error?
     const fakeGameID = "65a5303a0aaf4a563f531d92";
 
     // search games with a token

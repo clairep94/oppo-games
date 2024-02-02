@@ -23,5 +23,8 @@
       "node"
     ],
     "rules": {
+      "indent": ["error", 2, { "SwitchCase": 1 }],
+      "newline-per-chained-call": "off", // Turn off the rule
+      "no-multiple-empty-lines": "off" // Disabled
     }
 }
