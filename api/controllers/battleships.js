@@ -3,6 +3,62 @@ const TokenGenerator = require("../lib/token_generator");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
+// ============ HELPER FUNCTIONS FOR CONCEALMENT: ===================
+// All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
+// If the viewer is not the owner of a board or shipyard, they will get a concealed version of these.
+
+const concealBoard = (board) => {
+  // If the viewer is NOT the owner of the board (ie. a spectator or the opponent), they will get a concealed version of the board
+  // Iterate over all spaces and change all spaces with "s" to ""
+  for (let i = 0; i < board.length; i++) {
+    for (let j = 0; j < board[i].length; j++) {
+      if (board[i][j] === "s") {
+        board[i][j] = "";
+      }
+    }
+  }
+  return board;
+};
+
+const concealedGameView = (populatedGame, viewerID) => {
+  // If viewer is not playerOne: (viewer is playerTwo or observer)
+  if (populatedGame && viewerID != populatedGame.playerOne._id) {
+    // Needs to be != and not !== due to mongoose having its own data types
+    const concealedBoard = concealBoard(populatedGame.playerOneBoard);
+    populatedGame.playerOneBoard = concealedBoard;
+
+    populatedGame.playerOneShips = {
+      carrier: { sank_status: false },
+      battleship: { sank_status: false },
+      cruiser: { sank_status: false },
+      submarine: { sank_status: false },
+      destroyer: { sank_status: false },
+    };
+  }
+  // If viewer is not playerTwo: (viewer is playerOne or observer)
+  if (populatedGame && viewerID != populatedGame.playerTwo?._id) {
+    // this syntax for when there is no player two yet.
+    // Needs to be != and not !== due to mongoose having its own data types
+    const concealedBoard = concealBoard(populatedGame.playerTwoBoard);
+    populatedGame.playerTwoBoard = concealedBoard;
+
+    populatedGame.playerTwoShips = {
+      carrier: { sank_status: false },
+      battleship: { sank_status: false },
+      cruiser: { sank_status: false },
+      submarine: { sank_status: false },
+      destroyer: { sank_status: false },
+    };
+  }
+  return populatedGame;
+};
+
+// If the viewer is NOT the owner of the shipyard (ie. a spectator or the opponent), they will get a concealed version of the shipyard
+// This concealed version checks for units and converts to an empty array
+// This concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
+
+// ============ CONTROLLER ===============================
+
 const BattleshipsController = {
   // ================== METHODS SHARED BY ALL GAMES ============================
   Index: (req, res) => {
@@ -205,40 +261,22 @@ const BattleshipsController = {
         }
 
         // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
-        // If the viewer is NOT the owner of the board (ie. a spectator or the opponent), they will get a concealed version of the board
-        // This concealed version checks for "s" and converts it to "".
-        // This concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
+        game = concealedGameView(game, userID);
+        // // Conceal playerOneBoard if viewer is not playerOne:
+        // if (game && userID != game.playerOne._id) {
+        //   // Needs to be != and not !== due to mongoose having its own data types
+        //   const concealedBoard = concealBoard(game.playerOneBoard);
+        //   game.playerOneBoard = concealedBoard;
+        // }
+        // // Conceal playerTwoBoard if viewer is not playerTwo:
+        // if (game && userID != game.playerTwo?._id) {
+        //   // Needs to be != and not !== due to mongoose having its own data types
+        //   const concealedBoard = concealBoard(game.playerTwoBoard);
+        //   game.playerTwoBoard = concealedBoard;
+        // }
 
-        const concealBoard = (board) => {
-          // Iterate over all spaces and change all spaces with "s" to ""
-          for (let i = 0; i < board.length; i++) {
-            for (let j = 0; j < board[i].length; j++) {
-              if (board[i][j] === "s") {
-                board[i][j] = "";
-              }
-            }
-          }
-          return board;
-        };
-
-        // Conceal playerOneBoard if viewer is not playerOne:
-        if (game && userID != game.playerOne._id) {
-          // Needs to be != and not !== due to mongoose having its own data types
-          const concealedBoard = concealBoard(game.playerOneBoard);
-          game.playerOneBoard = concealedBoard;
-        }
-        // Conceal playerTwoBoard if viewer is not playerTwo:
-        if (game && userID != game.playerTwo?._id) {
-          // Needs to be != and not !== due to mongoose having its own data types
-          const concealedBoard = concealBoard(game.playerTwoBoard);
-          game.playerTwoBoard = concealedBoard;
-        }
-
-        // TODO: Add this method then refactor
-        // ======= 3) Conceal the ships according to who is looking (playerOne, playerTwo, outsider) ============
-        // If the viewer is NOT the owner of the shipyard (ie. a spectator or the opponent), they will get a concealed version of the shipyard
-        // This concealed version checks for units and converts to an empty array
-        // This concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
+        // // TODO: Add this method then refactor
+        // // ======= 3) Conceal the ships according to who is looking (playerOne, playerTwo, outsider) ============
 
         const token = TokenGenerator.jsonwebtoken(req.user_id);
         res.setHeader("Cache-Control", "no-store, no-cache");
@@ -342,8 +380,14 @@ const BattleshipsController = {
         .populate("playerOne", "_id username points")
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
-      console.log(JSON.stringify(placedShipsGame.playerOneShips));
-      res.status(200).json({ token: token, game: placedShipsGame });
+
+      // ======== 3) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+      const concealedPlacedShipsGame = concealedGameView(
+        placedShipsGame,
+        userID
+      );
+      // console.log(JSON.stringify(placedShipsGame.playerOneShips));
+      res.status(200).json({ token: token, game: concealedPlacedShipsGame });
     } catch (error) {
       console.error("Error submitting ship placements: ", error);
       res.status(500).json(error);

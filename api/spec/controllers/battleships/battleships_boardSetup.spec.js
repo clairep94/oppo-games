@@ -175,8 +175,8 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
         playerOne: user1._id,
         playerTwo: user2._id,
         // Set playerTwo's board and shipyard as the same ship placements as what playerOne will send in this Put request to see concealed vs. unconcealed boards & shipyards
-        // playerTwoBoard: unconcealedBoard,
-        // playerTwoShips: unconcealedShips,
+        playerTwoBoard: unconcealedBoard,
+        playerTwoShips: unconcealedShips,
       });
       await game.save();
 
@@ -215,16 +215,12 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
 
         // === BATTLESHIP PROPERTIES ====== //
         playerOneShips: unconcealedShips,
-        playerTwoShips: unplacedShips,
+        playerTwoShips: concealedShips,
         playerOneBoard: unconcealedBoard,
-        playerTwoBoard: emptyBoard,
+        playerTwoBoard: concealedBoard,
       };
 
       expect(response.body.game).toMatchObject(expectedResponse);
-      expect(response.body.game.playerOneShips).toMatchObject(unconcealedShips);
-      expect(response.body.game.playerTwoShips).toMatchObject(unplacedShips);
-      expect(response.body.game.playerOneBoard).toMatchObject(unconcealedBoard);
-      expect(response.body.game.playerTwoBoard).toMatchObject(emptyBoard);
     });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
