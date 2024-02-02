@@ -5,22 +5,21 @@ const TokenGenerator = require("../lib/token_generator");
 
 // ============ HELPER FUNCTIONS FOR CONCEALMENT: ===================
 // All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
-// If the viewer is not the owner of a board or shipyard, they will get a concealed version of these.
-
-const concealBoard = (board) => {
-  // If the viewer is NOT the owner of the board (ie. a spectator or the opponent), they will get a concealed version of the board
-  // Iterate over all spaces and change all spaces with "s" to ""
-  for (let i = 0; i < board.length; i++) {
-    for (let j = 0; j < board[i].length; j++) {
-      if (board[i][j] === "s") {
-        board[i][j] = "";
-      }
-    }
-  }
-  return board;
-};
+// If the viewer is not the owner of a board or shipyard, they will get a concealed version of each.
 
 const concealedGameView = (populatedGame, viewerID) => {
+  // The structure below allows for concealment for both opponents and observers.
+  const concealBoard = (board) => {
+    // Iterate over all spaces and change all spaces with "s" to ""
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (board[i][j] === "s") {
+          board[i][j] = "";
+        }
+      }
+    }
+    return board;
+  };
   // If viewer is not playerOne: (viewer is playerTwo or observer)
   if (populatedGame && viewerID != populatedGame.playerOne._id) {
     // Needs to be != and not !== due to mongoose having its own data types
@@ -53,17 +52,22 @@ const concealedGameView = (populatedGame, viewerID) => {
   return populatedGame;
 };
 
-// If the viewer is NOT the owner of the shipyard (ie. a spectator or the opponent), they will get a concealed version of the shipyard
-// This concealed version checks for units and converts to an empty array
-// This concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
-
 // ============ CONTROLLER ===============================
 
 const BattleshipsController = {
   // ================== METHODS SHARED BY ALL GAMES ============================
   Index: (req, res) => {
-    // TODO change this to a concealed board method too?
+    // using the select method to hide all gameboard details to prevent cheating.
     Battleships.find()
+      .select({
+        title: 1,
+        endpoint: 1,
+        playerOne: 1,
+        playerTwo: 1,
+        turn: 1,
+        winner: 1,
+        finished: 1,
+      })
       .populate("playerOne", "_id username points")
       .populate("playerTwo", "_id username points")
       .populate("winner", "_id username points")
@@ -79,7 +83,6 @@ const BattleshipsController = {
 
   Create: async (req, res) => {
     const userID = req.user_id;
-
     const newBattleships = new Battleships({
       playerOne: userID,
     });
@@ -162,9 +165,9 @@ const BattleshipsController = {
         const token = TokenGenerator.jsonwebtoken(req.user_id);
         return res.status(403).json({
           error: "Only players can forfeit the game.",
-          game: game,
+          // game: game,
           token: token,
-        }); //return the old game so as to not mess up the rendering
+        });
       }
 
       const winner =
@@ -211,7 +214,7 @@ const BattleshipsController = {
         console.log("ERROR: ONLY HOSTS CAN DELETE GAMES");
         return res.status(403).json({
           error: "Only hosts can delete the game.",
-          game: game,
+          // game: game,
           games: allGames,
         }); //return the old game & games list so as to not mess up the rendering
       }
@@ -220,7 +223,7 @@ const BattleshipsController = {
         console.log("ERROR: CANNOT DELETE NON-OPEN GAMES");
         return res.status(403).json({
           error: "Only games awaiting player Two can be deleted.",
-          game: game,
+          // game: game,
           games: allGames,
         }); //return the old game & games list so as to not mess up the rendering
       }
@@ -262,22 +265,6 @@ const BattleshipsController = {
 
         // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
         game = concealedGameView(game, userID);
-        // // Conceal playerOneBoard if viewer is not playerOne:
-        // if (game && userID != game.playerOne._id) {
-        //   // Needs to be != and not !== due to mongoose having its own data types
-        //   const concealedBoard = concealBoard(game.playerOneBoard);
-        //   game.playerOneBoard = concealedBoard;
-        // }
-        // // Conceal playerTwoBoard if viewer is not playerTwo:
-        // if (game && userID != game.playerTwo?._id) {
-        //   // Needs to be != and not !== due to mongoose having its own data types
-        //   const concealedBoard = concealBoard(game.playerTwoBoard);
-        //   game.playerTwoBoard = concealedBoard;
-        // }
-
-        // // TODO: Add this method then refactor
-        // // ======= 3) Conceal the ships according to who is looking (playerOne, playerTwo, outsider) ============
-
         const token = TokenGenerator.jsonwebtoken(req.user_id);
         res.setHeader("Cache-Control", "no-store, no-cache");
         res.status(200).json({ game: game, token: token });

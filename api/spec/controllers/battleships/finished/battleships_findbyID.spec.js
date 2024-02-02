@@ -1,8 +1,8 @@
 const app = require("../../../../app");
 const request = require("supertest");
 require("../../../mongodb_helper");
-const Battleships = require('../../../../models/battleships');
-const User = require('../../../../models/user');
+const Battleships = require("../../../../models/battleships");
+const User = require("../../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
@@ -16,61 +16,81 @@ let firstGame;
 let allGames;
 
 const playedBoard = [
-  ["","","","","","","","","","",],
-  ["","s","","","","","","","","",],
-  ["","s","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","s","s","s","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","X","","",],
-  ["","","","","","","","","","S",],
-  ["","","","","","O","O","O","","",],
-  ["","","","","","","","","S","",],
-]
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "s", "", "", "", "", "", "", "", ""],
+  ["", "s", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "s", "s", "s", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "X", "", ""],
+  ["", "", "", "", "", "", "", "", "", "S"],
+  ["", "", "", "", "", "O", "O", "O", "", ""],
+  ["", "", "", "", "", "", "", "", "S", ""],
+];
 const concealedBoard = [
-  ["","","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","","","",],
-  ["","","","","","","","X","","",],
-  ["","","","","","","","","","S",],
-  ["","","","","","O","O","O","","",],
-  ["","","","","","","","","S","",],
-]
-const unplacedShips = { 
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "X", "", ""],
+  ["", "", "", "", "", "", "", "", "", "S"],
+  ["", "", "", "", "", "O", "O", "O", "", ""],
+  ["", "", "", "", "", "", "", "", "S", ""],
+];
+const unplacedShips = {
   carrier: { sank_status: false, units: [] },
   battleship: { sank_status: false, units: [] },
   cruiser: { sank_status: false, units: [] },
   submarine: { sank_status: false, units: [] },
   destroyer: { sank_status: false, units: [] },
-}
+};
+const concealedShips = {
+  carrier: { sank_status: false },
+  battleship: { sank_status: false },
+  cruiser: { sank_status: false },
+  submarine: { sank_status: false },
+  destroyer: { sank_status: false },
+};
 
 // ==================== FIND BY ID -- with conceal function ==================================== //
 describe(".FINDBYID - /battleships/:gameID ", () => {
-  
   // ----------- ARRANGE: DB SETUP/CLEANUP, CREATE USER, & TOKEN -----------------
   beforeAll(async () => {
     // create a user
-    user = new User({ email: "test@test.com", username: "user123", password: "12345678" });
+    user = new User({
+      email: "test@test.com",
+      username: "user123",
+      password: "12345678",
+    });
     await user.save();
     // create a second user
-    user2 = new User({ email: "test2@test.com", username: "seconduser123", password: "123456789" });
+    user2 = new User({
+      email: "test2@test.com",
+      username: "seconduser123",
+      password: "123456789",
+    });
     await user2.save();
     // create a third user
-    user3 = new User({ email: "test3@test.com", username: "thirduser123", password: "123456789" });
+    user3 = new User({
+      email: "test3@test.com",
+      username: "thirduser123",
+      password: "123456789",
+    });
     await user3.save();
-    
-    
+
     // generate token
-    token = JWT.sign({
-      user_id: user.id,
-      // Backdate this token of 5 minutes
-      iat: Math.floor(Date.now() / 1000) - (5 * 60),
-      // Set the JWT token to expire in 10 minutes
-      exp: Math.floor(Date.now() / 1000) + (10 * 60),
-    }, secret);
+    token = JWT.sign(
+      {
+        user_id: user.id,
+        // Backdate this token of 5 minutes
+        iat: Math.floor(Date.now() / 1000) - 5 * 60,
+        // Set the JWT token to expire in 10 minutes
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+      },
+      secret
+    );
   });
 
   beforeEach(async () => {
@@ -83,15 +103,17 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     await Battleships.deleteMany({});
   });
 
-
   // ==================================================================================
   // -------------- FIND BY ID WITH TOKEN, sessionUser is playerOne. ------------------
   describe("When a token is present & the sessionUser is playerOne", () => {
-    
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({playerOne: user._id, playerOneBoard: playedBoard, playerTwoBoard: playedBoard}) // conceal playerTwoBoard when user is viewing the game.
+      game1 = new Battleships({
+        playerOne: user._id,
+        playerOneBoard: playedBoard,
+        playerTwoBoard: playedBoard,
+      }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
       // get all games and find the id of the first game
@@ -101,8 +123,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/battleships/${firstGame._id}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
@@ -114,7 +135,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
-          points: 0
+          points: 0,
         },
         title: "Battleships",
         endpoint: "battleships",
@@ -122,28 +143,32 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         winner: [],
         finished: false,
         // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips,
-        playerTwoShips: unplacedShips,
+        playerOneShips: unplacedShips, // logged in user
+        playerTwoShips: concealedShips, // opponent
         playerOneBoard: playedBoard, // logged in user
-        playerTwoBoard: concealedBoard // opponent
+        playerTwoBoard: concealedBoard, // opponent
       };
       expect(response.body.game).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // -------------- FIND BY ID WITH TOKEN, sessionUser is playerTwo. ------------------
   describe("When a token is present & the sessionUser is playerTwo", () => {
-
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({playerOne: user2._id, playerTwo: user._id, playerOneBoard: playedBoard, playerTwoBoard: playedBoard}) // conceal playerTwoBoard when user is viewing the game.
+      game1 = new Battleships({
+        playerOne: user2._id,
+        playerTwo: user._id,
+        playerOneBoard: playedBoard,
+        playerTwoBoard: playedBoard,
+      }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
       // get all games and find the id of the first game
@@ -153,8 +178,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/battleships/${firstGame._id}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
@@ -166,7 +190,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerOne: {
           _id: expect.any(String),
           username: "seconduser123",
-          points: 0
+          points: 0,
         },
         title: "Battleships",
         endpoint: "battleships",
@@ -174,28 +198,32 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         winner: [],
         finished: false,
         // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips,
-        playerTwoShips: unplacedShips,
+        playerOneShips: concealedShips, // opponent
+        playerTwoShips: unplacedShips, // logged in user
         playerOneBoard: concealedBoard, // opponent
-        playerTwoBoard: playedBoard // logged in user
+        playerTwoBoard: playedBoard, // logged in user
       };
       expect(response.body.game).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // -------------- FIND BY ID WITH TOKEN, sessionUser is an observer. ------------------
   describe("When a token is present & the sessionUser is an observer", () => {
-
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({playerOne: user2._id, playerTwo: user3._id, playerOneBoard: playedBoard, playerTwoBoard: playedBoard}) // conceal both boards
+      game1 = new Battleships({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+        playerOneBoard: playedBoard,
+        playerTwoBoard: playedBoard,
+      }); // conceal both boards
       await game1.save();
 
       // get all games and find the id of the first game
@@ -205,8 +233,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/battleships/${firstGame._id}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
@@ -218,12 +245,12 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerOne: {
           _id: expect.any(String),
           username: "seconduser123",
-          points: 0
+          points: 0,
         },
         playerTwo: {
           _id: expect.any(String),
           username: "thirduser123",
-          points: 0
+          points: 0,
         },
         title: "Battleships",
         endpoint: "battleships",
@@ -231,31 +258,31 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         winner: [],
         finished: false,
         // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips,
-        playerTwoShips: unplacedShips,
-        playerOneBoard: concealedBoard, 
-        playerTwoBoard: concealedBoard
+        playerOneShips: concealedShips,
+        playerTwoShips: concealedShips,
+        playerOneBoard: concealedBoard,
+        playerTwoBoard: concealedBoard,
       };
       expect(response.body.game).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
-
+  });
 
   // ------------- FIND BY ID WITH NO RESULT ------------------
-  describe("When a token is present but no matching ID", () => { // TODO change to 404 error?
+  describe("When a token is present but no matching ID", () => {
+    // TODO change to 404 error?
     const fakeGameID = "65a5303a0aaf4a563f531d92";
 
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new Battleships({playerOne: user._id})
-      game2 = new Battleships({playerOne: user._id})
+      game1 = new Battleships({ playerOne: user._id });
+      game2 = new Battleships({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
@@ -266,8 +293,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/battleships/${fakeGameID}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
@@ -276,23 +302,22 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     });
     test("returns a battleships object with a populated playerOne", () => {
       expect(response.body.game).toEqual(null);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // ------------- WHEN NO TOKEN --------------------
   describe("When not token is present", () => {
-
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new Battleships({playerOne: user._id})
-      game2 = new Battleships({playerOne: user._id})
+      game1 = new Battleships({ playerOne: user._id });
+      game2 = new Battleships({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
@@ -301,21 +326,19 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       firstGame = allGames[0];
 
       // fetch by gameID
-      response = await request(app)
-        .get(`/battleships/${firstGame._id}`)
+      response = await request(app).get(`/battleships/${firstGame._id}`);
     });
 
     // --------- ASSERTIONS -----------
     test("responds with a 401", async () => {
       expect(response.statusCode).toBe(401);
-      expect(response.body).toEqual({"message": "auth error"});
+      expect(response.body).toEqual({ message: "auth error" });
     });
     test("does not return a game object", () => {
       expect(response.body.game).toEqual(undefined);
-    })
+    });
     test("does not generate a new token", async () => {
       expect(response.body.token).toEqual(undefined);
     });
-  })
-})
-
+  });
+});

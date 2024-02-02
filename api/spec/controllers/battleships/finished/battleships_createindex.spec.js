@@ -207,10 +207,10 @@ describe("INDEX - /battleships", () => {
         finished: false,
 
         // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips,
-        playerTwoShips: unplacedShips,
-        playerOneBoard: emptyBoard,
-        playerTwoBoard: emptyBoard,
+        // playerOneShips: unplacedShips,
+        // playerTwoShips: unplacedShips,
+        // playerOneBoard: emptyBoard,
+        // playerTwoBoard: emptyBoard
       };
       expect(response.body.games).toHaveLength(2);
       expect(response.body.games[0]).toMatchObject(expectedResponse);
