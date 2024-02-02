@@ -69,43 +69,43 @@ const unconcealedShips = {
   carrier: {
     sank_status: false,
     units: [
-      { hit_status: false, coordinate: [5, 1] },
-      { hit_status: false, coordinate: [5, 2] },
-      { hit_status: false, coordinate: [5, 3] },
-      { hit_status: false, coordinate: [5, 4] },
-      { hit_status: false, coordinate: [5, 5] },
+      { hit_status: false, units: [5, 1] },
+      { hit_status: false, units: [5, 2] },
+      { hit_status: false, units: [5, 3] },
+      { hit_status: false, units: [5, 4] },
+      { hit_status: false, units: [5, 5] },
     ],
   },
   battleship: {
     sank_status: false,
     units: [
-      { hit_status: false, coordinate: [1, 7] },
-      { hit_status: false, coordinate: [2, 7] },
-      { hit_status: false, coordinate: [3, 7] },
-      { hit_status: false, coordinate: [4, 7] },
+      { hit_status: false, units: [1, 7] },
+      { hit_status: false, units: [2, 7] },
+      { hit_status: false, units: [3, 7] },
+      { hit_status: false, units: [4, 7] },
     ],
   },
   cruiser: {
     sank_status: false,
     units: [
-      { hit_status: false, coordinate: [8, 6] },
-      { hit_status: false, coordinate: [8, 7] },
-      { hit_status: false, coordinate: [8, 8] },
+      { hit_status: false, units: [8, 6] },
+      { hit_status: false, units: [8, 7] },
+      { hit_status: false, units: [8, 8] },
     ],
   },
   submarine: {
     sank_status: false,
     units: [
-      { hit_status: false, coordinate: [0, 2] },
-      { hit_status: false, coordinate: [1, 2] },
-      { hit_status: false, coordinate: [2, 2] },
+      { hit_status: false, units: [0, 2] },
+      { hit_status: false, units: [1, 2] },
+      { hit_status: false, units: [2, 2] },
     ],
   },
   destroyer: {
     sank_status: false,
     units: [
-      { hit_status: false, coordinate: [8, 2] },
-      { hit_status: false, coordinate: [9, 2] },
+      { hit_status: false, units: [8, 2] },
+      { hit_status: false, units: [9, 2] },
     ],
   },
 };
@@ -214,12 +214,17 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
         finished: false,
 
         // === BATTLESHIP PROPERTIES ====== //
-        // playerOneShips: unconcealedShips,
+        playerOneShips: unconcealedShips,
         playerTwoShips: unplacedShips,
-        // playerOneBoard: unconcealedBoard,
+        playerOneBoard: unconcealedBoard,
         playerTwoBoard: emptyBoard,
       };
+
       expect(response.body.game).toMatchObject(expectedResponse);
+      expect(response.body.game.playerOneShips).toMatchObject(unconcealedShips);
+      expect(response.body.game.playerTwoShips).toMatchObject(unplacedShips);
+      expect(response.body.game.playerOneBoard).toMatchObject(unconcealedBoard);
+      expect(response.body.game.playerTwoBoard).toMatchObject(emptyBoard);
     });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();

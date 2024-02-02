@@ -300,14 +300,14 @@ const BattleshipsController = {
 
       const targetBoard =
         userID == game.playerOne ? game.playerOneBoard : game.playerTwoBoard;
-      console.log("board: ", JSON.stringify(targetBoard));
+      // console.log("board: ", JSON.stringify(targetBoard));
 
       const targetShipyardVar =
         userID == game.playerOne ? "playerOneShips" : "playerTwoShips";
 
       const targetShipyard =
         userID == game.playerOne ? game.playerOneShips : game.playerTwoShips;
-      console.log("shipyard: ", JSON.stringify(targetShipyard));
+      // console.log("shipyard: ", JSON.stringify(targetShipyard));
 
       let updatedBoard = targetBoard;
       let updatedShipyard = targetShipyard;
@@ -342,7 +342,7 @@ const BattleshipsController = {
         .populate("playerOne", "_id username points")
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
-      console.log(JSON.stringify(placedShipsGame));
+      console.log(JSON.stringify(placedShipsGame.playerOneShips));
       res.status(200).json({ token: token, game: placedShipsGame });
     } catch (error) {
       console.error("Error submitting ship placements: ", error);
