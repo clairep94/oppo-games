@@ -55,6 +55,7 @@ const concealedGameView = (populatedGame, viewerID) => {
 
 const BattleshipsController = {
   // ================== METHODS SHARED BY ALL GAMES ============================
+  // This Index method only shows the properties of allgames, and no game boards
   Index: (req, res) => {
     // using the select method to hide all gameboard details to prevent cheating.
     Battleships.find()
@@ -269,7 +270,6 @@ const BattleshipsController = {
   },
 
   // ===================== BATTLESHIP SPECIFIC GAMEPLAY METHODS ============================
-  // ======= PLACING SHIPS ============
   SubmitShipPlacements: async (req, res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
@@ -279,6 +279,11 @@ const BattleshipsController = {
     try {
       // 1) =========== Find the current game and Catch Errors: =================
       const game = await Battleships.findById(gameID);
+
+      // Game not found
+      if (!game) {
+        return res.status(404).json({ error: "Game not found" });
+      }
 
       // Users cannot submit placements if they are not in the game.
       if (userID != game.playerOne && userID != game.playerTwo) {
@@ -356,7 +361,12 @@ const BattleshipsController = {
       const targetShipyard =
         userID == game.playerOne ? game.playerOneShips : game.playerTwoShips;
 
-      // Users cannot submit ship placements if ships have already been placed --> all ship placements are submitted at once.
+      let updatedBoard = targetBoard;
+      let updatedShipyard = targetShipyard;
+
+      console.log("target board: ", targetBoard);
+
+      // Users cannot submit ships if placements already exist
       const emptyBoard = [
         ["", "", "", "", "", "", "", "", "", ""],
         ["", "", "", "", "", "", "", "", "", ""],
@@ -369,24 +379,15 @@ const BattleshipsController = {
         ["", "", "", "", "", "", "", "", "", ""],
         ["", "", "", "", "", "", "", "", "", ""],
       ];
-      const unplacedShips = {
-        carrier: { sank_status: false, units: [] },
-        battleship: { sank_status: false, units: [] },
-        cruiser: { sank_status: false, units: [] },
-        submarine: { sank_status: false, units: [] },
-        destroyer: { sank_status: false, units: [] },
-      };
-      // if (targetBoard != emptyBoard || targetShipyard != unplacedShips) {
-      //   console.log("ERROR: SHIPS ARE ALREADY PLACED");
-      //   return res.status(403).json({
-      //     error:
-      //       "Ship have already been placed. Please reset before placing ships.",
-      //     token: token,
-      //   });
-      // }
-
-      let updatedBoard = targetBoard;
-      let updatedShipyard = targetShipyard;
+      if (JSON.stringify(targetBoard) !== JSON.stringify(emptyBoard)) {
+        // had to JSON.stringify the two nested arrays to compare content
+        console.log("ERROR: SHIPS ALREADY PLACED");
+        return res.status(403).json({
+          error:
+            "Ships have already been placed and/or game has already started. Please reset placements or forfeit.",
+          token: token,
+        });
+      }
 
       // Check each space in the placements board & check for keys in the shipCodeMap
       for (let i = 0; i < placements.length; i++) {
@@ -432,39 +433,66 @@ const BattleshipsController = {
     }
   },
 
-  // ======= RESET PLACEMENTS ============
   ResetShipPlacements: async (req, res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
+    const token = TokenGenerator.jsonwebtoken(req.user_id);
 
     try {
       // 1) =========== Find the current game and Catch Errors: =================
-      const currentGame = Battleships.findById(gameID) // TODO populated version?
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
+      const currentGame = await Battleships.findById(gameID); // unpopulated version
 
-      // Users cannot reset if the opponent has also submitted their ship placements OR game is ready
+      // Game not found
+      if (!currentGame) {
+        return res.status(404).json({ error: "Game not found" });
+      }
+
       // Users cannot reset if they are not in the game
+      if (userID != currentGame.playerOne && userID != currentGame.playerTwo) {
+        console.log("ERROR: YOU'RE NOT IN THIS GAME");
+        return res
+          .status(403)
+          .json({ error: "You are not in this game", token: token });
+      }
 
-      // 2) =========== Reset the corresponding player's board: ====================
+      // Users cannot reset if the opponent has also submitted their ship placements
+      // Find corresponding Board & Shipyard -- case for sessionUser not being in this game is handled in line 285.
+      // TODO figure out gameReady system
+      if (currentGame.ready === true) {
+        // had to JSON.stringify the two nested arrays to compare content
+        console.log("ERROR: GAME ALREADY STARTED");
+        return res.status(403).json({
+          error: "Game already started.",
+          token: token,
+        });
+      }
+
+      // 2) =========== Reset the corresponding player's board & shipyard: ====================
       const boardToReset =
-        userID === currentGame.playerOne._id
-          ? "playerTwoBoard"
-          : "playerOneBoard";
-      const boardResetObj = { sank_status: false, units: [] };
+        userID == currentGame.playerOne ? "playerOneBoard" : "playerTwoBoard"; // must be == instead of ===
 
+      const shipyardToReset =
+        userID == currentGame.playerOne ? "playerOneShips" : "playerTwoShips"; // must be == instead of ===
+
+      // A) Resetted board & shipyard
+      const emptyBoard = Array.from({ length: 10 }, () =>
+        Array.from({ length: 10 }, () => "")
+      );
+      const unplacedShips = {
+        carrier: { sank_status: false, units: [] },
+        battleship: { sank_status: false, units: [] },
+        cruiser: { sank_status: false, units: [] },
+        submarine: { sank_status: false, units: [] },
+        destroyer: { sank_status: false, units: [] },
+      };
+
+      // B) Reset the corresponding player's board
       const resetPlacementsGame = await Battleships.findOneAndUpdate(
         { _id: gameID },
         {
           $set: {
-            [boardToReset]: {
-              carrier: boardResetObj,
-              battleship: boardResetObj,
-              cruiser: boardResetObj,
-              submarine: boardResetObj,
-              destroyer: boardResetObj,
-            },
+            [boardToReset]: emptyBoard,
+            [shipyardToReset]: unplacedShips,
           },
         },
         { new: true }
@@ -473,8 +501,11 @@ const BattleshipsController = {
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
 
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.status(200).json({ token: token, game: resetPlacementsGame });
+      // ======== 3) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+      const concealedResetGame = concealedGameView(resetPlacementsGame, userID);
+      console.log("Concealed Game: ", concealedResetGame);
+
+      res.status(200).json({ token: token, game: concealedResetGame });
     } catch (error) {
       console.error("Error resetting ship placements: ", error);
       res.status(500).json(error);
