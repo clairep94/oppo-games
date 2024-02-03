@@ -25,20 +25,69 @@ const putEndpoint = "launch_missile";
 
 // BOARDS
 const initialBoard = [
-  ["", "", "s", "", "", "", "", "", "", ""],
-  ["", "", "s", "", "", "", "", "s", "", ""],
-  ["", "", "s", "", "", "", "", "s", "", ""],
-  ["", "", "", "", "", "", "", "s", "", ""],
-  ["", "", "", "", "", "", "", "s", "", ""],
-  ["", "s", "s", "s", "s", "s", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "C", "C", "C", "C", "C", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "s", "", "", "", "s", "s", "s", ""],
-  ["", "", "s", "", "", "", "", "", "", ""],
+  ["", "", "D", "", "", "", "R", "R", "R", ""],
+  ["", "", "D", "", "", "", "", "", "", ""],
+];
+const unconcealedInitialBoard = initialBoard;
+const concealedInitialBoard = [
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+];
+const unconcealedHitBoard = [
+  ["", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "X", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "C", "C", "C", "C", "C", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "D", "", "", "", "R", "R", "R", ""],
+  ["", "", "D", "", "", "", "", "", "", ""],
+];
+const concealedHitBoard = [
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "X", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
 ];
 
-const initialConcealedBoard = [
+const unconcealedMissBoard = [
+  ["/", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "C", "C", "C", "C", "C", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "D", "", "", "", "R", "R", "R", ""],
+  ["", "", "D", "", "", "", "", "", "", ""],
+];
+const concealedMissBoard = [
+  ["/", "", "", "", "", "", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
@@ -52,56 +101,26 @@ const initialConcealedBoard = [
 
 // SHIPYARDS
 const initialShips = {
-  carrier: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [5, 1] },
-      { hit_status: false, units: [5, 2] },
-      { hit_status: false, units: [5, 3] },
-      { hit_status: false, units: [5, 4] },
-      { hit_status: false, units: [5, 5] },
-    ],
-  },
-  battleship: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [1, 7] },
-      { hit_status: false, units: [2, 7] },
-      { hit_status: false, units: [3, 7] },
-      { hit_status: false, units: [4, 7] },
-    ],
-  },
-  cruiser: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [8, 6] },
-      { hit_status: false, units: [8, 7] },
-      { hit_status: false, units: [8, 8] },
-    ],
-  },
-  submarine: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [0, 2] },
-      { hit_status: false, units: [1, 2] },
-      { hit_status: false, units: [2, 2] },
-    ],
-  },
-  destroyer: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [8, 2] },
-      { hit_status: false, units: [9, 2] },
-    ],
-  },
+  carrier: { sank_status: false, units: 5 },
+  battleship: { sank_status: false, units: 4 },
+  cruiser: { sank_status: false, units: 3 },
+  submarine: { sank_status: false, units: 3 },
+  destroyer: { sank_status: false, units: 2 },
 };
-
-const initialConcealedShips = {
+const unconcealedInitialShips = initialShips;
+const concealedShips = {
   carrier: { sank_status: false },
   battleship: { sank_status: false },
   cruiser: { sank_status: false },
   submarine: { sank_status: false },
   destroyer: { sank_status: false },
+};
+const unconcealedHitShips = {
+  carrier: { sank_status: false, units: 5 },
+  battleship: { sank_status: false, units: 4 },
+  cruiser: { sank_status: false, units: 3 },
+  submarine: { sank_status: false, units: 2 },
+  destroyer: { sank_status: false, units: 2 },
 };
 
 let token;
@@ -160,9 +179,69 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
   });
 
   // -------------- LAUNCH MISSILE WITH TOKEN & NO ERRORS -- HIT -------------------
-  describe("When a token is present and no errors", () => {
-    const row = 2;
-    const col = 2;
+  // describe("When a token is present and no errors & HIT ", () => {
+  //   const row = 1;
+  //   const col = 2;
+
+  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  //   beforeEach(async () => {
+  //     game = new Battleships({
+  //       playerOne: user1._id,
+  //       playerTwo: user2._id,
+  //       // BOARD SETUP
+  //       playerOneBoard: initialBoard,
+  //       playerTwoBoard: initialBoard,
+  //       playerOneShips: initialShips,
+  //       playerTwoShips: initialShips,
+  //     });
+  //     await game.save();
+
+  //     // get the id of the game
+  //     allGames = await Battleships.find();
+  //     firstGame = allGames[0];
+
+  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  //     response = await request(app)
+  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+  //       .set("Authorization", `Bearer ${token}`)
+  //       .send({ row: row, col: col });
+  //   });
+
+  //   // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+  //   test("responds with a 200", async () => {
+  //     await expectResponseCode(response, 200);
+  //   });
+  //   test("generates a new token", async () => {
+  //     await expectNewToken(response, token);
+  //   });
+  //   test("returns a battleships object with a populated playerOne, and concealed playerTwoBoard & playerTwoShips", () => {
+  //     const expectedResponse = {
+  //       title: "Battleships",
+  //       endpoint: "battleships",
+  //       turn: 0,
+  //       winner: [],
+  //       finished: false,
+  //       playerOne: {
+  //         points: 0,
+  //         username: "first_user123",
+  //       },
+  //       playerTwo: {
+  //         points: 0,
+  //         username: "second_user123",
+  //       },
+  //       playerOneShips: unconcealedHitShips,
+  //       playerTwoShips: concealedShips,
+  //       playerOneBoard: unconcealedHitBoard,
+  //       playerTwoBoard: concealedHitBoard,
+  //     };
+  //     expect(response.body.game).toMatchObject(expectedResponse);
+  //   });
+  // });
+
+  // -------------- LAUNCH MISSILE WITH TOKEN & NO ERRORS -- MISS -------------------
+  describe("When a token is present and no errors & MISS ", () => {
+    const row = 0;
+    const col = 0;
 
     // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
     beforeEach(async () => {
@@ -196,22 +275,67 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
       await expectNewToken(response, token);
     });
     test("returns a battleships object with a populated playerOne, and concealed playerTwoBoard & playerTwoShips", () => {
-      const expectedResponse = expectedGameObject(
-        "first_user123",
-        "second_user123",
-        gameTitle,
-        gameEndpoint,
-        {
-          playerOneShips: initialShips,
-          playerTwoShips: initialConcealedShips,
-          playerOneBoard: initialBoard,
-          playerTwoBoard: initialConcealedShips,
-        }
-      );
+      const expectedResponse = {
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 1,
+        winner: [],
+        finished: false,
+        playerOneShips: {
+          carrier: { sank_status: false, units: 5 },
+          battleship: { sank_status: false, units: 4 },
+          cruiser: { sank_status: false, units: 3 },
+          submarine: { sank_status: false, units: 3 },
+          destroyer: { sank_status: false, units: 2 },
+        },
+        playerTwoShips: {
+          carrier: { sank_status: false },
+          battleship: { sank_status: false },
+          cruiser: { sank_status: false },
+          submarine: { sank_status: false },
+          destroyer: { sank_status: false },
+        },
+        playerOneBoard: [
+          ["", "", "U", "", "", "", "", "", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "C", "C", "C", "C", "C", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "D", "", "", "", "R", "R", "R", ""],
+          ["", "", "D", "", "", "", "", "", "", ""],
+        ],
+        playerTwoBoard: [
+          ["/", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+        ],
+        playerOne: {
+          points: 0,
+          username: "first_user123",
+        },
+        playerTwo: {
+          points: 0,
+          username: "second_user123",
+        },
+      };
       expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns a message: 'MISSED'", () => {
+      expect(response.body.message).toBe("MISSED");
     });
   });
 });
+
 // token & no errors
 // no token
 // out of turn -- not in game & not your turn

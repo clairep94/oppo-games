@@ -8,12 +8,13 @@ const { TokenExpiredError } = require("jsonwebtoken");
 // All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
 // If the viewer is not the owner of a board or shipyard, they will get a concealed version of each.
 const concealedGameView = (populatedGame, viewerID) => {
+  const shipCodes = ["C", "B", "R", "U", "D"];
   // The structure below allows for concealment for both opponents and observers.
   const concealBoard = (board) => {
     // Iterate over all spaces and change all spaces with "s" to ""
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
-        if (board[i][j] === "s") {
+        if (shipCodes.includes(board[i][j])) {
           board[i][j] = "";
         }
       }
@@ -314,11 +315,11 @@ const BattleshipsController = {
       // Users cannot submit incomplete ship placements
       const checkPlacementCompletion = (placements) => {
         const counts = {
-          C: 5,
-          B: 4,
-          R: 3,
-          S: 3,
-          D: 2,
+          C: 5, // carrier
+          B: 4, // battleship
+          R: 3, // cruiser
+          U: 3, // submarine
+          D: 2, // destroyer
         };
 
         for (let i = 0; i < placements.length; i++) {
@@ -345,7 +346,7 @@ const BattleshipsController = {
         C: "carrier",
         B: "battleship",
         R: "cruiser",
-        S: "submarine",
+        U: "submarine",
         D: "destroyer",
       };
 
@@ -390,31 +391,9 @@ const BattleshipsController = {
         });
       }
 
-      // Check each space in the placements board & check for keys in the shipCodeMap
-      for (let i = 0; i < placements.length; i++) {
-        for (let j = 0; j < placements[i].length; j++) {
-          if (placements[i][j] in shipCodeMap) {
-            // Append the corresponding shipType.units with {hit_status: false, units: [rowIndex, colIndex]}
-            const shipType = shipCodeMap[placements[i][j]];
-            updatedShipyard[shipType].units.push({
-              hit_status: false,
-              units: [i, j],
-            });
-
-            // Update the corresponding player's board space with "s"
-            updatedBoard[i][j] = "s";
-          }
-        }
-      }
-
       const placedShipsGame = await Battleships.findOneAndUpdate(
         { _id: gameID },
-        {
-          $set: {
-            [targetBoardVar]: updatedBoard,
-            [targetShipyardVar]: updatedShipyard,
-          },
-        },
+        { $set: { [targetBoardVar]: placements } },
         { new: true }
       )
         .populate("playerOne", "_id username points")
@@ -426,7 +405,8 @@ const BattleshipsController = {
         placedShipsGame,
         userID
       );
-      // console.log(JSON.stringify(placedShipsGame.playerOneShips));
+      console.log("Game: ", concealedPlacedShipsGame);
+
       res.status(200).json({ token: token, game: concealedPlacedShipsGame });
     } catch (error) {
       console.error("Error submitting ship placements: ", error);
@@ -520,6 +500,7 @@ const BattleshipsController = {
     const row = req.body.row; //index
     const col = req.body.col; //index
     const token = TokenGenerator.jsonwebtoken(req.user_id);
+    const shipCodes = ["C", "B", "R", "U", "D"];
 
     try {
       // 1) =========== Find the current game and Catch Errors: =================
@@ -547,25 +528,17 @@ const BattleshipsController = {
           ? currentGame.playerTwoShips
           : currentGame.playerOneShips;
 
-      const updatedBoard = targettedBoard;
-      const updatedShipyard = targettedShipyard;
-
       // -------- HIT ----------------------
-      if (updatedBoard[row][col] === "s") {
-        // A) Update the corresponding space on the board
-        updatedBoard[row][col] = "X";
+      if (shipCodes.includes(targettedBoard[row][col])) {
+        // -------- MISS -----------------------
+      } else {
+        targettedBoard[row][col] = "/";
 
-        // B) Check for sank ships & update ships
-
-        // C) Check for wins & update --> if every ship.sank === true
-        // D) Return game
-        const launchedMissileGame = await Battleships.findOneAndUpdate(
+        const missedGame = await Battleships.findOneAndUpdate(
           { _id: gameID },
           {
-            $set: {
-              [targettedBoardVar]: updatedBoard,
-              [targettedShipyardVar]: updatedShipyard,
-            },
+            $set: { [targettedBoardVar]: targettedBoard },
+            $inc: { turn: 1 },
           },
           { new: true }
         )
@@ -573,13 +546,15 @@ const BattleshipsController = {
           .populate("playerTwo", "_id username points")
           .populate("winner", "_id username points");
 
-        // -------- MISS -----------------------
-      } else if (targettedSpace === "") {
-        // Update targetted space
+        const concealedGame = concealedGameView(missedGame, userID);
+        console.log("Missed Game: ", concealedGame);
+        res.setHeader("Cache-Control", "no-store, no-cache");
+        res.status(200).json({
+          game: concealedGame,
+          token: token,
+          message: "MISSED",
+        });
       }
-
-      const concealedGame = concealedGameView(launchedMissileGame, userID);
-      res.status(200).json({ token: token, game: concealedGame });
     } catch (error) {
       console.error("Error placing piece: ", error);
       res.status(500).json(error);

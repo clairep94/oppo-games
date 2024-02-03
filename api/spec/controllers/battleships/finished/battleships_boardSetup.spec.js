@@ -8,12 +8,12 @@ const secret = process.env.JWT_SECRET;
 
 const {
   expectedGameObject,
-  expectErrorMessage,
+  // expectErrorMessage,
   expectNewToken,
-  expectResponseBody,
+  // expectResponseBody,
   expectResponseCode,
   expectNoGameObject,
-  expectNoToken,
+  // expectNoToken,
   expectError,
 } = require("../../../utils/TestHelpers");
 
@@ -39,9 +39,9 @@ const emptyBoard = [
 ];
 
 const submittedPlacementsBoard = [
-  ["", "", "S", "", "", "", "", "", "", ""],
-  ["", "", "S", "", "", "", "", "B", "", ""],
-  ["", "", "S", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
   ["", "", "", "", "", "", "", "B", "", ""],
   ["", "", "", "", "", "", "", "B", "", ""],
   ["", "C", "C", "C", "C", "C", "", "", "", ""],
@@ -52,9 +52,9 @@ const submittedPlacementsBoard = [
 ];
 
 const incompletePlacementsBoard = [
-  ["", "", "S", "", "", "", "", "", "", ""],
-  ["", "", "S", "", "", "", "", "B", "", ""],
-  ["", "", "S", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
   ["", "", "", "", "", "", "", "B", "", ""],
   ["", "", "", "", "", "", "", "B", "", ""],
   ["", "", "", "", "", "", "", "", "", ""],
@@ -66,72 +66,18 @@ const incompletePlacementsBoard = [
 
 const concealedBoard = emptyBoard;
 
-const unconcealedBoard = [
-  ["", "", "s", "", "", "", "", "", "", ""],
-  ["", "", "s", "", "", "", "", "s", "", ""],
-  ["", "", "s", "", "", "", "", "s", "", ""],
-  ["", "", "", "", "", "", "", "s", "", ""],
-  ["", "", "", "", "", "", "", "s", "", ""],
-  ["", "s", "s", "s", "s", "s", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "s", "", "", "", "s", "s", "s", ""],
-  ["", "", "s", "", "", "", "", "", "", ""],
-];
+const unconcealedBoard = submittedPlacementsBoard;
 
 // SHIPYARDS
 const unplacedShips = {
-  carrier: { sank_status: false, units: [] },
-  battleship: { sank_status: false, units: [] },
-  cruiser: { sank_status: false, units: [] },
-  submarine: { sank_status: false, units: [] },
-  destroyer: { sank_status: false, units: [] },
+  carrier: { sank_status: false, units: 5 },
+  battleship: { sank_status: false, units: 4 },
+  cruiser: { sank_status: false, units: 3 },
+  submarine: { sank_status: false, units: 3 },
+  destroyer: { sank_status: false, units: 2 },
 };
 
-const unconcealedShips = {
-  carrier: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [5, 1] },
-      { hit_status: false, units: [5, 2] },
-      { hit_status: false, units: [5, 3] },
-      { hit_status: false, units: [5, 4] },
-      { hit_status: false, units: [5, 5] },
-    ],
-  },
-  battleship: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [1, 7] },
-      { hit_status: false, units: [2, 7] },
-      { hit_status: false, units: [3, 7] },
-      { hit_status: false, units: [4, 7] },
-    ],
-  },
-  cruiser: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [8, 6] },
-      { hit_status: false, units: [8, 7] },
-      { hit_status: false, units: [8, 8] },
-    ],
-  },
-  submarine: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [0, 2] },
-      { hit_status: false, units: [1, 2] },
-      { hit_status: false, units: [2, 2] },
-    ],
-  },
-  destroyer: {
-    sank_status: false,
-    units: [
-      { hit_status: false, units: [8, 2] },
-      { hit_status: false, units: [9, 2] },
-    ],
-  },
-};
+const unconcealedShips = unplacedShips;
 
 const concealedShips = {
   carrier: { sank_status: false },
@@ -228,18 +174,25 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
       await expectNewToken(response, token);
     });
     test("returns a battleships object with a populated playerOne, and concealed playerTwoBoard & playerTwoShips", () => {
-      const expectedResponse = expectedGameObject(
-        "first_user123",
-        "second_user123",
-        gameTitle,
-        gameEndpoint,
-        {
-          playerOneShips: unconcealedShips,
-          playerTwoShips: concealedShips,
-          playerOneBoard: unconcealedBoard,
-          playerTwoBoard: concealedBoard,
-        }
-      );
+      const expectedResponse = {
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: false,
+        playerOne: {
+          points: 0,
+          username: "first_user123",
+        },
+        playerTwo: {
+          points: 0,
+          username: "second_user123",
+        },
+        playerOneShips: unconcealedShips,
+        playerTwoShips: concealedShips,
+        playerOneBoard: submittedPlacementsBoard,
+        playerTwoBoard: concealedBoard,
+      };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
   });

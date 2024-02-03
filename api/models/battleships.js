@@ -54,47 +54,31 @@ const BattleshipsSchema = new mongoose.Schema(
       type: Object,
       of: {
         sank_status: { type: Boolean, default: false },
-        units: [
-          {
-            hit_status: { type: Boolean, default: null },
-            coordinate: [Number, Number],
-          },
-        ],
+        units: { type: Number },
       },
       default: {
         // units as hit status & coordinates: [Number, Number] get added in the BattleshipsController.SubmitShipPlacements method. See controllers/battleships line 250
-        carrier: { sank_status: false, units: [] }, // 5 units
-        battleship: { sank_status: false, units: [] }, // 4 units
-        cruiser: { sank_status: false, units: [] }, // 3 units
-        submarine: { sank_status: false, units: [] }, // 3 units
-        destroyer: { sank_status: false, units: [] }, // 2 units
+        carrier: { sank_status: false, units: 5 }, // 5 units
+        battleship: { sank_status: false, units: 4 }, // 4 units
+        cruiser: { sank_status: false, units: 3 }, // 3 units
+        submarine: { sank_status: false, units: 3 }, // 3 units
+        destroyer: { sank_status: false, units: 2 }, // 2 units
       },
     },
     playerTwoShips: {
       type: Object,
       of: {
         sank_status: { type: Boolean, default: false },
-        units: [
-          {
-            hit_status: { type: Boolean, default: null },
-            coordinate: [Number, Number],
-          },
-        ],
+        units: { type: Number },
       },
       default: {
-        carrier: { sank_status: false, units: [] },
-        battleship: { sank_status: false, units: [] },
-        cruiser: { sank_status: false, units: [] },
-        submarine: { sank_status: false, units: [] },
-        destroyer: { sank_status: false, units: [] },
+        // units as hit status & coordinates: [Number, Number] get added in the BattleshipsController.SubmitShipPlacements method. See controllers/battleships line 250
+        carrier: { sank_status: false, units: 5 }, // 5 units
+        battleship: { sank_status: false, units: 4 }, // 4 units
+        cruiser: { sank_status: false, units: 3 }, // 3 units
+        submarine: { sank_status: false, units: 3 }, // 3 units
+        destroyer: { sank_status: false, units: 2 }, // 2 units
       },
-      // default: new Map(Object.entries({
-      //     carrier: { sank_status: false, units: Array.from({ length: 5 }, () => ({ hit_status: null, coordinate: [null, null] })) },
-      //     battleship: { sank_status: false, units: Array.from({ length: 4 }, () => ({ hit_status: null, coordinate: [null, null] })) },
-      //     cruiser: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
-      //     submarine: { sank_status: false, units: Array.from({ length: 3 }, () => ({ hit_status: null, coordinate: [null, null] })) },
-      //     destroyer: { sank_status: false, units: Array.from({ length: 2 }, () => ({ hit_status: null, coordinate: [null, null] })) }
-      // }))
     },
 
     // ----------- BOARDS -----------------
