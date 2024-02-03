@@ -1,5 +1,6 @@
 const Battleships = require("../models/battleships");
 const TokenGenerator = require("../lib/token_generator");
+const { TokenExpiredError } = require("jsonwebtoken");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
@@ -282,7 +283,7 @@ const BattleshipsController = {
 
       // Game not found
       if (!game) {
-        return res.status(404).json({ error: "Game not found" });
+        return res.status(404).json({ error: "Game not found", token: token });
       }
 
       // Users cannot submit placements if they are not in the game.
@@ -518,15 +519,11 @@ const BattleshipsController = {
     const userID = req.user_id;
     const row = req.body.row; //index
     const col = req.body.col; //index
+    const token = TokenGenerator.jsonwebtoken(req.user_id);
 
     try {
-      // 1) ============= Find the current game and Catch Errors: =================
-      const currentGame = Battleships.findById(gameID) // TODO populated version?
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      // 1) =========== Find the current game and Catch Errors: =================
+      const currentGame = await Battleships.findById(gameID);
 
       // Cannot launch if it is not your turn
       // Cannot launch if you are not in this game
@@ -534,33 +531,77 @@ const BattleshipsController = {
       // Cannot launch out of bounds
 
       // 2) ============= Launch the missile & get the updated game data ==================
+      const targettedBoardVar =
+        userID == currentGame.playerOne ? "playerTwoBoard" : "playerOneBoard";
+
       const targettedBoard =
-        userID === currentGame.playerOne._id
-          ? "playerTwoBoard"
-          : "playerOneBoard";
-      const targettedSpace = currentGame.targettedBoard.row.col;
+        userID == currentGame.playerOne
+          ? currentGame.playerTwoBoard
+          : currentGame.playerOneBoard;
+
+      const targettedShipyardVar =
+        userID == currentGame.playerOne ? "playerTwoShips" : "playerOneShips";
+
+      const targettedShipyard =
+        userID == currentGame.playerOne
+          ? currentGame.playerTwoShips
+          : currentGame.playerOneShips;
+
+      const updatedBoard = targettedBoard;
+      const updatedShipyard = targettedShipyard;
 
       // -------- HIT ----------------------
-      if (targettedSpace === "s") {
-        // A) Update targetted space
+      if (updatedBoard[row][col] === "s") {
+        // A) Update the corresponding space on the board
+        updatedBoard[row][col] = "X";
+
         // B) Check for sank ships & update ships
-        const targettedShips =
-          userID === currentGame.playerOne._id
-            ? "playerTwoShips"
-            : "playerOneShips";
 
         // C) Check for wins & update --> if every ship.sank === true
-
         // D) Return game
+        const launchedMissileGame = await Battleships.findOneAndUpdate(
+          { _id: gameID },
+          {
+            $set: {
+              [targettedBoardVar]: updatedBoard,
+              [targettedShipyardVar]: updatedShipyard,
+            },
+          },
+          { new: true }
+        )
+          .populate("playerOne", "_id username points")
+          .populate("playerTwo", "_id username points")
+          .populate("winner", "_id username points");
 
         // -------- MISS -----------------------
       } else if (targettedSpace === "") {
         // Update targetted space
       }
+
+      const concealedGame = concealedGameView(launchedMissileGame, userID);
+      res.status(200).json({ token: token, game: concealedGame });
     } catch (error) {
       console.error("Error placing piece: ", error);
       res.status(500).json(error);
     }
+
+    // // -------- HIT ----------------------
+    // if (currentGame.targettedBoard[row][col] === "s") {
+    //   // A) Update the corresponding space on the board
+    //   currentGame.targettedBoard[row][col] = "X";
+    //   // B) Check for sank ships & update ships
+
+    //   // C) Check for wins & update --> if every ship.sank === true
+    //   // D) Return game
+    //   // -------- MISS -----------------------
+    // } else if (targettedSpace === "") {
+    //   // Update targetted space
+    // }
+    //   res.status(200).json({ token: token, game: currentGame });
+    // } catch (error) {
+    //   console.error("Error placing piece: ", error);
+    //   res.status(500).json(error);
+    // }
   },
 };
 

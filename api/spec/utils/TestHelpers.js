@@ -7,17 +7,14 @@ const secret = process.env.JWT_SECRET;
 
 // RESPONSE CODE
 const expectResponseCode = async (response, expectedCode) => {
-  if (expectedCode === 401) {
-    expect(response.statusCode).toBe(401);
-    expect(response.body).toEqual({ message: "auth error" });
-  } else {
-    expect(response.statusCode).toBe(expectedCode);
-  }
+  expect(response.statusCode).toBe(expectedCode);
 };
 
-// ERROR MESSAGE
-const expectErrorMessage = async (response, expectedErrorMessage) => {
-  expect(response.body.error).toBe(expectedErrorMessage);
+// AUTH ERROR (NO TOKEN):
+const expectAuthError = async (response, expectedCode, token) => {
+  expect(response.statusCode).toBe(401);
+  expect(response.body).toEqual({ message: "auth error" });
+  expect(response.body.token).toEqual(undefined);
 };
 
 // ERROR MESSAGE & RESPONSE CODE COMBO:
@@ -80,7 +77,6 @@ const expectedGameObject = (
 
 module.exports = {
   expectedGameObject,
-  expectErrorMessage,
   expectNewToken,
   expectResponseBody,
   expectResponseCode,

@@ -1,8 +1,8 @@
-const app = require("../../../app");
+const app = require("../../../../app");
 const request = require("supertest");
-require("../../mongodb_helper");
-const Battleships = require("../../../models/battleships");
-const User = require("../../../models/user");
+require("../../../mongodb_helper");
+const Battleships = require("../../../../models/battleships");
+const User = require("../../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
@@ -15,7 +15,7 @@ const {
   expectNoGameObject,
   expectNoToken,
   expectError,
-} = require("../../utils/TestHelpers");
+} = require("../../../utils/TestHelpers");
 
 // =============== DECLARE VARIABLES ===============
 
@@ -645,10 +645,13 @@ describe(".SUBMITBOARD - /battleships/:gameID/submit_board ", () => {
         .send({ placements: submittedPlacementsBoard });
     });
 
-    // ---------- ASSERT: response code 404 and error message and token ------------
+    // ---------- ASSERT: response code 404 and error message and no token ------------
 
     test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
       await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
     });
 
     test("does not return a battleships game object", async () => {
