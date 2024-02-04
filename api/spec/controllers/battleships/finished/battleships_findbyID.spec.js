@@ -5,6 +5,15 @@ const Battleships = require("../../../../models/battleships");
 const User = require("../../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
+const {
+  expectedGameObject,
+  expectNewToken,
+  expectResponseCode,
+  expectNoGameObject,
+  expectNoToken,
+  expectError,
+  expectAuthError,
+} = require("../../../utils/TestHelpers");
 
 // ----------- DECLARE VARIABLES -----------------
 let token;
@@ -15,6 +24,18 @@ let response;
 let firstGame;
 let allGames;
 
+const placements = [
+  ["", "", "U", "", "", "", "", "", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "U", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "", "", "", "", "", "", "B", "", ""],
+  ["", "C", "C", "C", "C", "C", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "D", "", "", "", "R", "R", "R", ""],
+  ["", "", "D", "", "", "", "", "", "", ""],
+];
 const playedBoard = [
   ["", "", "U", "", "", "", "", "", "", ""],
   ["", "", "U", "", "", "", "", "X", "", ""],
@@ -113,6 +134,8 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerOne: user._id,
         playerOneBoard: playedBoard,
         playerTwoBoard: playedBoard,
+        playerOnePlacements: placements,
+        playerTwoPlacements: placements,
       }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
@@ -147,14 +170,13 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerTwoShips: concealedShips, // opponent
         playerOneBoard: playedBoard, // logged in user
         playerTwoBoard: concealedBoard, // opponent
+        playerOnePlacements: placements, // logged in user
+        playerTwoPlacements: null, // opponent
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
     test("generates a new token", async () => {
-      expect(response.body.token).toBeDefined();
-      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
-      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
-      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+      expectNewToken(response, token);
     });
   });
 
@@ -168,6 +190,8 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerTwo: user._id,
         playerOneBoard: playedBoard,
         playerTwoBoard: playedBoard,
+        playerOnePlacements: placements,
+        playerTwoPlacements: placements,
       }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
@@ -202,14 +226,13 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerTwoShips: unplacedShips, // logged in user
         playerOneBoard: concealedBoard, // opponent
         playerTwoBoard: playedBoard, // logged in user
+        playerOnePlacements: null, // opponent
+        playerTwoPlacements: placements, // logged in player
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
     test("generates a new token", async () => {
-      expect(response.body.token).toBeDefined();
-      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
-      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
-      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+      expectNewToken(response, token);
     });
   });
 
@@ -223,6 +246,8 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerTwo: user3._id,
         playerOneBoard: playedBoard,
         playerTwoBoard: playedBoard,
+        playerOnePlacements: placements,
+        playerTwoPlacements: placements,
       }); // conceal both boards
       await game1.save();
 
@@ -262,21 +287,83 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         playerTwoShips: concealedShips,
         playerOneBoard: concealedBoard,
         playerTwoBoard: concealedBoard,
+        playerOnePlacements: null,
+        playerTwoPlacements: null,
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
     test("generates a new token", async () => {
-      expect(response.body.token).toBeDefined();
-      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
-      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
-      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+      expectNewToken(response, token);
+    });
+  });
+
+  // -------------- FIND BY ID WITH TOKEN, sessionUser is an observer but game is won. ------------------
+  describe("When a token is present & the sessionUser is an observer, but game is over", () => {
+    // search games with a token
+    beforeEach(async () => {
+      // create game
+      game1 = new Battleships({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+        playerOneBoard: playedBoard,
+        playerTwoBoard: playedBoard,
+        playerOnePlacements: placements,
+        playerTwoPlacements: placements,
+        finished: true,
+      }); // conceal both boards
+      await game1.save();
+
+      // get all games and find the id of the first game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // fetch by gameID
+      response = await request(app)
+        .get(`/battleships/${firstGame._id}`)
+        .set("Authorization", `Bearer ${token}`);
+    });
+
+    // --------- ASSERTIONS -----------
+    test("responds with a 200", async () => {
+      expect(response.statusCode).toBe(200);
+    });
+    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "seconduser123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "thirduser123",
+          points: 0,
+        },
+        title: "Battleships",
+        endpoint: "battleships",
+        turn: 0,
+        winner: [],
+        finished: true,
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: unplacedShips,
+        playerTwoShips: unplacedShips,
+        playerOneBoard: playedBoard,
+        playerTwoBoard: playedBoard,
+        playerOnePlacements: placements,
+        playerTwoPlacements: placements,
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("generates a new token", async () => {
+      expectNewToken(response, token);
     });
   });
 
   // ------------- FIND BY ID WITH NO RESULT ------------------
-  describe("When a token is present but no matching ID", () => {
-    // TODO change to 404 error?
+  describe("When a token is present but game not found", () => {
     const fakeGameID = "65a5303a0aaf4a563f531d92";
+    const errorMessage = "Game not found";
+    const errorCode = 404;
 
     // search games with a token
     beforeEach(async () => {
@@ -296,18 +383,16 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
         .set("Authorization", `Bearer ${token}`);
     });
 
-    // --------- ASSERTIONS -----------
-    test("responds with a 200", async () => {
-      expect(response.statusCode).toBe(200);
-    });
-    test("returns a battleships object with a populated playerOne", () => {
-      expect(response.body.game).toEqual(null);
+    // --------- ASSERT: response code 404 and error message and new token -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
     });
     test("generates a new token", async () => {
-      expect(response.body.token).toBeDefined();
-      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
-      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
-      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+      await expectNewToken(response, token);
+    });
+
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
     });
   });
 
@@ -330,15 +415,11 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     });
 
     // --------- ASSERTIONS -----------
-    test("responds with a 401", async () => {
-      expect(response.statusCode).toBe(401);
-      expect(response.body).toEqual({ message: "auth error" });
+    test("responds with a 401, auth error message, and no new token", async () => {
+      expectAuthError(response);
     });
     test("does not return a game object", () => {
       expect(response.body.game).toEqual(undefined);
-    });
-    test("does not generate a new token", async () => {
-      expect(response.body.token).toEqual(undefined);
     });
   });
 });

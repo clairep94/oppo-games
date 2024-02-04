@@ -129,6 +129,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerOnePlacements: initialBoard,
+        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -195,6 +197,19 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           ["", "", "", "", "", "", "", "", "", ""],
           ["", "", "", "", "", "", "", "", "", ""],
         ],
+        playerOnePlacements: [
+          ["", "", "U", "", "", "", "", "", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "C", "C", "C", "C", "C", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "D", "", "", "", "R", "R", "R", ""],
+          ["", "", "D", "", "", "", "", "", "", ""],
+        ],
+        playerTwoPlacements: null,
         playerOne: {
           points: 0,
           username: "first_user123",
@@ -230,6 +245,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerOnePlacements: initialBoard,
+        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -296,6 +313,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           ["", "", "", "", "", "", "", "", "", ""],
           ["", "", "", "", "", "", "", "", "", ""],
         ],
+        playerTwoPlacements: null,
+        playerOnePlacements: initialBoard,
         playerOne: {
           points: 0,
           username: "first_user123",
@@ -367,6 +386,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           ["", "", "D", "", "", "", "R", "R", "R", ""],
           ["", "", "D", "", "", "", "", "", "", ""],
         ],
+        playerOnePlacements: initialBoard,
+        playerTwoPlacements: initialBoard,
         playerOne: {
           points: 0,
           username: "first_user123",
@@ -412,6 +433,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           submarine: { sank_status: false, units: 3 },
           destroyer: { sank_status: false, units: 1 },
         },
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -486,6 +509,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           points: 0,
           username: "second_user123",
         },
+        playerTwoPlacements: null,
+        playerOnePlacements: initialBoard,
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -557,6 +582,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           points: 0,
           username: "second_user123",
         },
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -594,6 +621,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           submarine: { sank_status: true, units: 0 },
           destroyer: { sank_status: false, units: 1 },
         },
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -673,6 +702,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           points: 0,
           username: "second_user123",
         },
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -749,6 +780,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           points: 0,
           username: "second_user123",
         },
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -770,6 +803,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -821,6 +856,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoShips: initialShips,
         playerOneBoard: initialBoard,
         playerTwoBoard: initialBoard,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -843,6 +880,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -886,6 +925,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -941,6 +982,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoShips: initialShips,
         playerOneBoard: initialBoard,
         playerTwoBoard: initialBoard,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -963,6 +1006,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1018,6 +1063,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoShips: initialShips,
         playerOneBoard: initialBoard,
         playerTwoBoard: initialBoard,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -1039,6 +1086,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1092,6 +1141,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoShips: initialShips,
         playerOneBoard: initialBoard,
         playerTwoBoard: initialBoard,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -1113,6 +1164,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: initialBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1168,6 +1221,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoShips: initialShips,
         playerOneBoard: initialBoard,
         playerTwoBoard: initialBoard,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -1190,6 +1245,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: emptyBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1243,6 +1300,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         playerTwoBoard: emptyBoard,
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -1278,6 +1337,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         ],
         playerOneShips: initialShips,
         playerTwoShips: initialShips,
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1342,6 +1403,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
           ["", "", "D", "", "", "", "R", "R", "R", ""],
           ["", "", "D", "", "", "", "", "", "", "/"],
         ],
+        playerTwoPlacements: initialBoard,
+        playerOnePlacements: initialBoard,
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
