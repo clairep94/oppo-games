@@ -24,6 +24,19 @@ const gameEndpoint = "battleships";
 const putEndpoint = "launch_missile";
 
 // BOARDS
+const emptyBoard = [
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+  ["", "", "", "", "", "", "", "", "", ""],
+];
+
 const initialBoard = [
   ["", "", "U", "", "", "", "", "", "", ""],
   ["", "", "U", "", "", "", "", "B", "", ""],
@@ -238,7 +251,7 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
     test("generates a new token", async () => {
       await expectNewToken(response, token);
     });
-    test("returns a battleships object with a populated playerOne, and concealed playerTwoBoard & playerTwoShips", () => {
+    test("returns a battleships object with a populated playerOne, and concealed playerTwoBoard & playerTwoShips ", () => {
       const expectedResponse = {
         title: "Battleships",
         endpoint: "battleships",
@@ -1159,6 +1172,82 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
   });
+  // -------------- OPPONENT NOT READY ERROR -------------------
+  describe("When the opponent has not submitted their ships ", () => {
+    const row = 0;
+    const col = 0;
+    const errorCode = 403;
+    const errorMessage = "Opponent has not set up their board yet.";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        turn: 0,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: emptyBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneBoard: initialBoard,
+        playerTwoBoard: emptyBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
   // -------------- ALREADY HIT SPACE ERROR -------------------
   describe("When the missile target space has already been hit ", () => {
     const row = 0;

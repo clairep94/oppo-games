@@ -17,7 +17,7 @@ router.put(
   "/:id/submit_placements",
   BattleshipsController.SubmitShipPlacements
 );
-router.put("/:id/reset_placements", BattleshipsController.ResetShipPlacements);
+// router.put("/:id/reset_placements", BattleshipsController.ResetShipPlacements);
 router.put("/:id/launch_missile", BattleshipsController.LaunchMissile);
 
 module.exports = router;
