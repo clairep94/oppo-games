@@ -5,13 +5,15 @@ const User = require("../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
+// Note: this is WIP, still a bit disorganised. Use when helpful, but ignore if less readable than longhand tests
+
 // RESPONSE CODE
 const expectResponseCode = async (response, expectedCode) => {
   expect(response.statusCode).toBe(expectedCode);
 };
 
 // AUTH ERROR (NO TOKEN):
-const expectAuthError = async (response, expectedCode, token) => {
+const expectAuthError = async (response) => {
   expect(response.statusCode).toBe(401);
   expect(response.body).toEqual({ message: "auth error" });
   expect(response.body.token).toEqual(undefined);
@@ -83,4 +85,5 @@ module.exports = {
   expectNoGameObject,
   expectNoToken,
   expectError,
+  expectAuthError,
 };
