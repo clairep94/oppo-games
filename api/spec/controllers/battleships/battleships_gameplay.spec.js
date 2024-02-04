@@ -549,8 +549,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
     });
   });
 
-  // -------------- LAUNCH MISSILE WITH TOKEN & NO ERRORS -- HIT -------------------
-  describe("When a token is present and no errors & SINK ", () => {
+  // -------------- LAUNCH MISSILE WITH TOKEN & NO ERRORS -- WIN -------------------
+  describe("When a token is present and no errors & WIN ", () => {
     const row = 9;
     const col = 2;
 
@@ -607,8 +607,13 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         title: "Battleships",
         endpoint: "battleships",
         turn: 1,
-        winner: [],
-        finished: false,
+        winner: [
+          {
+            points: 0,
+            username: "first_user123",
+          },
+        ],
+        finished: true,
         playerOneShips: {
           carrier: { sank_status: false, units: 5 },
           battleship: { sank_status: false, units: 4 },
@@ -678,8 +683,13 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         title: "Battleships",
         endpoint: "battleships",
         turn: 1,
-        winner: [],
-        finished: false,
+        winner: [
+          {
+            points: 0,
+            username: "first_user123",
+          },
+        ],
+        finished: true,
         playerOneShips: {
           carrier: { sank_status: false, units: 5 },
           battleship: { sank_status: false, units: 4 },
@@ -803,7 +813,7 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
     });
   });
   // -------------- FINISHED GAME ERROR -------------------
-  // describe("When no token is present ", () => {
+  // describe("Game is already over ", () => {
   //   const row = 0;
   //   const col = 0;
 

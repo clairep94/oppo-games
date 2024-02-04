@@ -490,6 +490,7 @@ const BattleshipsController = {
     const col = req.body.col; //index
     const token = TokenGenerator.jsonwebtoken(req.user_id);
     const shipCodes = ["C", "B", "R", "U", "D"];
+    let message;
 
     try {
       // 1) =========== Find the current game and Catch Errors: =================
@@ -553,7 +554,7 @@ const BattleshipsController = {
             return true; // If all ships' sank_status are true, return true
           };
 
-          if (checkWin(targetShipyard)) {
+          if (checkWin(targettedShipyard)) {
             const wonGame = await Battleships.findOneAndUpdate(
               { _id: gameID },
               {
