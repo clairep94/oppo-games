@@ -496,10 +496,47 @@ const BattleshipsController = {
       // 1) =========== Find the current game and Catch Errors: =================
       const currentGame = await Battleships.findById(gameID);
 
+      // Game not found
+      if (!currentGame) {
+        return res.status(404).json({ error: "Game not found", token: token });
+      }
+
+      // Users cannot submit placements if they are not in the game.
+      if (userID != currentGame.playerOne && userID != currentGame.playerTwo) {
+        console.log("ERROR: YOU'RE NOT IN THIS GAME");
+        return res
+          .status(403)
+          .json({ error: "Observers cannot launch missiles", token: token });
+      }
+
+      // Users cannot launch on completed games.
+      if (currentGame.finished === true) {
+        console.log("ERROR: GAME FINISHED");
+        return res
+          .status(403)
+          .json({ error: "Game already finished.", token: token });
+      }
+
       // Cannot launch if it is not your turn
-      // Cannot launch if you are not in this game
-      // Cannot launch in an explored space
+      const whoseTurnID =
+        currentGame.turn % 2 === 0
+          ? currentGame.playerOne
+          : currentGame.playerTwo;
+      if (userID != whoseTurnID) {
+        // has to be != not !== due to mongoose data type
+        console.log("ERROR: IT IS NOT YOUR TURN");
+        return res
+          .status(403)
+          .json({ error: "It is not your turn.", token: token });
+      }
+
       // Cannot launch out of bounds
+      if (row > 9 || col > 9) {
+        console.log("ERROR: MISSILE LAUNCHED OUT OF BOUNDS");
+        return res
+          .status(403)
+          .json({ error: "Launch target is out of bounds.", token: token });
+      }
 
       // 2) ============= Launch the missile & get the updated game data ==================
       const targettedBoardVar =
@@ -535,7 +572,18 @@ const BattleshipsController = {
       let finished = currentGame.finished;
       let winner = currentGame.winner;
 
-      // -------- HIT ----------------------
+      // Users cannot launch in an explored space
+      if (
+        targettedBoard[row][col] === "X" ||
+        targettedBoard[row][col] === "/"
+      ) {
+        console.log("ERROR: SPACE ALREADY HIT");
+        return res
+          .status(403)
+          .json({ error: "Already hit this space.", token: token });
+      }
+
+      // -------- IF HIT: ----------------------
       if (targettedBoard[row][col] in shipCodeMap) {
         const shipCode = targettedBoard[row][col];
         const hitShip = shipCodeMap[shipCode]; // carrier, battleship, cruiser, submarine, destroyer
@@ -558,28 +606,29 @@ const BattleshipsController = {
             return true; // If all ships' sank_status are true, return true
           };
 
+          // ---- WIN CONDITION -------
           if (checkWin(targettedShipyard)) {
             message = "WIN";
             finished = true;
             winner = [userID];
 
-            // SANK ONLY
+            // ----- SANK CONDITION ------
           } else {
             message = `SANK: ${hitShip.toUpperCase()}`;
           }
 
-          // HIT ONLY
+          // ---- HIT CONDITION --------
         } else {
           message = "HIT";
         }
 
-        // -------- MISS -----------------------
+        // -------- MISS CONDITION -----------------
       } else {
         targettedBoard[row][col] = "/";
         message = "MISSED";
       }
 
-      // 3) ============ PUT REQUEST ====================
+      // 3) ============ PUT REQUEST WITH CORRESPONDING GAME UPDATE ====================
       const updatedGame = await Battleships.findOneAndUpdate(
         { _id: gameID },
         {

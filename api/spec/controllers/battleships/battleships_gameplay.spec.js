@@ -812,74 +812,449 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
   });
-  // -------------- FINISHED GAME ERROR -------------------
-  // describe("Game is already over ", () => {
-  //   const row = 0;
-  //   const col = 0;
+  // -------------- GAME NOT FOUND -------------------
+  describe("Game not found ", () => {
+    const row = 0;
+    const col = 0;
+    const fakeGameID = "65a5303a0aaf4a563f531d92";
+    const errorMessage = "Game not found";
+    const errorCode = 404;
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new Battleships({
-  //       playerOne: user1._id,
-  //       playerTwo: user2._id,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //     });
-  //     await game.save();
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
 
-  //     // get the id of the game
-  //     allGames = await Battleships.find();
-  //     firstGame = allGames[0];
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  //       .send({ row: row, col: col });
-  //   });
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${fakeGameID}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
 
-  //   // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
-  //   test("responds with a 401 & auth error message", async () => {
-  //     await expectResponseCode(response, 401);
-  //   });
-  //   test("does not return a battleships game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
-  //   test("the game in the database is unaffected", async () => {
-  //     const checkGame = await Battleships.findById(firstGame._id)
-  //       .populate("playerOne", "_id username points")
-  //       .populate("playerTwo", "_id username points")
-  //       .populate("winner", "_id username points");
+    // --------- ASSERT: Response code 404, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+  });
+  // -------------- GAME OVER ERROR -------------------
+  describe("Game is already over ", () => {
+    const row = 0;
+    const col = 0;
+    const errorCode = 403;
+    const errorMessage = "Game already finished.";
 
-  //     // Convert Mongoose document to a plain JavaScript object
-  //     const checkGameObject = checkGame.toObject();
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        finished: true,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
 
-  //     const expectedResponse = {
-  //       playerOne: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "first_user123",
-  //         points: 0,
-  //       },
-  //       playerTwo: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "second_user123",
-  //         points: 0,
-  //       },
-  //       title: gameTitle,
-  //       endpoint: gameEndpoint,
-  //       turn: 0,
-  //       winner: [],
-  //       finished: false,
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
 
-  //       // === BATTLESHIP PROPERTIES ====== //
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //     };
-  //     expect(checkGameObject).toMatchObject(expectedResponse);
-  //   });
-  // });
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: true,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+  // -------------- OUT OF TURN ERROR -------------------
+  describe("When it is not your turn ", () => {
+    const row = 0;
+    const col = 0;
+    const errorCode = 403;
+    const errorMessage = "It is not your turn.";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        turn: 3,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 3,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+  // -------------- OBSERVER ERROR -------------------
+  describe("When you are not in this game ", () => {
+    const row = 0;
+    const col = 0;
+    const errorCode = 403;
+    const errorMessage = "Observers cannot launch missiles";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "second_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "third_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+  // -------------- OUT OF BOUNDS ERROR -------------------
+  describe("When the missile target space is out of bounds ", () => {
+    const row = 9;
+    const col = 10;
+    const errorCode = 403;
+    const errorMessage = "Launch target is out of bounds.";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+        playerOneBoard: initialBoard,
+        playerTwoBoard: initialBoard,
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+  // -------------- ALREADY HIT SPACE ERROR -------------------
+  describe("When the missile target space has already been hit ", () => {
+    const row = 0;
+    const col = 0;
+    // const row = 9;
+    // const col = 9;
+    const errorCode = 403;
+    const errorMessage = "Already hit this space.";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new Battleships({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        // BOARD SETUP
+        playerOneBoard: initialBoard,
+        playerTwoBoard: [
+          ["X", "", "U", "", "", "", "", "", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "C", "C", "C", "C", "C", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "D", "", "", "", "R", "R", "R", ""],
+          ["", "", "D", "", "", "", "", "", "", "/"],
+        ],
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await Battleships.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ row: row, col: col });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await Battleships.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === BATTLESHIP PROPERTIES ====== //
+        playerOneShips: initialShips,
+        playerTwoShips: initialShips,
+        playerOneBoard: initialBoard,
+        playerTwoBoard: [
+          ["X", "", "U", "", "", "", "", "", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "U", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "", "", "", "", "", "", "B", "", ""],
+          ["", "C", "C", "C", "C", "C", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "", "", "", "", "", "", "", ""],
+          ["", "", "D", "", "", "", "R", "R", "R", ""],
+          ["", "", "D", "", "", "", "", "", "", "/"],
+        ],
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 });
