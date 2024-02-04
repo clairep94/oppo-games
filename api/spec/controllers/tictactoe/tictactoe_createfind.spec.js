@@ -1,8 +1,8 @@
-const app = require("../../app");
+const app = require("../../../app");
 const request = require("supertest");
-require("../mongodb_helper");
-const TicTacToe = require('../../models/tictactoe');
-const User = require('../../models/user');
+require("../../mongodb_helper");
+const TicTacToe = require('../../../models/tictactoe');
+const User = require('../../../models/user');
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 

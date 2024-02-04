@@ -23,10 +23,8 @@ describe("Logging in through /login", () => {
     cy.get('h1').should('be.visible').and('contain.text', 'Login')
 
     // Check for the presence and attributes of form fields
-    // cy.get("#username").should('exist').and('have.attr', 'placeholder', 'Username');
     cy.get("#email").should('exist').and('have.attr', 'placeholder', 'Email');
     cy.get("#password").should('exist').and('have.attr', 'placeholder', 'Password').and('have.attr', 'type', 'password');
-    // cy.get("#retype-password").should('exist').and('have.attr', 'placeholder', 'Retype Password').and('have.attr', 'type', 'password');
     cy.get("#toggle-pw-visibility-button").should('exist').and('have.text', "Show Password");
     cy.get("#error-message").should('not.exist'); // Assuming error message is initially not visible
   })

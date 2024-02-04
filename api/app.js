@@ -7,43 +7,36 @@ const JWT = require("jsonwebtoken");
 const authenticationRouter = require("./routes/authentication");
 const signUpRouter = require("./routes/signup");
 const usersRouter = require("./routes/users");
-const tictactoeRouter = require("./routes/tictactoe");
 const messagesRouter = require("./routes/messages");
 
-// const rockPaperScissorsRouter = require("./routes/rock-paper-scissors-games");
-// const battleshipsRouter = require("./routes/battleships-games");
+const tictactoeRouter = require("./routes/tictactoe");
+const battleshipsRouter = require("./routes/battleships");
 
+// const rockPaperScissorsRouter = require("./routes/rock-paper-scissors-games");
 
 const app = express();
-// const server = require('http').Server(app);
-
-// dotenv.config();
-// const port = process.env.PORT || 5001;
-
 
 // setup for receiving JSON
-app.use(express.json())
+app.use(express.json());
 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(cors())
 
-
 // middleware function to check for valid tokens
 const tokenChecker = (req, res, next) => {
-
   let token;
-  const authHeader = req.get("Authorization")
+  const authHeader = req.get("Authorization");
 
-  if(authHeader) {
-    token = authHeader.slice(7)
+  if (authHeader) {
+    token = authHeader.slice(7);
   }
 
   JWT.verify(token, process.env.JWT_SECRET, (err, payload) => {
-    if(err) {
-      console.log(err)
-      res.status(401).json({message: "auth error"});
+    if (err) {
+      console.log(err);
+      res.status(401).json({ message: "auth error" });
     } else {
       req.user_id = payload.user_id;
       next();
@@ -58,15 +51,12 @@ app.use("/tokens", authenticationRouter);
 // routes with no authentication:
 app.use("/signup", signUpRouter);
 
-
-
 // routes with authentication:
-app.use("/tictactoe", tokenChecker, tictactoeRouter);
 app.use("/messages", tokenChecker, messagesRouter);
-// app.use("/rps", tokenChecker, rockPaperScissorsRouter);
-// app.use("/battleships", tokenChecker, battleshipsRouter);
 app.use("/users", tokenChecker, usersRouter);
-
+app.use("/tictactoe", tokenChecker, tictactoeRouter);
+app.use("/battleships", tokenChecker, battleshipsRouter);
+// app.use("/rps", tokenChecker, rockPaperScissorsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -80,8 +70,7 @@ app.use((err, req, res) => {
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // respond with details of the error
-  res.status(err.status || 500).json({message: 'server error'})
+  res.status(err.status || 500).json({ message: "server error" });
 });
-
 
 module.exports = app;
