@@ -107,6 +107,8 @@ const BattleshipsSchema = new mongoose.Schema(
         Array.from({ length: 10 }, () => "")
       ),
     },
+    playerOnePlacements: { type: [[String]] },
+    playerTwoPlacements: { type: [[String]] },
   },
 
   {

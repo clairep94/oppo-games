@@ -27,13 +27,9 @@ const concealedGameView = (populatedGame, viewerID) => {
     const concealedBoard = concealBoard(populatedGame.playerOneBoard);
     populatedGame.playerOneBoard = concealedBoard;
 
-    populatedGame.playerOneShips = {
-      carrier: { sank_status: false },
-      battleship: { sank_status: false },
-      cruiser: { sank_status: false },
-      submarine: { sank_status: false },
-      destroyer: { sank_status: false },
-    };
+    for (const ship in populatedGame.playerOneShips) {
+      delete populatedGame.playerOneShips[ship].units;
+    }
   }
   // If viewer is not playerTwo: (viewer is playerOne or observer)
   if (populatedGame && viewerID != populatedGame.playerTwo?._id) {
@@ -42,13 +38,9 @@ const concealedGameView = (populatedGame, viewerID) => {
     const concealedBoard = concealBoard(populatedGame.playerTwoBoard);
     populatedGame.playerTwoBoard = concealedBoard;
 
-    populatedGame.playerTwoShips = {
-      carrier: { sank_status: false },
-      battleship: { sank_status: false },
-      cruiser: { sank_status: false },
-      submarine: { sank_status: false },
-      destroyer: { sank_status: false },
-    };
+    for (const ship in populatedGame.playerTwoShips) {
+      delete populatedGame.playerTwoShips[ship].units;
+    }
   }
   return populatedGame;
 };
@@ -363,9 +355,6 @@ const BattleshipsController = {
       const targetShipyard =
         userID == game.playerOne ? game.playerOneShips : game.playerTwoShips;
 
-      let updatedBoard = targetBoard;
-      let updatedShipyard = targetShipyard;
-
       console.log("target board: ", targetBoard);
 
       // Users cannot submit ships if placements already exist
@@ -528,8 +517,129 @@ const BattleshipsController = {
           ? currentGame.playerTwoShips
           : currentGame.playerOneShips;
 
+      const targetID =
+        userID == currentGame.playerOne
+          ? currentGame.playerTwo
+          : currentGame.playerOne;
+
+      const shipCodeMap = {
+        C: "carrier",
+        B: "battleship",
+        R: "cruiser",
+        U: "submarine",
+        D: "destroyer",
+      };
+
       // -------- HIT ----------------------
-      if (shipCodes.includes(targettedBoard[row][col])) {
+      if (targettedBoard[row][col] in shipCodeMap) {
+        const shipCode = targettedBoard[row][col];
+        const hitShip = shipCodeMap[shipCode]; // carrier, battleship, cruiser, submarine, destroyer
+
+        // A) Update the shipyard, decremate the units
+        targettedShipyard[hitShip].units--;
+        // B) Update the board
+        targettedBoard[row][col] = "X";
+        // C) Check sank & win:
+        if (targettedShipyard[hitShip].units === 0) {
+          targettedShipyard[hitShip].sank_status = true;
+          console.log(targettedShipyard[hitShip]);
+
+          const checkWin = (shipyard) => {
+            for (const ship in shipyard) {
+              if (!shipyard[ship].sank_status) {
+                return false; // If any ship's sank_status is false, return false
+              }
+            }
+            return true; // If all ships' sank_status are true, return true
+          };
+
+          if (checkWin(targetShipyard)) {
+            const wonGame = await Battleships.findOneAndUpdate(
+              { _id: gameID },
+              {
+                $set: {
+                  [targettedBoardVar]: targettedBoard,
+                  [targettedShipyardVar]: targettedShipyard,
+                  finished: true,
+                  winner: [userID],
+                },
+                $inc: { turn: 1 },
+              },
+              { new: true }
+            )
+              .populate("playerOne", "_id username points")
+              .populate("playerTwo", "_id username points")
+              .populate("winner", "_id username points");
+            console.log("Sank Game: ", wonGame);
+            const concealedGame = concealedGameView(wonGame, userID);
+
+            res.setHeader("Cache-Control", "no-store, no-cache");
+            res.status(200).json({
+              game: concealedGame,
+              token: token,
+              target: targetID,
+              actor: userID,
+              message: "WIN",
+            });
+
+            // SANK ONLY
+          } else {
+            const sankGame = await Battleships.findOneAndUpdate(
+              { _id: gameID },
+              {
+                $set: {
+                  [targettedBoardVar]: targettedBoard,
+                  [targettedShipyardVar]: targettedShipyard,
+                },
+                $inc: { turn: 1 },
+              },
+              { new: true }
+            )
+              .populate("playerOne", "_id username points")
+              .populate("playerTwo", "_id username points")
+              .populate("winner", "_id username points");
+            console.log("Sank Game: ", sankGame);
+            const concealedGame = concealedGameView(sankGame, userID);
+
+            res.setHeader("Cache-Control", "no-store, no-cache");
+            res.status(200).json({
+              game: concealedGame,
+              token: token,
+              target: targetID,
+              actor: userID,
+              message: "SANK",
+            });
+          }
+
+          // HIT ONLY
+        } else {
+          const hitGame = await Battleships.findOneAndUpdate(
+            { _id: gameID },
+            {
+              $set: {
+                [targettedBoardVar]: targettedBoard,
+                [targettedShipyardVar]: targettedShipyard,
+              },
+              $inc: { turn: 1 },
+            },
+            { new: true }
+          )
+            .populate("playerOne", "_id username points")
+            .populate("playerTwo", "_id username points")
+            .populate("winner", "_id username points");
+
+          const concealedGame = concealedGameView(hitGame, userID);
+          console.log("Hit Game: ", concealedGame);
+          res.setHeader("Cache-Control", "no-store, no-cache");
+          res.status(200).json({
+            game: concealedGame,
+            token: token,
+            target: targetID,
+            actor: userID,
+            message: "HIT",
+          });
+        }
+
         // -------- MISS -----------------------
       } else {
         targettedBoard[row][col] = "/";
@@ -552,6 +662,8 @@ const BattleshipsController = {
         res.status(200).json({
           game: concealedGame,
           token: token,
+          target: targetID,
+          actor: userID,
           message: "MISSED",
         });
       }
@@ -559,24 +671,6 @@ const BattleshipsController = {
       console.error("Error placing piece: ", error);
       res.status(500).json(error);
     }
-
-    // // -------- HIT ----------------------
-    // if (currentGame.targettedBoard[row][col] === "s") {
-    //   // A) Update the corresponding space on the board
-    //   currentGame.targettedBoard[row][col] = "X";
-    //   // B) Check for sank ships & update ships
-
-    //   // C) Check for wins & update --> if every ship.sank === true
-    //   // D) Return game
-    //   // -------- MISS -----------------------
-    // } else if (targettedSpace === "") {
-    //   // Update targetted space
-    // }
-    //   res.status(200).json({ token: token, game: currentGame });
-    // } catch (error) {
-    //   console.error("Error placing piece: ", error);
-    //   res.status(500).json(error);
-    // }
   },
 };
 

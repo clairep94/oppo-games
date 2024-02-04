@@ -24,11 +24,11 @@ const emptyBoard = [
   ["", "", "", "", "", "", "", "", "", ""],
 ];
 const unplacedShips = {
-  carrier: { sank_status: false, units: [] },
-  battleship: { sank_status: false, units: [] },
-  cruiser: { sank_status: false, units: [] },
-  submarine: { sank_status: false, units: [] },
-  destroyer: { sank_status: false, units: [] },
+  carrier: { sank_status: false, units: 5 },
+  battleship: { sank_status: false, units: 4 },
+  cruiser: { sank_status: false, units: 3 },
+  submarine: { sank_status: false, units: 3 },
+  destroyer: { sank_status: false, units: 2 },
 };
 
 // ==================== CREATE A GAME ================================= //
