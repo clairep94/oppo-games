@@ -8,6 +8,7 @@ const { TokenExpiredError } = require("jsonwebtoken");
 const concealedGameView = (populatedGame, viewerID) => {
   // All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
   // If the viewer is not the owner of a board or shipyard, they will get a concealed version of each.
+  // If the game is over (finished === true): no concealment occurs and the function returns the original populatedGame.
 
   const shipCodes = ["C", "B", "R", "U", "D"];
 
@@ -148,17 +149,30 @@ const BattleshipsController = {
     const token = TokenGenerator.jsonwebtoken(req.user_id);
 
     try {
-      const game = await Battleships.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
+      const game = await Battleships.findById(gameID);
 
+      // Game not found error
+      if (!game) {
+        return res.status(404).json({ error: "Game not found", token: token });
+      }
+      // Already joined game error
+      if (
+        userID == game.playerOne ||
+        (game.playerTwo && game.playerTwo == userID)
+      ) {
+        console.log("ERROR: ALREADY IN THIS GAME");
+        return res
+          .status(403)
+          .json({ error: "Already in this game", token: token });
+      }
+      // Game is full error
       if (game.playerTwo) {
         console.log("ERROR: GAME ALREADY FULL");
         return res
           .status(403)
-          .json({ error: "Game already full.", game: game, token: token });
+          .json({ error: "Game already full.", token: token });
       } else {
+        // Join game
         const joinedGame = await Battleships.findOneAndUpdate(
           { _id: gameID },
           {
@@ -170,11 +184,14 @@ const BattleshipsController = {
           .populate("playerTwo", "_id username points")
           .populate("winner", "_id username points");
 
-        res.status(200).json({ token: token, game: joinedGame });
+        // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+        const concealedGame = concealedGameView(joinedGame, userID);
+        res.setHeader("Cache-Control", "no-store, no-cache");
+        res.status(200).json({ token: token, game: concealedGame });
       }
     } catch (error) {
       console.log("Error in TTT.Join", error);
-      res.status(501).json(error);
+      res.status(500).json(error);
     }
   },
 
@@ -182,29 +199,41 @@ const BattleshipsController = {
     try {
       const sessionUser = req.user_id;
       const gameID = req.params.id;
-      const game = await Battleships.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
+      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      const game = await Battleships.findById(gameID);
 
-      // Throw error if sessionUser is not in the game:
-      if (
-        sessionUser != game.playerOne._id &&
-        sessionUser != game.playerTwo._id
-      ) {
-        console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
+      // Game not found error
+      if (!game) {
+        return res.status(404).json({ error: "Game not found", token: token });
+      }
+      // Game aready finished error
+      if (game.finished) {
+        console.log("ERROR: GAME ALREADY FINISHED");
         return res.status(403).json({
-          error: "Only players can forfeit the game.",
-          // game: game,
+          error: "Game already finished.",
+          token: token,
+        });
+      }
+      if (!game.playerTwo) {
+        console.log("ERROR: AWAITING PLAYER TWO");
+        return res.status(403).json({
+          error: "Awaiting player two. Please delete instead.",
           token: token,
         });
       }
 
+      // Throw error if sessionUser is not in the game:
+      if (sessionUser != game.playerOne && sessionUser != game.playerTwo) {
+        // needs to be != due to Mongoose datatypes
+        console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
+        return res.status(403).json({
+          error: "Only players can forfeit the game.",
+          token: token,
+        });
+      }
+      // needs to be ==  not === due to Mongoose datatypes
       const winner =
-        sessionUser == game.playerOne._id
-          ? game.playerTwo._id
-          : game.playerOne._id;
+        sessionUser == game.playerOne ? game.playerTwo : game.playerOne;
 
       const forfeitedGame = await Battleships.findOneAndUpdate(
         { _id: gameID },
@@ -218,8 +247,10 @@ const BattleshipsController = {
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
 
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.status(200).json({ token: token, game: forfeitedGame });
+      // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+      const concealedGame = concealedGameView(forfeitedGame, sessionUser);
+      res.setHeader("Cache-Control", "no-store, no-cache");
+      res.status(200).json({ token: token, game: concealedGame });
     } catch (error) {
       console.error("Error forfeiting: ", error);
       res.status(500).json(error);
@@ -230,33 +261,29 @@ const BattleshipsController = {
     try {
       const sessionUser = req.user_id;
       const gameID = req.params.id;
-      const game = await Battleships.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
+      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      const game = await Battleships.findById(gameID);
 
-      const allGames = await Battleships.find()
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
+      // Game not found error
+      if (!game) {
+        return res.status(404).json({ error: "Game not found", token: token });
+      }
       // Throw error if sessionUser is not playerOne (host)
-      if (sessionUser != game.playerOne._id) {
+      if (sessionUser != game.playerOne) {
+        // needs to be != due to Mongoose datatypes
         console.log("ERROR: ONLY HOSTS CAN DELETE GAMES");
         return res.status(403).json({
           error: "Only hosts can delete the game.",
-          // game: game,
-          games: allGames,
-        }); //return the old game & games list so as to not mess up the rendering
+          token: token,
+        });
       }
       // Throw error if game is full (has playerTwo):
       if (game.playerTwo) {
         console.log("ERROR: CANNOT DELETE NON-OPEN GAMES");
         return res.status(403).json({
           error: "Only games awaiting player Two can be deleted.",
-          // game: game,
-          games: allGames,
-        }); //return the old game & games list so as to not mess up the rendering
+          token: token,
+        });
       }
 
       // Delete the game
@@ -264,12 +291,20 @@ const BattleshipsController = {
 
       // Get the updated game list
       const updatedGames = await Battleships.find()
+        .select({
+          title: 1,
+          endpoint: 1,
+          playerOne: 1,
+          playerTwo: 1,
+          turn: 1,
+          winner: 1,
+          finished: 1,
+        })
         .populate("playerOne", "_id username points")
         .populate("playerTwo", "_id username points")
         .populate("winner", "_id username points");
 
-      // Generate new token
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
+      res.setHeader("Cache-Control", "no-store, no-cache");
       res.status(200).json({ token: token, games: updatedGames });
     } catch (error) {
       console.error("Error deleting: ", error);
@@ -295,6 +330,7 @@ const BattleshipsController = {
 
       // Users cannot submit placements if they are not in the game.
       if (userID != game.playerOne && userID != game.playerTwo) {
+        // needs to be != due to Mongoose datatypes
         console.log("ERROR: YOU'RE NOT IN THIS GAME");
         return res
           .status(403)
@@ -348,15 +384,17 @@ const BattleshipsController = {
       }
 
       // 2) =========== Update the user's board with the ship placements: =================
-      const shipCodeMap = {
-        C: "carrier",
-        B: "battleship",
-        R: "cruiser",
-        U: "submarine",
-        D: "destroyer",
-      };
+      // const shipCodeMap = {
+      //   C: "carrier",
+      //   B: "battleship",
+      //   R: "cruiser",
+      //   U: "submarine",
+      //   D: "destroyer",
+      // };
 
       // Find corresponding Board for the sessionUser -- case for sessionUser not being in this game is handled in line 285.
+      // needs to be ==  not === due to Mongoose datatypes
+      // const targettedBoardVar = targetStr + "Board";
       const userPlayerStr =
         userID == game.playerOne ? "playerOne" : "playerTwo";
 
@@ -402,8 +440,9 @@ const BattleshipsController = {
         placedShipsGame,
         userID
       );
-      console.log("Submitted Placements Game: ", concealedPlacedShipsGame);
+      // console.log("Submitted Placements Game: ", concealedPlacedShipsGame);
 
+      res.setHeader("Cache-Control", "no-store, no-cache");
       res.status(200).json({ token: token, game: concealedPlacedShipsGame });
     } catch (error) {
       console.error("Error submitting ship placements: ", error);
@@ -432,6 +471,7 @@ const BattleshipsController = {
 
       // Users cannot submit placements if they are not in the game.
       if (userID != currentGame.playerOne && userID != currentGame.playerTwo) {
+        // needs to be != due to Mongoose datatypes
         console.log("ERROR: YOU'RE NOT IN THIS GAME");
         return res
           .status(403)
@@ -469,12 +509,12 @@ const BattleshipsController = {
 
       // 2) ============= Launch the missile & get the updated game data ==================
       const targetStr =
-        userID == currentGame.playerOne ? "playerTwo" : "playerOne";
+        userID == currentGame.playerOne ? "playerTwo" : "playerOne"; // needs to be == due to Mongoose datatypes
       const targettedBoardVar = targetStr + "Board";
       const targettedBoard = currentGame[targettedBoardVar];
       const targettedShipyardVar = targetStr + "Ships";
       const targettedShipyard = currentGame[targettedShipyardVar];
-
+      // needs to be ==  not === due to Mongoose datatypes
       const targetID =
         userID == currentGame.playerOne
           ? currentGame.playerTwo
@@ -588,10 +628,9 @@ const BattleshipsController = {
         .populate("winner", "_id username points");
 
       const concealedGame = concealedGameView(updatedGame, userID);
-      const shownGame = message === "WIN" ? updatedGame : concealedGame; // If game is won, reveal the ships
       res.setHeader("Cache-Control", "no-store, no-cache");
       res.status(200).json({
-        game: shownGame,
+        game: concealedGame,
         token: token,
         target: targetID,
         actor: userID,
