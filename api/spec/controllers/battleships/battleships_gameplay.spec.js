@@ -476,8 +476,8 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
-    test("returns a message: 'SANK'", () => {
-      expect(response.body.message).toBe("SANK");
+    test("returns a message: 'SANK: SHIP TYPE'", () => {
+      expect(response.body.message).toBe("SANK: DESTROYER");
     });
     test("returns the correct target & actor", () => {
       expect(response.body.actor.toString()).toEqual(user1._id.toString());

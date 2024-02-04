@@ -531,6 +531,10 @@ const BattleshipsController = {
         D: "destroyer",
       };
 
+      let message;
+      let finished = currentGame.finished;
+      let winner = currentGame.winner;
+
       // -------- HIT ----------------------
       if (targettedBoard[row][col] in shipCodeMap) {
         const shipCode = targettedBoard[row][col];
@@ -555,119 +559,53 @@ const BattleshipsController = {
           };
 
           if (checkWin(targettedShipyard)) {
-            const wonGame = await Battleships.findOneAndUpdate(
-              { _id: gameID },
-              {
-                $set: {
-                  [targettedBoardVar]: targettedBoard,
-                  [targettedShipyardVar]: targettedShipyard,
-                  finished: true,
-                  winner: [userID],
-                },
-                $inc: { turn: 1 },
-              },
-              { new: true }
-            )
-              .populate("playerOne", "_id username points")
-              .populate("playerTwo", "_id username points")
-              .populate("winner", "_id username points");
-            console.log("Sank Game: ", wonGame);
-            const concealedGame = concealedGameView(wonGame, userID);
-
-            res.setHeader("Cache-Control", "no-store, no-cache");
-            res.status(200).json({
-              game: concealedGame,
-              token: token,
-              target: targetID,
-              actor: userID,
-              message: "WIN",
-            });
+            message = "WIN";
+            finished = true;
+            winner = [userID];
 
             // SANK ONLY
           } else {
-            const sankGame = await Battleships.findOneAndUpdate(
-              { _id: gameID },
-              {
-                $set: {
-                  [targettedBoardVar]: targettedBoard,
-                  [targettedShipyardVar]: targettedShipyard,
-                },
-                $inc: { turn: 1 },
-              },
-              { new: true }
-            )
-              .populate("playerOne", "_id username points")
-              .populate("playerTwo", "_id username points")
-              .populate("winner", "_id username points");
-            console.log("Sank Game: ", sankGame);
-            const concealedGame = concealedGameView(sankGame, userID);
-
-            res.setHeader("Cache-Control", "no-store, no-cache");
-            res.status(200).json({
-              game: concealedGame,
-              token: token,
-              target: targetID,
-              actor: userID,
-              message: "SANK",
-            });
+            message = `SANK: ${hitShip.toUpperCase()}`;
           }
 
           // HIT ONLY
         } else {
-          const hitGame = await Battleships.findOneAndUpdate(
-            { _id: gameID },
-            {
-              $set: {
-                [targettedBoardVar]: targettedBoard,
-                [targettedShipyardVar]: targettedShipyard,
-              },
-              $inc: { turn: 1 },
-            },
-            { new: true }
-          )
-            .populate("playerOne", "_id username points")
-            .populate("playerTwo", "_id username points")
-            .populate("winner", "_id username points");
-
-          const concealedGame = concealedGameView(hitGame, userID);
-          console.log("Hit Game: ", concealedGame);
-          res.setHeader("Cache-Control", "no-store, no-cache");
-          res.status(200).json({
-            game: concealedGame,
-            token: token,
-            target: targetID,
-            actor: userID,
-            message: "HIT",
-          });
+          message = "HIT";
         }
 
         // -------- MISS -----------------------
       } else {
         targettedBoard[row][col] = "/";
-
-        const missedGame = await Battleships.findOneAndUpdate(
-          { _id: gameID },
-          {
-            $set: { [targettedBoardVar]: targettedBoard },
-            $inc: { turn: 1 },
-          },
-          { new: true }
-        )
-          .populate("playerOne", "_id username points")
-          .populate("playerTwo", "_id username points")
-          .populate("winner", "_id username points");
-
-        const concealedGame = concealedGameView(missedGame, userID);
-        console.log("Missed Game: ", concealedGame);
-        res.setHeader("Cache-Control", "no-store, no-cache");
-        res.status(200).json({
-          game: concealedGame,
-          token: token,
-          target: targetID,
-          actor: userID,
-          message: "MISSED",
-        });
+        message = "MISSED";
       }
+
+      // 3) ============ PUT REQUEST ====================
+      const updatedGame = await Battleships.findOneAndUpdate(
+        { _id: gameID },
+        {
+          $set: {
+            [targettedBoardVar]: targettedBoard,
+            [targettedShipyardVar]: targettedShipyard,
+            finished: finished,
+            winner: winner,
+          },
+          $inc: { turn: 1 },
+        },
+        { new: true }
+      )
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      const concealedGame = concealedGameView(updatedGame, userID);
+      res.setHeader("Cache-Control", "no-store, no-cache");
+      res.status(200).json({
+        game: concealedGame,
+        token: token,
+        target: targetID,
+        actor: userID,
+        message: message,
+      });
     } catch (error) {
       console.error("Error placing piece: ", error);
       res.status(500).json(error);
