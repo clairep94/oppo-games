@@ -39,27 +39,40 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
 
 ## Feature Updates
 
+**Feb 4, 2024:**
+- ✅ `spec/utils/TestHelpers.js`: Supportive functions for shorthand Jest testing. Eg. `expectNewToken`, `expectAuthError`, `expectError(code, message)`
+- ✅ Battleships Backend with TTD
+  - ✅ Adds TTD'd: Create, Index, FindByID, Join, Delete, Forfeit, SubmitShipPlacement & LaunchMissile
+    - ✅ Error handling: Out-of-Turn, Awaiting-Opponent, Game-Already-Over, You-Are-Not-In-This-Game, Cannot-Delete-Ongoing-Game, Cannot-Join-Full-Game, Opponent-Not-Ready, Space-Already-Hit
+  - ✅ Adds: Concealment supportive function
+    - ✅ Opponents and game-observers get a concealed view that only shows HITs and MISSes on the game board & the full sank status of ships.
+    - ✅ Opponents and game-observers DO NOT see remaining ship unit locations, remaining ship unit count or initial ship placements.
+    - ✅ Concealment occurs in the backend to prevent cheating through inspecting the browser.
+
+**Jan 28, 2024:**
+- ✅ Frontend Test E2E coverage with Cypress
+  - ✅ Landing Page
+  - ✅ Signup Popup & Signup Page, Login Popup & Login Page
+  - ✅ Game Intro Pages: TTT, Battleships, RPS
+
+**Jan 21 2024:**
 - ✅ Backend Test coverage with Jest
   - ✅ Added 10 test suites and 185 tests for Users, Messages, Authentication & Tictactoe
   - ✅ Tictactoe covers: Create, Index, FindbyID, Join, Delete, Forfeit & PlacePiece
     - ✅ Error handling: Out-of-Turn, Awaiting-Opponent, Game-Already-Over, You-Are-Not-In-This-Game, Already-A-Piece-There, Cannot-Delete-Ongoing-Game, Cannot-Join-Full-Game
     - ✅ TicTacToe game playthrough for 4 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win
 
-- ✅ Frontend Test E2E coverage with Cypress
-  - ✅ Landing Page
-  - ✅ Signup Popup & Signup Page, Login Popup & Login Page
-  - ✅ Game Intro Pages: TTT, Battleships, RPS
+  <!---
   - Messaging in TicTacToe
   - TicTacToe game playthrough for 5 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win, Leave-Mid-Game-And-Return
- 
-  <!---
   - TicTacToe create, join, delete, forfeit & errors
   - Game Lobby
-  - User Page --->
+  - User Page 
+  - Users can see notifications of joins in real-time
+  - Users can send and see game invitations
+  - Users can play RPS & Battleships
+  --->
     
-- Users can see notifications of joins in real-time
-- Users can send and see game invitations
-- Users can play RPS & Battleships
 
 <br>
 
