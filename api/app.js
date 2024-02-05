@@ -11,8 +11,7 @@ const messagesRouter = require("./routes/messages");
 
 const tictactoeRouter = require("./routes/tictactoe");
 const battleshipsRouter = require("./routes/battleships");
-
-// const rockPaperScissorsRouter = require("./routes/rock-paper-scissors-games");
+const rockpaperscissorsRouter = require("./routes/rockpaperscissors");
 
 const app = express();
 
@@ -56,7 +55,7 @@ app.use("/messages", tokenChecker, messagesRouter);
 app.use("/users", tokenChecker, usersRouter);
 app.use("/tictactoe", tokenChecker, tictactoeRouter);
 app.use("/battleships", tokenChecker, battleshipsRouter);
-// app.use("/rps", tokenChecker, rockPaperScissorsRouter);
+app.use("/rockpaperscissors", tokenChecker, rockpaperscissorsRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
