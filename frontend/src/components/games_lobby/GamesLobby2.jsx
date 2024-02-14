@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import GameTypeCard from './GameTypeCard';
 import SingleGameCard from './SingleGameCard';
 import AllGamesCard from './AllGamesCard';
+import { SessionContext } from '../app/ProtectedRoutes';
+import { useNavigate } from 'react-router';
 
-const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, setSessionUser }) => {
+const GamesLobby = (props) => {
+  const navigate = useNavigate();
+  const {token, setToken, sessionUserID, sessionUser } = useContext(SessionContext);
+
 
   // ======= GAME DATA ================
   const [allGames, setAllGames] = useState([]); // ---> USE FILTERING METHOD

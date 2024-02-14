@@ -9,18 +9,9 @@ import { SessionContext } from "../app/ProtectedRoutes";
 import { useContext } from "react";
 import { useNavigate } from "react-router";
 
-// useNavigate hook
-
 const NavBar = (props) => {
   const navigate = useNavigate();
-  //   const navigate = props.navigate;
   const { sessionUserID } = useContext(SessionContext);
-  // const token = props.token
-  // const setToken = props.setToken
-  // const sessionUserID = props.sessionUserID
-  // const sessionUser = props.sessionUser
-  // const setSessionUser = props.setSessionUser
-
   const navIcons = {};
 
   // ============= LOGOUT ======================== //

@@ -14,7 +14,7 @@ import MessagePage from "../messages/MessagePage";
 // import GamePage from '../game-page/GamePage';
 import GamePage from "../game_pages/GamePage";
 import TTTGamePage from "../game_pages/TTTGamePage";
-import { SessionContextProvider } from "../context/SessionContext";
+// import { SessionContextProvider } from "../context/SessionContext";
 
 export const SessionContext = createContext(); // see line 47
 
@@ -40,12 +40,10 @@ const ProtectedRoutes = ({ navigate }) => {
   // ============= LOGIN POPUP & TIMEOUT CHECKER ===================
   const showLoginPopup = !useSessionTimeOutCheck(); // checks every 5 seconds if token is valid and changes true/false
 
-  // ============= USE CONTEXT ==========================
-
   // =================== JSX FOR COMPONENT ===================================
   if (token && sessionUserID) {
     return (
-      <SessionContextProvider
+      <SessionContext.Provider
         value={{
           token,
           setToken,
@@ -66,65 +64,23 @@ const ProtectedRoutes = ({ navigate }) => {
 
           {/* NAV BAR */}
           <div className="z-30 absolute h-full flex py-[1rem]">
-            <NavBar
-            // navigate={navigate}
-
-            // token={token}
-            // setToken={setToken}
-            // sessionUserID={sessionUserID}
-            // sessionUser={sessionUser}
-            // setSessionUser={setSessionUser}
-            />
+            <NavBar />
           </div>
 
           {/* =============== MAIN PAGE ============================= */}
           <div className="h-full w-full flex flex-col overflow-none text-gray-50">
             <Routes>
               {/* ------ Lobby ------  */}
-              <Route
-                path="/"
-                element={
-                  <GamesLobby
-                    navigate={navigate}
-                    token={token}
-                    setToken={setToken}
-                    sessionUserID={sessionUserID}
-                    sessionUser={sessionUser}
-                    setSessionUser={setSessionUser}
-                  />
-                }
-              />
+              <Route path="/" element={<GamesLobby />} />
 
               {/* ------ User Profile ------  */}
-              <Route
-                path="/users/:id"
-                element={
-                  <ProfilePage
-                    navigate={navigate}
-                    token={token}
-                    setToken={setToken}
-                    sessionUserID={sessionUserID}
-                    sessionUser={sessionUser}
-                    setSessionUser={setSessionUser}
-                  />
-                }
-              />
+              <Route path="/users/:id" element={<ProfilePage />} />
 
               {/* ------ Tictactoe ------  */}
-              <Route
-                path="/tictactoe/:id"
-                element={
-                  <TTTGamePage
-                    token={token}
-                    setToken={setToken}
-                    sessionUserID={sessionUserID}
-                    sessionUser={sessionUser}
-                  />
-                }
-              />
+              <Route path="/tictactoe/:id" element={<TTTGamePage />} />
 
               {/* -------- RPS ----------- */}
-              <Route
+              {/* <Route
                 path="/rps/:gameId"
                 element={
                   <GamePage
@@ -132,24 +88,13 @@ const ProtectedRoutes = ({ navigate }) => {
                     gameTitle={"Rock Paper Scissors"}
                   />
                 }
-              />
+              /> */}
 
               {/* ---- Battleships ---- */}
-              <Route
-                path="/battleships/:gameId"
-                element={
-                  <GamePage navigate={navigate} gameTitle={"Battleships"} />
-                }
-              />
-
-              <Route
-                path="/gamepagetest"
-                element={<GamePage sessionUser={sessionUser} />}
-              />
             </Routes>
           </div>
         </div>
-      </SessionContextProvider>
+      </SessionContext.Provider>
     );
   }
 };

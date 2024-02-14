@@ -56,7 +56,3 @@ const App = () => {
   );
 };
 export default App;
-
-// emerald-400
-// emerald-700
-// purple-700
