@@ -818,7 +818,7 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
         .send({ row: row, col: col });
     });
 
-    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    // --------- ASSERT: Response code 401, returns a token & populated game with appropriate concealment -----------
     test("responds with a 401 & auth error message", async () => {
       await expectResponseCode(response, 401);
     });
@@ -1227,6 +1227,7 @@ describe(".LAUNCHMISSILE - /battleships/:gameID/launch_missile", () => {
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
   });
+
   // -------------- OPPONENT NOT READY ERROR -------------------
   describe("When the opponent has not submitted their ships ", () => {
     const row = 0;

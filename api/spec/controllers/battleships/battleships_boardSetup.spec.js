@@ -1,8 +1,8 @@
-const app = require("../../../../app");
+const app = require("../../../app");
 const request = require("supertest");
-require("../../../mongodb_helper");
-const Battleships = require("../../../../models/battleships");
-const User = require("../../../../models/user");
+require("../../mongodb_helper");
+const Battleships = require("../../../models/battleships");
+const User = require("../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 
@@ -13,7 +13,7 @@ const {
   expectNoGameObject,
   expectNoToken,
   expectError,
-} = require("../../../utils/TestHelpers");
+} = require("../../utils/TestHelpers");
 
 // =============== DECLARE VARIABLES ===============
 
