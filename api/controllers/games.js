@@ -4,7 +4,6 @@ const {
   handleGameNotFound,
   singleGamePopulate,
 } = require("../services/GameHelpers");
-const { populate } = require("../models/battleships");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
@@ -63,11 +62,11 @@ const GamesController = {
         }
 
         // Game not found
-        const errorResponse = handleGameNotFound(res, token, game);
-        if (errorResponse) {
-          return errorResponse;
+        if (!game) {
+          return res
+            .status(404)
+            .json({ error: "Game not found", token: token });
         }
-
         // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
         game = concealmentFunction(game, userID);
         res.setHeader("Cache-Control", "no-store, no-cache");
@@ -138,23 +137,22 @@ const GamesController = {
         return res
           .status(403)
           .json({ error: "Game already full.", token: token });
-      } else {
-        // Join game
-        let joinedGame = await GameModel.findOneAndUpdate(
-          { _id: gameID },
-          {
-            $set: { playerTwo: userID },
-          },
-          { new: true }
-        );
-        // Populate the forfeited game
-        joinedGame = await singleGamePopulate(joinedGame);
-
-        // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
-        const concealedGame = concealmentFunction(joinedGame, userID);
-        res.setHeader("Cache-Control", "no-store, no-cache");
-        res.status(200).json({ token: token, game: concealedGame });
       }
+      // Join game
+      let joinedGame = await GameModel.findOneAndUpdate(
+        { _id: gameID },
+        {
+          $set: { playerTwo: userID },
+        },
+        { new: true }
+      );
+      // Populate the forfeited game
+      joinedGame = await singleGamePopulate(joinedGame);
+
+      // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
+      const concealedGame = concealmentFunction(joinedGame, userID);
+      res.setHeader("Cache-Control", "no-store, no-cache");
+      res.status(200).json({ token: token, game: concealedGame });
     } catch (error) {
       console.log("Error in Game.Join", error);
       res.status(500).json(error);
