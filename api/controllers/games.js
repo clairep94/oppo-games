@@ -1,5 +1,10 @@
 const TokenGenerator = require("../lib/token_generator");
 const { TokenExpiredError } = require("jsonwebtoken");
+const {
+  handleGameNotFound,
+  singleGamePopulate,
+} = require("../services/GameHelpers");
+const { populate } = require("../models/battleships");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
@@ -58,10 +63,9 @@ const GamesController = {
         }
 
         // Game not found
-        if (!game) {
-          return res
-            .status(404)
-            .json({ error: "Game not found", token: token });
+        const errorResponse = handleGameNotFound(res, token, game);
+        if (errorResponse) {
+          return errorResponse;
         }
 
         // ======== 2) Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
@@ -136,16 +140,15 @@ const GamesController = {
           .json({ error: "Game already full.", token: token });
       } else {
         // Join game
-        const joinedGame = await GameModel.findOneAndUpdate(
+        let joinedGame = await GameModel.findOneAndUpdate(
           { _id: gameID },
           {
             $set: { playerTwo: userID },
           },
           { new: true }
-        )
-          .populate("playerOne", "_id username points")
-          .populate("playerTwo", "_id username points")
-          .populate("winner", "_id username points");
+        );
+        // Populate the forfeited game
+        joinedGame = await singleGamePopulate(joinedGame);
 
         // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
         const concealedGame = concealmentFunction(joinedGame, userID);
@@ -203,17 +206,17 @@ const GamesController = {
       const winner =
         sessionUser == game.playerOne ? game.playerTwo : game.playerOne;
 
-      const forfeitedGame = await GameModel.findOneAndUpdate(
+      let forfeitedGame = await GameModel.findOneAndUpdate(
         { _id: gameID },
         {
           $push: { winner: winner },
           $set: { finished: true },
         },
         { new: true }
-      )
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
+      );
+
+      // Populate the forfeited game
+      forfeitedGame = await singleGamePopulate(forfeitedGame);
 
       // ======== Conceal the boards according to who is looking (playerOne, playerTwo, outsider) ============
       const concealedGame = concealmentFunction(forfeitedGame, sessionUser);
