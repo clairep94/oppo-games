@@ -1,6 +1,7 @@
 const Battleships = require("../models/battleships");
 const TokenGenerator = require("../lib/token_generator");
 const { TokenExpiredError } = require("jsonwebtoken");
+const GamesController = require("./games");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
