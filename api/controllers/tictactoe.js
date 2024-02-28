@@ -5,10 +5,6 @@ const GamesController = require("./games");
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 
-const defaultConcealmentFunction = (game) => {
-  return game;
-};
-
 const TicTacToeController = {
   // ================== METHODS SHARED BY ALL GAMES ============================
   // This Index method only shows the properties of allgames, and no game boards
@@ -29,107 +25,17 @@ const TicTacToeController = {
     GamesController.Join(req, res, TicTacToe);
   },
 
+  // Method to forfeit a TicTacToe game
   Forfeit: async (req, res) => {
-    try {
-      const sessionUser = req.user_id;
-      // const sessionUser = req.body.user;  // postman testing purposes only
-      const gameID = req.params.id;
-      const game = await TicTacToe.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      // Throw error if sessionUser is not in the game:
-      if (
-        sessionUser != game.playerOne._id &&
-        sessionUser != game.playerTwo._id
-      ) {
-        console.log("ERROR: NON-PARTICIPANTS CANNOT FORFEIT");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        return res.status(403).json({
-          error: "Only players can forfeit the game.",
-          game: game,
-          token: token,
-        }); //return the old game so as to not mess up the rendering
-      }
-
-      const winner =
-        sessionUser == game.playerOne._id
-          ? game.playerTwo._id
-          : game.playerOne._id;
-
-      const forfeitedGame = await TicTacToe.findOneAndUpdate(
-        { _id: gameID },
-        {
-          $push: { winner: winner },
-          $set: { finished: true },
-        },
-        { new: true }
-      )
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.status(200).json({ token: token, game: forfeitedGame });
-      // res.status(200).json({game: forfeitedGame});
-    } catch (error) {
-      console.error("Error forfeiting: ", error);
-      res.status(500).json(error);
-    }
+    GamesController.Forfeit(req, res, TicTacToe);
   },
 
+  // Method to delete a TicTacToe game
   Delete: async (req, res) => {
-    try {
-      const sessionUser = req.user_id;
-      const gameID = req.params.id;
-      const game = await TicTacToe.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      const allGames = await TicTacToe.find()
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      // Throw error if sessionUser is not playerOne (host)
-      if (sessionUser != game.playerOne._id) {
-        console.log("ERROR: ONLY HOSTS CAN DELETE GAMES");
-        return res.status(403).json({
-          error: "Only hosts can delete the game.",
-          game: game,
-          games: allGames,
-        }); //return the old game & games list so as to not mess up the rendering
-      }
-      // Throw error if game is full (has playerTwo):
-      if (game.playerTwo) {
-        console.log("ERROR: CANNOT DELETE NON-OPEN GAMES");
-        return res.status(403).json({
-          error: "Only games awaiting player Two can be deleted.",
-          game: game,
-          games: allGames,
-        }); //return the old game & games list so as to not mess up the rendering
-      }
-
-      // Delete the game
-      await TicTacToe.findByIdAndDelete(gameID);
-
-      // Get the updated game list
-      const updatedGames = await TicTacToe.find()
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      // Generate new token
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.status(200).json({ token: token, games: updatedGames });
-    } catch (error) {
-      console.error("Error deleting: ", error);
-      res.status(500).json(error);
-    }
+    GamesController.Delete(req, res, TicTacToe);
   },
 
+  // ===================== BATTLESHIP SPECIFIC GAMEPLAY METHODS ============================
   PlacePiece: async (req, res) => {
     const gameID = req.params.id;
     const userID = req.user_id;
