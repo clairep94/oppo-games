@@ -26,20 +26,28 @@ Users can sign up, log in, and play a number of mini-games 1v1 with other users.
 
 https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-4050-81b2-360373d5b208
 
-- Users can view a description of each of our games
-- Users can register and see errors if they do not have a unique email and username, or if their password does not have a set length and char set
-- Users can see a game lobby, filter by game type or open status or ownership
-- Users can create a game
-- Users can see errors if they try to play without an opponent
-- Users can join games, play and message opponents in realtime
-- Users can see errors if they try to play out-of-turn or play out-of-bounds moves
-- Users can go back to past games to see the last game-state and message history
-
+<details>
+  <summary>Features</summary>
+  
+    * Users can view a description of each of our games
+    * Users can register and see errors if they do not have a unique email and username, or if their password does not have a set length and char set
+    * Users can see a game lobby, filter by game type or open status or ownership
+    * Users can create a game
+    * Users can see errors if they try to play without an opponent
+    * Users can join games, play and message opponents in realtime
+    * Users can see errors if they try to play out-of-turn or play out-of-bounds moves
+    * Users can go back to past games to see the last game-state and message history
+    
+</details>
 <br>
 
 ## Feature Updates
 
-**Feb 4, 2024:**<br>
+<details>
+  <summary>Click Me</summary>
+  
+**Feb 4, 2024:**
+<br>
 <img width="350" alt="Screenshot 2024-02-04 at 18 21 14" src="https://github.com/clairep94/oppo-games/assets/128436909/f66d7c02-bc71-41c2-9db0-6cee062dba1c">
 <img width="307" alt="Screenshot 2024-02-04 at 18 20 53" src="https://github.com/clairep94/oppo-games/assets/128436909/e370324c-ea16-44fa-9677-dda5e0e5d2f7">
 
@@ -78,6 +86,11 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
     
 
 <br>
+
+
+
+  
+</details>
 
 ## Screenshots
 
