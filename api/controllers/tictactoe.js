@@ -11,7 +11,7 @@ const defaultConcealmentFunction = (game) => {
 
 const TicTacToeController = {
   // ================== METHODS SHARED BY ALL GAMES ============================
-
+  // This Index method only shows the properties of allgames, and no game boards
   Index: (req, res) => {
     GamesController.Index(req, res, TicTacToe);
   },
@@ -19,97 +19,14 @@ const TicTacToeController = {
   FindByID: (req, res) => {
     GamesController.FindByID(req, res, TicTacToe);
   },
-
-  // FindByID: (req, res) => {
-  //   const tictactoeID = req.params.id;
-  //   TicTacToe.findById(tictactoeID)
-  //     .populate("playerOne", "_id username points")
-  //     .populate("playerTwo", "_id username points")
-  //     .populate("winner", "_id username points")
-  //     .exec((err, tictactoe) => {
-  //       if (err) {
-  //         throw err;
-  //       }
-  //       const token = TokenGenerator.jsonwebtoken(req.user_id);
-  //       res.setHeader("Cache-Control", "no-store, no-cache");
-  //       res.status(200).json({ game: tictactoe, token: token });
-  //       // res.status(200).json({ game: tictactoe });
-  //     });
-  // },
-
+  // Method to create a new TicTacToe game
   Create: async (req, res) => {
-    // const newTicTacToe = new TicTacToe({
-    //   playerOne: req.body.playerOne,
-    //   playerTwo: req.body.playerTwo
-    // });
-    const userID = req.user_id;
-
-    const newTicTacToe = new TicTacToe({
-      playerOne: userID,
-    });
-
-    try {
-      const result = await newTicTacToe.save();
-      const populatedTicTacToe = await TicTacToe.populate(result, {
-        path: "playerOne",
-        select: "_id username points",
-      });
-      await TicTacToe.populate(populatedTicTacToe, {
-        path: "playerTwo",
-        select: "_id username points",
-      });
-      await TicTacToe.populate(populatedTicTacToe, {
-        path: "winner",
-        select: "_id username points",
-      });
-
-      const token = TokenGenerator.jsonwebtoken(req.user_id);
-      res.setHeader("Cache-Control", "no-store, no-cache");
-      res.status(201).json({ token: token, game: populatedTicTacToe });
-      // res.status(201).json({ game: populatedTicTacToe });
-    } catch (error) {
-      console.log("Error in TTT.Create", error);
-      res.status(501).json(error);
-    }
+    GamesController.Create(req, res, TicTacToe);
   },
 
+  // Method to join a TicTacToe game
   Join: async (req, res) => {
-    const gameID = req.params.id;
-    const userID = req.user_id;
-
-    try {
-      const game = await TicTacToe.findById(gameID)
-        .populate("playerOne", "_id username points")
-        .populate("playerTwo", "_id username points")
-        .populate("winner", "_id username points");
-
-      if (game.playerTwo) {
-        console.log("ERROR: GAME ALREADY FULL");
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-
-        return res
-          .status(403)
-          .json({ error: "Game already full.", game: game, token: token });
-      } else {
-        const joinedGame = await TicTacToe.findOneAndUpdate(
-          { _id: gameID },
-          {
-            $set: { playerTwo: userID },
-          },
-          { new: true }
-        )
-          .populate("playerOne", "_id username points")
-          .populate("playerTwo", "_id username points")
-          .populate("winner", "_id username points");
-
-        const token = TokenGenerator.jsonwebtoken(req.user_id);
-        res.status(200).json({ token: token, game: joinedGame });
-        // res.status(200).json({game: forfeitedGame});
-      }
-    } catch (error) {
-      console.log("Error in TTT.Join", error);
-      res.status(501).json(error);
-    }
+    GamesController.Join(req, res, TicTacToe);
   },
 
   Forfeit: async (req, res) => {
