@@ -8,7 +8,7 @@ const {
 // TODO Add points for this game if there is a win condition
 
 // Default concealment function that returns the original game data
-const defaultConcealmentFunction = (game, viewerID) => {
+const defaultConcealmentFunction = (game) => {
   return game;
 };
 

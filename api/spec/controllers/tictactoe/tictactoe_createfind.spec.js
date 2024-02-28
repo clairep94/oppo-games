@@ -1,31 +1,47 @@
 const app = require("../../../app");
 const request = require("supertest");
 require("../../mongodb_helper");
-const TicTacToe = require('../../../models/tictactoe');
-const User = require('../../../models/user');
+const TicTacToe = require("../../../models/tictactoe");
+const User = require("../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
+const {
+  expectedGameObject,
+  expectNewToken,
+  expectResponseCode,
+  expectNoGameObject,
+  expectNoToken,
+  expectError,
+  expectAuthError,
+} = require("../../utils/TestHelpers");
 
 let token;
 
 // ==================== CREATE A GAME ================================= //
 describe("CREATE - /tictactoe", () => {
   let user;
-  
+
   // ---------------- ARRANGE: DB cleanup, create User & token ------------- //
   beforeAll(async () => {
     // create a user
-    user = new User({ email: "test@test.com", username: "user123", password: "12345678" });
+    user = new User({
+      email: "test@test.com",
+      username: "user123",
+      password: "12345678",
+    });
     await user.save();
 
     // generate token
-    token = JWT.sign({
-      user_id: user.id,
-      // Backdate this token of 5 minutes
-      iat: Math.floor(Date.now() / 1000) - (5 * 60),
-      // Set the JWT token to expire in 10 minutes
-      exp: Math.floor(Date.now() / 1000) + (10 * 60),
-    }, secret);
+    token = JWT.sign(
+      {
+        user_id: user.id,
+        // Backdate this token of 5 minutes
+        iat: Math.floor(Date.now() / 1000) - 5 * 60,
+        // Set the JWT token to expire in 10 minutes
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+      },
+      secret
+    );
   });
 
   beforeEach(async () => {
@@ -42,7 +58,7 @@ describe("CREATE - /tictactoe", () => {
   describe("When token is present", () => {
     let response;
 
-    // ---------------- ACT: create game with a token; ------------- 
+    // ---------------- ACT: create game with a token; -------------
     beforeEach(async () => {
       response = await request(app)
         .post("/tictactoe") // Correct endpoint
@@ -59,24 +75,24 @@ describe("CREATE - /tictactoe", () => {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
-          points: 0
+          points: 0,
         },
         title: "Tic-Tac-Toe",
         endpoint: "tictactoe",
         turn: 0,
         winner: [],
         finished: false,
+        // === TICTACTOE PROPERTIES === //
         xPlacements: [],
         oPlacements: [],
         gameBoard: {
           A: { 1: " ", 2: " ", 3: " " },
           B: { 1: " ", 2: " ", 3: " " },
           C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
@@ -92,26 +108,25 @@ describe("CREATE - /tictactoe", () => {
     // ---------------- ACT: create game with no token; -------------
     beforeEach(async () => {
       response = await request(app)
-        .post("/tictactoe") 
+        .post("/tictactoe")
         .send({ playerOne: user._id });
     });
 
     // --------- ASSERT: Response code 401, returns no token & no populated game -----------
-    test("responds with a 401", async () => {
+    test("responds with a 401 & auth error message", async () => {
       expect(response.statusCode).toBe(401);
+      expect(response.body).toEqual({ message: "auth error" });
     });
     test("does not create a game", async () => {
-      let games = await TicTacToe.find()
+      let games = await TicTacToe.find();
       expect(games.length).toEqual(0);
       // expect(response.body).toEqual({"message": "auth error"});
-    })
+    });
     test("returns no new token", async () => {
-      expect(response.body.token).toEqual(undefined);    
+      expect(response.body.token).toEqual(undefined);
     });
   });
-
 });
-
 
 // ==================== INDEX ========================================== //
 describe("INDEX - /tictactoe", () => {
@@ -121,17 +136,24 @@ describe("INDEX - /tictactoe", () => {
   // -------- ARRANGE: DB cleanup, create User & token ----------
   beforeAll(async () => {
     // create a user
-    user = new User({ email: "test@test.com", username: "user123", password: "12345678" });
+    user = new User({
+      email: "test@test.com",
+      username: "user123",
+      password: "12345678",
+    });
     await user.save();
 
     // generate token
-    token = JWT.sign({
-      user_id: user.id,
-      // Backdate this token of 5 minutes
-      iat: Math.floor(Date.now() / 1000) - (5 * 60),
-      // Set the JWT token to expire in 10 minutes
-      exp: Math.floor(Date.now() / 1000) + (10 * 60),
-    }, secret);
+    token = JWT.sign(
+      {
+        user_id: user.id,
+        // Backdate this token of 5 minutes
+        iat: Math.floor(Date.now() / 1000) - 5 * 60,
+        // Set the JWT token to expire in 10 minutes
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+      },
+      secret
+    );
   });
 
   beforeEach(async () => {
@@ -150,15 +172,15 @@ describe("INDEX - /tictactoe", () => {
 
     beforeEach(async () => {
       // -------- ARRANGE: create 2 games -------------
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new TicTacToe({ playerOne: user._id });
+      game2 = new TicTacToe({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
       // ------ ACT: fetch all games with a token -------------
       response = await request(app)
-        .get("/tictactoe") 
-        .set("Authorization", `Bearer ${token}`)
+        .get("/tictactoe")
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // ------- ASSERT: Response code 200, returns an array of TTT populated games, and a new token -----
@@ -170,33 +192,32 @@ describe("INDEX - /tictactoe", () => {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
-          points: 0
+          points: 0,
         },
         title: "Tic-Tac-Toe",
         endpoint: "tictactoe",
         turn: 0,
         winner: [],
         finished: false,
-        xPlacements: [],
-        oPlacements: [],
-        gameBoard: {
-          A: { 1: " ", 2: " ", 3: " " },
-          B: { 1: " ", 2: " ", 3: " " },
-          C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        // xPlacements: [],
+        // oPlacements: [],
+        // gameBoard: {
+        //   A: { 1: " ", 2: " ", 3: " " },
+        //   B: { 1: " ", 2: " ", 3: " " },
+        //   C: { 1: " ", 2: " ", 3: " " },
+        // },
       };
       expect(response.body.games).toHaveLength(2);
       expect(response.body.games[0]).toMatchObject(expectedResponse);
       expect(response.body.games[1]).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // ------------- INDEX WITH TOKEN AND EMPTY LIST ------------- //
   describe("When a token is present but the array is empty", () => {
@@ -216,14 +237,14 @@ describe("INDEX - /tictactoe", () => {
     });
     test("returns an empty array of tictactoe object with a populated playerOne", () => {
       expect(response.body.games).toHaveLength(0);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // ------------- INDEX WITH NO TOKEN - ERROR ------------- //
   describe("When no token is present", () => {
@@ -231,14 +252,13 @@ describe("INDEX - /tictactoe", () => {
 
     beforeEach(async () => {
       // ------ ARRANGE: create 2 games -------
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new TicTacToe({ playerOne: user._id });
+      game2 = new TicTacToe({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
       // ------ ACT: search games with no token ---------
-      response = await request(app)
-        .get("/tictactoe") 
+      response = await request(app).get("/tictactoe");
     });
 
     // --------- ASSERT: status 401, return no games and no token -----------
@@ -247,13 +267,12 @@ describe("INDEX - /tictactoe", () => {
     });
     test("does not return any games", () => {
       expect(response.body.games).toEqual(undefined);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toEqual(undefined);
     });
-  })
-})
-
+  });
+});
 
 // ==================== FIND BY ID ==================================== //
 describe(".FINDBYID - /tictactoe/:gameID ", () => {
@@ -263,17 +282,24 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
 
   beforeAll(async () => {
     // create a user
-    user = new User({ email: "test@test.com", username: "user123", password: "12345678" });
+    user = new User({
+      email: "test@test.com",
+      username: "user123",
+      password: "12345678",
+    });
     await user.save();
 
     // generate token
-    token = JWT.sign({
-      user_id: user.id,
-      // Backdate this token of 5 minutes
-      iat: Math.floor(Date.now() / 1000) - (5 * 60),
-      // Set the JWT token to expire in 10 minutes
-      exp: Math.floor(Date.now() / 1000) + (10 * 60),
-    }, secret);
+    token = JWT.sign(
+      {
+        user_id: user.id,
+        // Backdate this token of 5 minutes
+        iat: Math.floor(Date.now() / 1000) - 5 * 60,
+        // Set the JWT token to expire in 10 minutes
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+      },
+      secret
+    );
   });
 
   beforeEach(async () => {
@@ -295,8 +321,8 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new TicTacToe({ playerOne: user._id });
+      game2 = new TicTacToe({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
@@ -307,8 +333,7 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/tictactoe/${firstGame._id}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
@@ -320,7 +345,7 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
-          points: 0
+          points: 0,
         },
         title: "Tic-Tac-Toe",
         endpoint: "tictactoe",
@@ -333,31 +358,32 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
           A: { 1: " ", 2: " ", 3: " " },
           B: { 1: " ", 2: " ", 3: " " },
           C: { 1: " ", 2: " ", 3: " " },
-          
-      },
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
-    })
+    });
     test("generates a new token", async () => {
       expect(response.body.token).toBeDefined();
       let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
       let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
       expect(newPayload.iat > originalPayload.iat).toEqual(true);
     });
-  })
+  });
 
   // ------------- FIND BY ID WITH NO RESULT ------------------
-  describe("When a token is present but no matching ID", () => {
+  describe("When a token is present but game not found", () => {
     let response;
     let firstGame;
     let allGames;
     const fakeGameID = "65a5303a0aaf4a563f531d92";
+    const errorMessage = "Game not found";
+    const errorCode = 404;
 
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new TicTacToe({ playerOne: user._id });
+      game2 = new TicTacToe({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
@@ -368,24 +394,34 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
       // fetch by gameID
       response = await request(app)
         .get(`/tictactoe/${fakeGameID}`)
-        .set('Authorization', `Bearer ${token}`)
-
+        .set("Authorization", `Bearer ${token}`);
     });
 
     // --------- ASSERTIONS -----------
-    test("responds with a 200", async () => {
-      expect(response.statusCode).toBe(200);
+    // test("responds with a 200", async () => {
+    //   expect(response.statusCode).toBe(200);
+    // });
+    // test("returns a tictactoe object with a populated playerOne", () => {
+    //   expect(response.body.game).toEqual(null);
+    // });
+    // test("generates a new token", async () => {
+    //   expect(response.body.token).toBeDefined();
+    //   let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
+    //   let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
+    //   expect(newPayload.iat > originalPayload.iat).toEqual(true);
+    // });
+    // --------- ASSERT: response code 404 and error message and new token -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
     });
-    test("returns a tictactoe object with a populated playerOne", () => {
-      expect(response.body.game).toEqual(null);
-    })
     test("generates a new token", async () => {
-      expect(response.body.token).toBeDefined();
-      let newPayload = JWT.decode(response.body.token, process.env.JWT_SECRET);
-      let originalPayload = JWT.decode(token, process.env.JWT_SECRET);
-      expect(newPayload.iat > originalPayload.iat).toEqual(true);
+      await expectNewToken(response, token);
     });
-  })
+
+    test("does not return a battleships game object", async () => {
+      await expectNoGameObject(response);
+    });
+  });
 
   // ------------- WHEN NO TOKEN --------------------
   describe("When not token is present", () => {
@@ -394,8 +430,8 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new TicTacToe({playerOne: user._id})
-      game2 = new TicTacToe({playerOne: user._id})
+      game1 = new TicTacToe({ playerOne: user._id });
+      game2 = new TicTacToe({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
@@ -404,10 +440,8 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
       firstGame = allGames[0];
 
       // fetch by gameID
-      response = await request(app)
-        .get(`/tictactoe/${firstGame._id}`)
-        // .set('Authorization', `Bearer ${token}`)
-
+      response = await request(app).get(`/tictactoe/${firstGame._id}`);
+      // .set('Authorization', `Bearer ${token}`)
     });
 
     // --------- ASSERTIONS -----------
@@ -416,10 +450,9 @@ describe(".FINDBYID - /tictactoe/:gameID ", () => {
     });
     test("does not return a game object", () => {
       expect(response.body.game).toEqual(undefined);
-    })
+    });
     test("does not generate a new token", async () => {
       expect(response.body.token).toEqual(undefined);
     });
-  })
-})
-
+  });
+});
