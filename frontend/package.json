@@ -19,7 +19,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts --openssl-legacy-provider start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test-open": "npx cypress open",
     "test": "npm run test:unit && npm run test:feature",
@@ -47,5 +47,8 @@
   },
   "devDependencies": {
     "tailwindcss": "^3.4.1"
+  },
+  "engines": {
+    "node": "18"
   }
 }

@@ -1,14 +1,17 @@
-import React, {useState, useRef, useEffect} from "react";
-import {useParams} from "react-router-dom";
+import React, {useState, useRef, useEffect, useContext} from "react";
+import {useNavigate, useParams} from "react-router-dom";
 import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
 import { addMessage, fetchMessages } from "../../api_calls/messageAPI";
 import io from "socket.io-client";
 import InputEmoji from 'react-input-emoji';
+import { SessionContext } from "../app/ProtectedRoutes";
 
 
 
-export default function TTTGamePage({ token, setToken, sessionUserID, sessionUser }) {
-
+export default function TTTGamePage(props) {
+    const navigate = useNavigate();
+    const {token, setToken, sessionUserID, sessionUser } = useContext(SessionContext);
+  
     const background = 'TTT.jpg'
     const mapName = 'Alpine Map'
 
