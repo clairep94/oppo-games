@@ -7,6 +7,7 @@ OppoGames is a fullstack social-gaming site, showcasing use of the MERN stack, S
 Users can sign up, log in, and play a number of mini-games 1v1 with other users. Users can see their opponents moves and message in real-time.
 
 **This is my personal extension of the [Oppo Games - Group 6 final project at Makers Academy](https://github.com/clairep94/oppo-games-group6).**
+
 - Please see [**Feature Updates**](#feature-updates) below for ongoing feature implementation updates.
 
 <br>
@@ -40,6 +41,7 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
 ## Feature Updates
 
 **Feb 4, 2024:**
+
 - ✅ `spec/utils/TestHelpers.js`: Supportive functions for shorthand Jest testing. Eg. `expectNewToken`, `expectAuthError`, `expectError(code, message)`
 - ✅ Battleships Backend with TTD
   - ✅ Adds TTD'd: Create, Index, FindByID, Join, Delete, Forfeit, SubmitShipPlacement & LaunchMissile
@@ -50,13 +52,16 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
     - ✅ Concealment occurs in the backend to prevent cheating through inspecting the browser.
 
 **Jan 28, 2024:**
+
 - ✅ Frontend Test E2E coverage with Cypress
   - ✅ Landing Page
   - ✅ Signup Popup & Signup Page, Login Popup & Login Page
   - ✅ Game Intro Pages: TTT, Battleships, RPS
 
 **Jan 21 2024:**
+
 - ✅ Backend Test coverage with Jest
+
   - ✅ Added 10 test suites and 185 tests for Users, Messages, Authentication & Tictactoe
   - ✅ Tictactoe covers: Create, Index, FindbyID, Join, Delete, Forfeit & PlacePiece
     - ✅ Error handling: Out-of-Turn, Awaiting-Opponent, Game-Already-Over, You-Are-Not-In-This-Game, Already-A-Piece-There, Cannot-Delete-Ongoing-Game, Cannot-Join-Full-Game
@@ -67,12 +72,11 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
   - TicTacToe game playthrough for 5 scenarios: X-Win, O-Win, Draw, Forfeit, 9th-Turn-Win, Leave-Mid-Game-And-Return
   - TicTacToe create, join, delete, forfeit & errors
   - Game Lobby
-  - User Page 
+  - User Page
   - Users can see notifications of joins in real-time
   - Users can send and see game invitations
   - Users can play RPS & Battleships
   --->
-    
 
 <br>
 
@@ -90,6 +94,7 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
 ## Installation:
 
 ### Node.js
+
 1. Install Node Version Manager (nvm)
    ```
    brew install nvm
@@ -102,21 +107,23 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
    ```
 
 ### MongoDB
+
 1. Install MongoDB
    ```
    brew tap mongodb/brew
    brew install mongodb-community@5.0
    ```
-   *Note:* If you see a message that says `If you need to have mongodb-community@5.0 first in your PATH, run:`, follow the instruction. Restart your terminal after this.
+   _Note:_ If you see a message that says `If you need to have mongodb-community@5.0 first in your PATH, run:`, follow the instruction. Restart your terminal after this.
 2. Start MongoDB
    ```
    brew services start mongodb-community@5.0
    ```
 
 ### Packages:
+
 1. npm install in the three main folders:
 
-   ``` shell
+   ```shell
    ; cd api
    ; npm install
    ; cd ../frontend
@@ -136,12 +143,12 @@ https://github.com/clairep94/oppo-games-group6/assets/128436909/fe225b5f-cd23-40
 
 2. Start the front end application (in the `frontend` directory)
 
-  In a new terminal session...
+In a new terminal session...
 
-  ```shell
-  ; cd frontend
-  ; npm start
-  ```
+```shell
+; cd frontend
+; npm start
+```
 
 You should now be able to open your browser and go to `http://localhost:3000/`
 
@@ -179,18 +186,15 @@ Currently, the project has test coverage for the API only via Jest. E2e frontend
 
 ; JWT_SECRET=f6d278bb34e1d0e146a80b16ec254c05 npm run test
 ```
-**Note: On first run of test suite, you must run the test twice before they pass. This is because the the test database is created and written during these initial test runs.**
 
+**Note: On first run of test suite, you must run the test twice before they pass. This is because the the test database is created and written during these initial test runs.**
 
 3. Running the frontend tests.
 
    ** Cypress E2e to be implemented**
 
-
-
-
 <!---
-
+Reseting to commit on Feb 6th to bug-fix frontend
 ####  Running tests for the frontend
 
 Start the front end in a new terminal session
