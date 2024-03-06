@@ -1,17 +1,14 @@
-import React, {useState, useRef, useEffect, useContext} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import React, {useState, useRef, useEffect} from "react";
+import {useParams} from "react-router-dom";
 import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
 import { addMessage, fetchMessages } from "../../api_calls/messageAPI";
 import io from "socket.io-client";
 import InputEmoji from 'react-input-emoji';
-import { SessionContext } from "../app/ProtectedRoutes";
 
 
 
-export default function TTTGamePage(props) {
-    const navigate = useNavigate();
-    const {token, setToken, sessionUserID, sessionUser } = useContext(SessionContext);
-  
+export default function TTTGamePage({ token, setToken, sessionUserID, sessionUser }) {
+
     const background = 'TTT.jpg'
     const mapName = 'Alpine Map'
 
@@ -94,7 +91,7 @@ export default function TTTGamePage(props) {
 
 
     useState(() => {
-        fetchMessages(gameID, token)
+        fetchMessages(gameID)
         .then(messagesData => {
             setMessages(messagesData.allMessages);
         })
@@ -263,7 +260,7 @@ export default function TTTGamePage(props) {
 
     // Send the message to the database:
     if (newMessage.trim()) { // check that there is a conversationPartner and that newMessage is not all whitespaces
-        addMessage(messageToSend, token)
+        addMessage(messageToSend)
             .then(sentMessageData => {
                 const sentMessage = sentMessageData.newMessage
                 // add newMessage to the messages array:

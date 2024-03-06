@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "clean": "^4.0.2",
+    "nodemailer": "^6.9.8"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

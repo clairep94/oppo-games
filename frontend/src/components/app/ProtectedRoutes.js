@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import { useSessionTimeOutCheck } from "../../utility/LoggedInCheck";
@@ -14,9 +14,6 @@ import MessagePage from "../messages/MessagePage";
 // import GamePage from '../game-page/GamePage';
 import GamePage from "../game_pages/GamePage";
 import TTTGamePage from "../game_pages/TTTGamePage";
-// import { SessionContextProvider } from "../context/SessionContext";
-
-export const SessionContext = createContext(); // see line 47
 
 const ProtectedRoutes = ({ navigate }) => {
   // =========== TOKEN & SESSION USER DATA =======================
@@ -43,58 +40,97 @@ const ProtectedRoutes = ({ navigate }) => {
   // =================== JSX FOR COMPONENT ===================================
   if (token && sessionUserID) {
     return (
-      <SessionContext.Provider
-        value={{
-          token,
-          setToken,
-          sessionUserID,
-          sessionUser,
-          setSessionUser,
-        }}
-      >
-        <div className="h-screen w-screen flex flex-row overflow-scroll">
-          {/* FULL PAGE */}
+      <div className="h-screen w-screen flex flex-row overflow-scroll">
+        {/* FULL PAGE */}
 
-          {/* LOGGED OUT POPUP */}
-          {showLoginPopup && (
-            <div className="z-40 absolute h-full w-full">
-              <LoginPopup navigate={navigate} />
-            </div>
-          )}
-
-          {/* NAV BAR */}
-          <div className="z-30 absolute h-full flex py-[1rem]">
-            <NavBar />
+        {/* LOGGED OUT POPUP */}
+        {showLoginPopup && (
+          <div className="z-40 absolute h-full w-full">
+            <LoginPopup navigate={navigate} />
           </div>
+        )}
 
-          {/* =============== MAIN PAGE ============================= */}
-          <div className="h-full w-full flex flex-col overflow-none text-gray-50">
-            <Routes>
-              {/* ------ Lobby ------  */}
-              <Route path="/" element={<GamesLobby />} />
-
-              {/* ------ User Profile ------  */}
-              <Route path="/users/:id" element={<ProfilePage />} />
-
-              {/* ------ Tictactoe ------  */}
-              <Route path="/tictactoe/:id" element={<TTTGamePage />} />
-
-              {/* -------- RPS ----------- */}
-              {/* <Route
-                path="/rps/:gameId"
-                element={
-                  <GamePage
-                    navigate={navigate}
-                    gameTitle={"Rock Paper Scissors"}
-                  />
-                }
-              /> */}
-
-              {/* ---- Battleships ---- */}
-            </Routes>
-          </div>
+        {/* NAV BAR */}
+        <div className="z-30 absolute h-full flex py-[1rem]">
+          <NavBar
+            navigate={navigate}
+            token={token}
+            setToken={setToken}
+            sessionUserID={sessionUserID}
+            sessionUser={sessionUser}
+            setSessionUser={setSessionUser}
+          />
         </div>
-      </SessionContext.Provider>
+
+        {/* =============== MAIN PAGE ============================= */}
+        <div className="h-full w-full flex flex-col overflow-none text-gray-50">
+          <Routes>
+            {/* ------ Lobby ------  */}
+            <Route
+              path="/"
+              element={
+                <GamesLobby
+                  navigate={navigate}
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  sessionUser={sessionUser}
+                  setSessionUser={setSessionUser}
+                />
+              }
+            />
+
+            {/* ------ User Profile ------  */}
+            <Route
+              path="/users/:id"
+              element={
+                <ProfilePage
+                  navigate={navigate}
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  sessionUser={sessionUser}
+                  setSessionUser={setSessionUser}
+                />
+              }
+            />
+
+            {/* ------ Tictactoe ------  */}
+            <Route
+              path="/tictactoe/:id"
+              element={
+                <TTTGamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  sessionUser={sessionUser}
+                />
+              }
+            />
+
+            {/* -------- RPS ----------- */}
+            <Route
+              path="/rockpaperscissors/:gameId"
+              element={
+                <GamePage
+                  navigate={navigate}
+                  gameTitle={"Rock Paper Scissors"}
+                />
+              }
+            />
+
+            {/* ---- Battleships ---- */}
+            <Route
+              path="/battleships/:gameId"
+              element={
+                <GamePage navigate={navigate} gameTitle={"Battleships"} />
+              }
+            />
+
+            {/* <Route path='/gamepagetest' element={<GamePage sessionUser={sessionUser}/>}/> */}
+          </Routes>
+        </div>
+      </div>
     );
   }
 };

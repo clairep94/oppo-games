@@ -3,10 +3,10 @@ import {useParams} from "react-router-dom";
 import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
 import io from "socket.io-client";
 
-export default function GamePage({sessionUser}) {
+export default function GamePage({sessionUser, navigate, gameTitle}) {
 
     const game = {
-        title: "Tic-Tac-Toe",
+        title: gameTitle,
         endpoint: "tictactoe",
         id: "659ce476f549713d72573bab",
         background: "TTT.jpg",

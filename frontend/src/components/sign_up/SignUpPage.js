@@ -177,7 +177,7 @@ const SignUpPage = ({ navigate }) => {
       </form>
 
       {/* ERROR MESSAGES */}
-      {error && <p aria-label="Error Message" id="error-message" className={styles.errorMessage}>{error}</p>}
+      {error && <p aria-label="Error Message" className={styles.errorMessage}>{error}</p>}
 
       <br/>
 
@@ -185,7 +185,6 @@ const SignUpPage = ({ navigate }) => {
       aria-label="Already have an account? Log in" 
       className="mt-4 text-white text-left">Already have an account? <a 
       aria-label="Link to Log in" 
-      id="log-in-link"
       href="/login" 
       className="underline">Log in</a>
       </p>

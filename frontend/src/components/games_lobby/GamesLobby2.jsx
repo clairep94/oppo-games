@@ -1,14 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GameTypeCard from './GameTypeCard';
 import SingleGameCard from './SingleGameCard';
 import AllGamesCard from './AllGamesCard';
-import { SessionContext } from '../app/ProtectedRoutes';
-import { useNavigate } from 'react-router';
 
-const GamesLobby = (props) => {
-  const navigate = useNavigate();
-  const {token, setToken, sessionUserID, sessionUser } = useContext(SessionContext);
-
+const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, setSessionUser }) => {
 
   // ======= GAME DATA ================
   const [allGames, setAllGames] = useState([]); // ---> USE FILTERING METHOD
@@ -26,7 +21,7 @@ const GamesLobby = (props) => {
     },
     {
       title:'Rock-Paper-Scissors', 
-      endpoint: 'rps',
+      endpoint: 'rockpaperscissors',
       hardCodePlayersOnline: "108",
       mapName: "Mellow Meadow",
       imgSource: '/cards/RPS.jpg'
@@ -42,7 +37,30 @@ const GamesLobby = (props) => {
 
   // ============= GETTING ALL GAMES ================= //
   useEffect(() => {
+  //   let allGames = []
+
+  //   const fetchAllGames = async (token, game) => {
+  //     try {
+  //         const response = await fetch(`${game.endpoint}`, {
+  //             headers: {
+  //             Authorization: `Bearer ${token}`,
+  //         },
+  //         });
+  //         const gameData = await response.json();
+  //         console.log(gameData)
+  //         return gameData;
+  //     } catch (error) {
+  //         console.error("TictactoeAPI.allUsers:", error);
+  //         throw error;
+  //     }
+  // }
+
     if(token) {
+      // gamesMenu.map((game) => {
+      //   const games = fetchAllGames(token)
+      //   allGames = allGames.concat(games);
+        
+      // })
       fetch("/tictactoe", {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -55,8 +73,8 @@ const GamesLobby = (props) => {
           setAllGames(data.games);
           setDisplayGames(data.games);
         })
-    }
-  }, [])
+    
+  }}, [])
 
 
   // =========== CREATING A GAME =================== //

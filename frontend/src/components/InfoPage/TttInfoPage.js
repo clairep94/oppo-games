@@ -18,6 +18,7 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
 
   const gameCardRPS = {
     backgroundImage: `url(${gameCardRPSImage})`,
+ //color and opacity???
     backgroundSize: 'cover',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
@@ -60,7 +61,7 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
   if (gameTitle === "Tic Tac Toe") {
     return (
       <>
-      <div class="bg-auto min-h-screen " data-cy="background-image" style={gameCardRPS}>
+      <div class="bg-auto min-h-screen " style={gameCardRPS}>
       
         <MiniNavBar />
         {/* <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 py-4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
@@ -72,8 +73,7 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
         
         
 
-        <div data-cy="tic-tac-toe-info-card"
-        className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
+        <div className="pb-20 items-center flex flex-col min-h-full justify-center rounded-xl bg-gray-600/50 py-4 px-6 shadow-lg shadow-black/9 saturate-200 backdrop-blur-sm">
             <img 
                 src={tttSingle} 
                 alt="tic-tac-toe-image-card" 
@@ -81,9 +81,9 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
                 className="transition duration-500 ease-in-out transition-transform hover:scale-110"
                 ></img>
 
-        <h1 className={h1Style}>Tic-Tac-Toe</h1>
+        <h1 className={h1Style}>Tic Tac Toe</h1>
         <div class="container pr-60 pl-60">
-        <p className={basicFont} data-cy="game-description"> 
+        <p className={basicFont}> 
         Engage in a riveting duel of minds on the alpine map with Tic Tac Toe, where strategy takes center stage 
         and every move is a live-wire decision! Feel the strategic intensity as you plot your moves, contemplating 
         each placement with the precision of a seasoned tactician. Explore the dynamic nature of the game, where strategic 
@@ -110,12 +110,11 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
         </div>
         </div>
 
-        <h2 className={h2Style}>EXPLORE OUR LATEST GAMES</h2>
+        <h1 className={h2Style}>EXPLORE OUR LATEST GAMES</h1>
     <div class="grid grid-cols-2 gap-4 mr-20 ml-20 ">
 
         {/* RPS Card 2 */}
-        <div data-cy="rock-paper-scissors-info-card"
-        class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
             <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
             <a aria-label="Link to Register" href="/rps">
@@ -136,8 +135,7 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
         </div>
 
         {/* BATTLESHIPS Card 3 */}
-        <div data-cy="battleships-info-card"
-        class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
+        <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg lg:overflow-visible relative">
         <div class="min-h-[140px] w-full place-items-left overflow-x-scroll rounded-lg p-6 lg:overflow-visible relative">
         <figure class="w-full h-96 relative hover:opacity-50 transition-opacity">
         <a aria-label="Link to Register" href="/battleships">
@@ -163,7 +161,7 @@ const TttInfoPage = ({ navigate, gameTitle }) => {
 
     <div class="bg-black/50 relative left-2/4 transform -translate-x-2/4 text-center -translate-x-2/4 px-6 shadow-lg saturate-200 backdrop-blur-sm">
       <footer class="text-center py-7 text-white">
-      <p>&copy; 2024 OPPO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
+      <p>&copy; 2024 OTTO Games. All rights reserved. A web development project by Claire, Onuora, Perran, Ray, Romain, Sudhansh & Tej</p>
         </footer>
       </div>
 

@@ -91,7 +91,7 @@ const LogInPage = ({ navigate }) => {
 
       {/* RIGHT side with login form */}
       <div className="flex-1 pl-40 pr-40 pt-80 pb-80">
-      <h1 className={h2Style}>Login</h1>
+      <h2 className={h2Style}>Login</h2>
       
       {/* LOGIN FORM */}
       <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
@@ -137,13 +137,12 @@ const LogInPage = ({ navigate }) => {
       </button>
 
       {/* ERROR MESSAGES */}
-      {error && <p id="error-message" aria-label="Login Error Message" className="text-red-500 mt-4">{error}</p>}
+      {error && <p aria-label="Login Error Message" className="text-red-500 mt-4">{error}</p>}
 
       {/* Register Link */}
       <p aria-label="Don't have an account? Register" className="mt-4 text-white">
         Don't have an account?{' '}
-        <a id='register-link'
-        aria-label="Link to Register" href="/signup" className="underline">Register</a>
+        <a aria-label="Link to Register" href="/signup" className="underline">Register</a>
       </p>
     </div>
 

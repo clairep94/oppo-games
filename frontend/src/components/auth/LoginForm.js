@@ -87,7 +87,7 @@ const LogInForm = ({ navigate, viewWelcome, viewSignup }) => {
       {/* flex-1 p-[5rem] relative */}
       {/* RIGHT side with login form */}
       <div className="flex-1 p-[5rem] relative">
-        <button data-cy="close-div-x"
+        <button
           className="absolute top-[3rem] right-[3rem] text-white text-3xl cursor-pointer"
           onClick={viewWelcome}
         >
@@ -140,13 +140,12 @@ const LogInForm = ({ navigate, viewWelcome, viewSignup }) => {
       </button>
 
       {/* ERROR MESSAGES */}
-      {error && <p id="error-message" aria-label="Login Error Message" className="text-red-500 mt-4">{error}</p>}
+      {error && <p aria-label="Login Error Message" className="text-red-500 mt-4">{error}</p>}
 
       {/* Register Link */}
       <p aria-label="Don't have an account? Register" className="mt-4 text-white">
         Don't have an account?{' '}
-        <a id='register-link'
-        aria-label="Link to Register" onClick={viewSignup} className="underline">Register</a>
+        <a aria-label="Link to Register" onClick={viewSignup} className="underline">Register</a>
       </p>
     </div>
 
