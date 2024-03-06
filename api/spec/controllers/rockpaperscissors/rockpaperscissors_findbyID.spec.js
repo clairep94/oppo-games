@@ -1,7 +1,7 @@
 const app = require("../../../app");
 const request = require("supertest");
 require("../../mongodb_helper");
-const Battleships = require("../../../models/battleships");
+const RockPaperScissors = require("../../../models/rockpaperscissors");
 const User = require("../../../models/user");
 const JWT = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
@@ -24,59 +24,8 @@ let response;
 let firstGame;
 let allGames;
 
-const placements = [
-  ["", "", "U", "", "", "", "", "", "", ""],
-  ["", "", "U", "", "", "", "", "B", "", ""],
-  ["", "", "U", "", "", "", "", "B", "", ""],
-  ["", "", "", "", "", "", "", "B", "", ""],
-  ["", "", "", "", "", "", "", "B", "", ""],
-  ["", "C", "C", "C", "C", "C", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "D", "", "", "", "R", "R", "R", ""],
-  ["", "", "D", "", "", "", "", "", "", ""],
-];
-const playedBoard = [
-  ["", "", "U", "", "", "", "", "", "", ""],
-  ["", "", "U", "", "", "", "", "X", "", ""],
-  ["", "", "U", "", "", "", "", "B", "", ""],
-  ["", "", "", "", "", "", "", "B", "", ""],
-  ["", "", "", "", "", "", "", "B", "", ""],
-  ["", "C", "C", "C", "C", "C", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "D", "", "", "/", "R", "X", "X", ""],
-  ["", "", "D", "", "", "", "", "", "", ""],
-];
-const concealedBoard = [
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "X", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-  ["", "", "", "", "", "/", "", "X", "X", ""],
-  ["", "", "", "", "", "", "", "", "", ""],
-];
-const unplacedShips = {
-  carrier: { sank_status: false, units: 5 },
-  battleship: { sank_status: false, units: 4 },
-  cruiser: { sank_status: false, units: 3 },
-  submarine: { sank_status: false, units: 3 },
-  destroyer: { sank_status: false, units: 2 },
-};
-const concealedShips = {
-  carrier: { sank_status: false },
-  battleship: { sank_status: false },
-  cruiser: { sank_status: false },
-  submarine: { sank_status: false },
-  destroyer: { sank_status: false },
-};
-
 // ==================== FIND BY ID -- with conceal function ==================================== //
-describe(".FINDBYID - /battleships/:gameID ", () => {
+describe(".FINDBYID - /rockpaperscissors/:gameID ", () => {
   // ----------- ARRANGE: DB SETUP/CLEANUP, CREATE USER, & TOKEN -----------------
   beforeAll(async () => {
     // create a user
@@ -116,12 +65,12 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
 
   beforeEach(async () => {
     // reset database;
-    await Battleships.deleteMany({});
+    await RockPaperScissors.deleteMany({});
   });
 
   afterAll(async () => {
     await User.deleteMany({});
-    await Battleships.deleteMany({});
+    await RockPaperScissors.deleteMany({});
   });
 
   // ==================================================================================
@@ -130,22 +79,32 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({
+      game1 = new RockPaperScissors({
         playerOne: user._id,
-        playerOneBoard: playedBoard,
-        playerTwoBoard: playedBoard,
-        playerOnePlacements: placements,
-        playerTwoPlacements: placements,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
       }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/battleships/${firstGame._id}`)
+        .get(`/rockpaperscissors/${firstGame._id}`)
         .set("Authorization", `Bearer ${token}`);
     });
 
@@ -153,25 +112,32 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+    test("returns a rockpaperscissors object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
           username: "user123",
           points: 0,
         },
-        title: "Battleships",
-        endpoint: "battleships",
+        title: "RockPaperScissors",
+        endpoint: "rockpaperscissors",
         turn: 0,
         winner: [],
         finished: false,
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips, // logged in user
-        playerTwoShips: concealedShips, // opponent
-        playerOneBoard: playedBoard, // logged in user
-        playerTwoBoard: concealedBoard, // opponent
-        playerOnePlacements: placements, // logged in user
-        playerTwoPlacements: null, // opponent
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "submitted",
+          outcome: null,
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -185,23 +151,33 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({
+      game1 = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user._id,
-        playerOneBoard: playedBoard,
-        playerTwoBoard: playedBoard,
-        playerOnePlacements: placements,
-        playerTwoPlacements: placements,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
       }); // conceal playerTwoBoard when user is viewing the game.
       await game1.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/battleships/${firstGame._id}`)
+        .get(`/rockpaperscissors/${firstGame._id}`)
         .set("Authorization", `Bearer ${token}`);
     });
 
@@ -209,25 +185,32 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+    test("returns a rockpaperscissors object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
           username: "seconduser123",
           points: 0,
         },
-        title: "Battleships",
-        endpoint: "battleships",
+        title: "RockPaperScissors",
+        endpoint: "rockpaperscissors",
         turn: 0,
         winner: [],
         finished: false,
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: concealedShips, // opponent
-        playerTwoShips: unplacedShips, // logged in user
-        playerOneBoard: concealedBoard, // opponent
-        playerTwoBoard: playedBoard, // logged in user
-        playerOnePlacements: null, // opponent
-        playerTwoPlacements: placements, // logged in player
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "submitted",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -241,23 +224,33 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({
+      game1 = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user3._id,
-        playerOneBoard: playedBoard,
-        playerTwoBoard: playedBoard,
-        playerOnePlacements: placements,
-        playerTwoPlacements: placements,
-      }); // conceal both boards
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
+      }); // conceal both hannds
       await game1.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/battleships/${firstGame._id}`)
+        .get(`/rockpaperscissors/${firstGame._id}`)
         .set("Authorization", `Bearer ${token}`);
     });
 
@@ -265,7 +258,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+    test("returns a rockpaperscissors object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
@@ -277,18 +270,25 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
           username: "thirduser123",
           points: 0,
         },
-        title: "Battleships",
-        endpoint: "battleships",
+        title: "RockPaperScissors",
+        endpoint: "rockpaperscissors",
         turn: 0,
         winner: [],
         finished: false,
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: concealedShips,
-        playerTwoShips: concealedShips,
-        playerOneBoard: concealedBoard,
-        playerTwoBoard: concealedBoard,
-        playerOnePlacements: null,
-        playerTwoPlacements: null,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "submitted",
+          playerTwoChoice: "submitted",
+          outcome: null,
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -302,24 +302,34 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create game
-      game1 = new Battleships({
+      game1 = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user3._id,
-        playerOneBoard: playedBoard,
-        playerTwoBoard: playedBoard,
-        playerOnePlacements: placements,
-        playerTwoPlacements: placements,
         finished: true,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
       }); // conceal both boards
       await game1.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/battleships/${firstGame._id}`)
+        .get(`/rockpaperscissors/${firstGame._id}`)
         .set("Authorization", `Bearer ${token}`);
     });
 
@@ -327,7 +337,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     test("responds with a 200", async () => {
       expect(response.statusCode).toBe(200);
     });
-    test("returns a battleships object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+    test("returns a rockpaperscissors object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
@@ -339,18 +349,102 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
           username: "thirduser123",
           points: 0,
         },
-        title: "Battleships",
-        endpoint: "battleships",
+        title: "RockPaperScissors",
+        endpoint: "rockpaperscissors",
         turn: 0,
         winner: [],
         finished: true,
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: unplacedShips,
-        playerTwoShips: unplacedShips,
-        playerOneBoard: playedBoard,
-        playerTwoBoard: playedBoard,
-        playerOnePlacements: placements,
-        playerTwoPlacements: placements,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("generates a new token", async () => {
+      expectNewToken(response, token);
+    });
+  });
+
+  // -------------- FIND BY ID WITH TOKEN, sessionUser is an observer but currentRound is concluded. ------------------
+  describe("When a token is present & the sessionUser is an observer, but currentRound is concluded", () => {
+    // search games with a token
+    beforeEach(async () => {
+      // create game
+      game1 = new RockPaperScissors({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: user._id,
+        },
+      }); // conceal both boards
+      await game1.save();
+
+      // get all games and find the id of the first game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // fetch by gameID
+      response = await request(app)
+        .get(`/rockpaperscissors/${firstGame._id}`)
+        .set("Authorization", `Bearer ${token}`);
+    });
+
+    // --------- ASSERTIONS -----------
+    test("responds with a 200", async () => {
+      expect(response.statusCode).toBe(200);
+    });
+    test("returns a rockpaperscissors object with a populated playerOne. PlayerOne cannot see PlayerTwo's full board.", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "seconduser123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "thirduser123",
+          points: 0,
+        },
+        title: "RockPaperScissors",
+        endpoint: "rockpaperscissors",
+        turn: 0,
+        winner: [],
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        currentRound: {
+          playerOneChoice: "R",
+          playerTwoChoice: "P",
+          outcome: expect.any(String),
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -368,18 +462,18 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new Battleships({ playerOne: user._id });
-      game2 = new Battleships({ playerOne: user._id });
+      game1 = new RockPaperScissors({ playerOne: user._id });
+      game2 = new RockPaperScissors({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
       response = await request(app)
-        .get(`/battleships/${fakeGameID}`)
+        .get(`/rockpaperscissors/${fakeGameID}`)
         .set("Authorization", `Bearer ${token}`);
     });
 
@@ -391,7 +485,7 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
       await expectNewToken(response, token);
     });
 
-    test("does not return a battleships game object", async () => {
+    test("does not return a rockpaperscissors game object", async () => {
       await expectNoGameObject(response);
     });
   });
@@ -401,17 +495,17 @@ describe(".FINDBYID - /battleships/:gameID ", () => {
     // search games with a token
     beforeEach(async () => {
       // create 2 games
-      game1 = new Battleships({ playerOne: user._id });
-      game2 = new Battleships({ playerOne: user._id });
+      game1 = new RockPaperScissors({ playerOne: user._id });
+      game2 = new RockPaperScissors({ playerOne: user._id });
       await game1.save();
       await game2.save();
 
       // get all games and find the id of the first game
-      allGames = await Battleships.find();
+      allGames = await RockPaperScissors.find();
       firstGame = allGames[0];
 
       // fetch by gameID
-      response = await request(app).get(`/battleships/${firstGame._id}`);
+      response = await request(app).get(`/rockpaperscissors/${firstGame._id}`);
     });
 
     // --------- ASSERTIONS -----------

@@ -25,7 +25,11 @@ const concealedRockPaperScissorsView = (populatedGame, viewerID) => {
     }
   };
 
-  if (populatedGame && !populatedGame.finished) {
+  if (
+    populatedGame &&
+    !populatedGame.finished &&
+    !populatedGame.currentRound.outcome
+  ) {
     // If viewer is not playerOne: (viewer is playerTwo or observer)
     if (viewerID != populatedGame.playerOne._id) {
       // Needs to be != and not !== due to mongoose having its own data types
@@ -59,7 +63,6 @@ const RockPaperScissorsController = {
       RockPaperScissors,
       concealedRockPaperScissorsView
     );
-    console.log("Successfully found RPS Games");
   },
 
   // Method to fetch a specific RockPaperScissors game by ID
@@ -75,7 +78,6 @@ const RockPaperScissorsController = {
   // Method to create a new RockPaperScissors game
   Create: async (req, res) => {
     GamesController.Create(req, res, RockPaperScissors);
-    console.log("Successfully created RPS Game");
   },
 
   // Method to join a RockPaperScissors game
