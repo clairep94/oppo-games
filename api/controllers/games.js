@@ -26,6 +26,7 @@ const GamesController = {
         turn: 1,
         winner: 1,
         finished: 1,
+        updatedAt: 1,
       })
       .populate("playerOne", "_id username points")
       .populate("playerTwo", "_id username points")

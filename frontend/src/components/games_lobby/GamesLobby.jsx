@@ -34,44 +34,47 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
     }
   ] 
 
-  // ============= GETTING ALL GAMES ================= //
+  // ============= GETTING ALL GAMES & SORTING BY ANTI-CHRONOLOGICAL ================= //
+  const fetchAllGames = async () => {
+    // Function to fetch all games in the gamesMenu
+    // Iterate through gamesMenu and add the resulting games data to allGames
+    // allGames is stored in the order of the GET requests, then in chronological order
+    // displayGames is stored by default in a mixed, antichronological order
 
-  useEffect(() => {
+    try {
+      const fetchedResults = [];
+      for (const game of gamesMenu) {
 
-    const fetchAllGames = async () => {
-      // Function to fetch all games in the gamesMenu
-      // Iterate through gamesMenu and add the resulting games data to allGames
-      // allGames is stored in the order of the GET requests, then in chronological order
-      // displayGames is stored by default in a mixed, antichronological order
+        // PERFORM GET REQUEST FOR EACH GAME TYPE
+        const response = await fetch(`/${game.endpoint}`, {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
 
-      try {
-        const fetchedResults = [];
-        for (const game of gamesMenu) {
-
-          // PERFORM GET REQUEST FOR EACH GAME TYPE
-          const response = await fetch(`/${game.endpoint}`, {
-            headers: {'Authorization': `Bearer ${token}`}
-          });
-
-          // HANDLE ERROR IF ERROR
-          if (!response.ok) {
-            const errorMessage = await response.text(); // Get the error message from the response body
-            throw new Error(`Failed to fetch data from ${game.endpoint}: ${response.statusText}. Error message: ${errorMessage}`);
-          }
-          const data = await response.json();
-          fetchedResults.push(...data.games)
-          window.localStorage.setItem("token", data.token)
-          setToken(window.localStorage.getItem("token"))
+        // HANDLE ERROR IF ERROR
+        if (!response.ok) {
+          const errorMessage = await response.text(); // Get the error message from the response body
+          throw new Error(`Failed to fetch data from ${game.endpoint}: ${response.statusText}. Error message: ${errorMessage}`);
         }
-
-        setAllGames(fetchedResults);
-        setDisplayGames(fetchedResults);
-
-      } catch (error) {
-        console.error(`Error fetching results:`, error);
+        const data = await response.json();
+        fetchedResults.push(...data.games)
+        window.localStorage.setItem("token", data.token)
+        setToken(window.localStorage.getItem("token"))
       }
-    };
 
+      setAllGames(fetchedResults);
+      setDisplayGames(sortByRecent(fetchedResults));
+    } catch (error) {
+      console.error(`Error fetching results:`, error);
+    }
+  };
+
+  const sortByRecent = (games) => {
+    return [...games].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  };
+
+
+  // ============= USE EFFECT HOOK TO GETTING ALL GAMES ================= //
+  useEffect(() => {
     if(token){
       fetchAllGames();
     } else {
@@ -92,16 +95,18 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
-            });
-        
-            if (response.status === 201) {
-            const data = await response.json();
-            const gameID = data.game._id;
+          });
+      
+        if (response.status === 201) {
+          const data = await response.json();
+          const gameID = data.game._id;
 
-            navigate(`/${game.endpoint}/${gameID}`);
-            } else {
-            console.log("error creating game")
-            }
+          navigate(`/${game.endpoint}/${gameID}`);
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+        } else {
+          console.log("Error creating game:", response.error)
+        }
       } catch (error) {
         console.error(`Error creating new ${game.title} game:`, error);
       }
@@ -112,8 +117,6 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   // join a game and re-direct to the unique game's page
   const joinGame = async (game) => {
     console.log(`Join ${game.title}`)
-    console.log(game._id)
-    console.log(game.endpoint)
     if(token){
       try {
         const response = await fetch (`/${game.endpoint}/${game._id}/join`, {
@@ -129,8 +132,11 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
           const gameID = data.game._id;
 
           navigate(`/${game.endpoint}/${gameID}`);
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
         } else {
-          console.log("Error joining game")
+          console.log("Error joining game:", response.error)
         }
       } catch (error) {
         console.error(`Error joining ${game.title} game:`, error);
@@ -156,14 +162,18 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
           const data = await response.json();
           const gameID = data.game._id;
 
-          setAllGames(allGames.map(game => game._id === gameID ? game : data.game)) // update All Games with the new forfeit
-          setDisplayGames(displayGames.map(game => game._id === gameID ? game : data.game)) // update Display Games with the new forfeit
+          setAllGames(allGames.map(game => game._id === gameID ? data.game : game)) // update All Games with the new forfeit
+          setDisplayGames(displayGames.map(game => game._id === gameID ? data.game : game)) // update Display Games with the new forfeit
+
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
 
         } else {
-          console.log("Error joining game")
+          console.log("Error forfeiting game:", response.error)
         }
       } catch (error) {
-        console.error(`Error joining ${game.title} game:`, error);
+        console.error(`Error forfeiting ${game.title} game:`, error);
       }
     }
   }
@@ -185,12 +195,17 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
         });
 
         if (response.status === 200) {
+          const data = await response.json();
 
-          setAllGames(allGames.filter(game => game._id !== IDToDelete)) // update All Games with the new forfeit
-          setDisplayGames(displayGames.filter(game => game._id !== IDToDelete)) // update Display Games with the new forfeit
+          setAllGames(allGames.filter(game => game._id !== IDToDelete)) // update All Games with the new delete
+          setDisplayGames(displayGames.filter(game => game._id !== IDToDelete)) // update Display Games with the new delete
+
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
 
         } else {
-          console.log("Error deleting game")
+          console.log("Error deleting game:", response.error)
         }
       } catch (error) {
         console.error(`Error deleting ${game.title} game:`, error);
@@ -205,32 +220,32 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
 
     switch (view) {
       case "All":
-        setDisplayGames(allGames);
+        setDisplayGames(sortByRecent(allGames));
         break;
 
       case "Open":
         const openGames = allGames.filter(game => !game.playerTwo);
-        setDisplayGames(openGames);
+        setDisplayGames(sortByRecent(openGames));
         break;
 
-      case "Your":
-        const yourGames = allGames.filter(game => game.playerOne._id === sessionUserID || game.playerTwo._id === sessionUserID);
-        setDisplayGames(yourGames);
+      case "Your": // INDEX 
+        const yourGames = allGames.filter(game => game.playerOne._id === sessionUserID || game.playerTwo?._id === sessionUserID);
+        setDisplayGames(sortByRecent(yourGames));
         break;
 
       case "Tic-Tac-Toe":
         const tttGames = allGames.filter(game => game.endpoint === 'tictactoe');
-        setDisplayGames(tttGames);
+        setDisplayGames(sortByRecent(tttGames));
         break;
 
       case "Rock-Paper-Scissors":
         const rpsGames = allGames.filter(game => game.endpoint === 'rockpaperscissors');
-        setDisplayGames(rpsGames);
+        setDisplayGames(sortByRecent(rpsGames));
         break;
 
       case "Battleships":
         const bsGames = allGames.filter(game => game.endpoint === 'battleships');
-        setDisplayGames(bsGames);
+        setDisplayGames(sortByRecent(bsGames));
         break;
 
       default:
@@ -256,8 +271,8 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
       return(
         // BACKGROUND
         <div
-            className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
-            style={{ backgroundImage: 'url(/backgrounds/Welcome2.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
+          className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
+          style={{ backgroundImage: 'url(/backgrounds/Welcome2.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
 
           {/* PAGE CONTAINER */}
           <div className='flex flex-col w-full h-full justify-between'>
@@ -281,11 +296,11 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
               {/* OUR GAMES - GAME CARDS WHERE YOU CAN SELECT TO CREATE A GAME OR VIEW OPEN GAMES OR VIEW CURRENT GAMES*/}
               <div className='flex flex-row bg-gray-600/40 rounded-[1rem] h-[60%] overflow-x-scroll pt-3 pl-2 pr-2 pb-6 border-2 space-x-3 border-white/20'>
 
-                  {/* ALL GAMES CARD */}
-                  <AllGamesCard showGames={showGames}/>
+                {/* ALL GAMES CARD */}
+                <AllGamesCard showGames={showGames}/>
 
                   {gamesMenu.map((game, index) => (
-                      <GameTypeCard game={game} index={index} showGames={showGames} createGame={createGame}/>
+                    <GameTypeCard game={game} index={index} showGames={showGames} createGame={createGame}/>
                   ))}
 
               </div>
@@ -301,10 +316,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
                   <SingleGameCard game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
                 )))}
               </div>
-          </div>
-
-
-
+            </div>
           </div>
         </div>
       )
