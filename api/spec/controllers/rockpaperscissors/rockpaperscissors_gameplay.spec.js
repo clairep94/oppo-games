@@ -30,7 +30,7 @@ let user3;
 let game;
 let response;
 
-// ==================== LAUNCH MISSILE ===========================
+// ==================== SUBMIT CHOICE ===========================
 // TODO add winner getting points for the two win conditions.
 
 describe(`SUBMIT_CHOICE - /${gameEndpoint}/:gameID/${putEndpoint}`, () => {
@@ -77,7 +77,7 @@ describe(`SUBMIT_CHOICE - /${gameEndpoint}/:gameID/${putEndpoint}`, () => {
     await RockPaperScissors.deleteMany({});
   });
 
-  // // -------------- SUBMIT CHOICE WITH TOKEN -------------------
+  // -------------- SUBMIT CHOICE WITH TOKEN - single choice -------------------
   describe("When a token is present and no errors - opponent has not submitted yet ", () => {
     // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
     beforeEach(async () => {
@@ -109,12 +109,12 @@ describe(`SUBMIT_CHOICE - /${gameEndpoint}/:gameID/${putEndpoint}`, () => {
       const expectedResponse = {
         playerOne: {
           _id: expect.any(String),
-          username: "user123",
+          username: "first_user123",
           points: 0,
         },
         playerTwo: {
           _id: expect.any(String),
-          username: "user123",
+          username: "second_user123",
           points: 0,
         },
         title: gameTitle,
@@ -133,372 +133,846 @@ describe(`SUBMIT_CHOICE - /${gameEndpoint}/:gameID/${putEndpoint}`, () => {
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
-    test("returns a message: 'MISSED'", () => {
-      expect(response.body.message).toBe("MISSED");
+    test("returns a message", () => {
+      expect(response.body.message).toBe("Hand Selected: R");
     });
-    test("returns the correct target & actor", () => {
-      expect(response.body.actor.toString()).toEqual(user1._id.toString());
-      expect(response.body.target.toString()).toEqual(user2._id.toString());
+  });
+
+  // // -------------- SUBMIT CHOICE WITH TOKEN - single round - draw -------------------
+  describe("When a token is present and no errors - opponent has submitted - draw ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "R",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "R" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        winner: [],
+        finished: false,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [{ playerOneChoice: "R", playerTwoChoice: "R" }],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toMatchObject({
+        round: 1,
+        playerOneChoice: "R",
+        playerTwoChoice: "R",
+        outcome: "Draw",
+      });
+    });
+  });
+
+  // -------------- SUBMIT CHOICE WITH TOKEN - single round - P>R player one win -------------------
+  describe("When a token is present and no errors - opponent has submitted - P>R ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "R",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "P" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        winner: [],
+        finished: false,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [{ playerOneChoice: "P", playerTwoChoice: "R" }],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toMatchObject({
+        round: 1,
+        playerOneChoice: "P",
+        playerTwoChoice: "R",
+        outcome: response.body.game.playerOne._id,
+      });
+    });
+  });
+
+  // -------------- SUBMIT CHOICE WITH TOKEN - single round - R>S player two win -------------------
+  describe("When a token is present and no errors - opponent has submitted - R>S ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "R",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "S" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        winner: [],
+        finished: false,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [{ playerOneChoice: "S", playerTwoChoice: "R" }],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toMatchObject({
+        round: 1,
+        playerOneChoice: "S",
+        playerTwoChoice: "R",
+        outcome: response.body.game.playerTwo._id,
+      });
+    });
+  });
+
+  // -------------- SUBMIT CHOICE WITH TOKEN - single round - S>P player one win -------------------
+  describe("When a token is present and no errors - opponent has submitted - R>S ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "P",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "S" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        winner: [],
+        finished: false,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [{ playerOneChoice: "S", playerTwoChoice: "P" }],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toMatchObject({
+        round: 1,
+        playerOneChoice: "S",
+        playerTwoChoice: "P",
+        outcome: response.body.game.playerOne._id,
+      });
+    });
+  });
+
+  // -------------- SUBMIT CHOICE WITH TOKEN - 3 game playthrough - playerOne win -------------------
+  describe("When a token is present and no errors - 3 game playthrough - playerOne win ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        finishedRounds: [
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "P",
+            outcome: user1._id,
+          },
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user2._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "P",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "S" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        finishedRounds: [
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+        ],
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        finished: true,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns the right winner", () => {
+      expect(response.body.game.winner[0].username).toBe("first_user123");
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toBe(
+        `Winner: ${response.body.game.playerOne._id}`
+      );
+    });
+  });
+
+  // -------------- SUBMIT CHOICE WITH TOKEN - 3 game playthrough - draw -------------------
+  describe("When a token is present and no errors - 3 game playthrough - draw ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        finishedRounds: [
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "P",
+            outcome: user1._id,
+          },
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: user2._id,
+          },
+        ],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "S" });
+    });
+
+    // --------- ASSERT: Response code 200, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 200", async () => {
+      await expectResponseCode(response, 200);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("returns a rockpaperscissors object", () => {
+      const expectedResponse = {
+        playerOne: {
+          _id: expect.any(String),
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          _id: expect.any(String),
+          username: "second_user123",
+          points: 0,
+        },
+        finishedRounds: [
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+          {
+            playerOneChoice: "R",
+            playerTwoChoice: "P",
+            outcome: expect.any(String),
+          },
+          {
+            playerOneChoice: "S",
+            playerTwoChoice: "S",
+            outcome: "Draw",
+          },
+        ],
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 1,
+        finished: true,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(response.body.game).toMatchObject(expectedResponse);
+    });
+    test("returns the right winner", () => {
+      expect(response.body.game.winner).toHaveLength(2);
+    });
+    test("returns a message with the last round & outcome", () => {
+      expect(response.body.message).toBe("Draw");
     });
   });
 
   // ============== ERRORS =========================
   // // -------------- LAUNCH MISSILE NO TOKEN -------------------
   // describe("When no token is present ", () => {
-  //   const row = 0;
-  //   const col = 0;
+  // const row = 0;
+  // const col = 0;
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new RockPaperScissors({
-  //       playerOne: user1._id,
-  //       playerTwo: user2._id,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     });
-  //     await game.save();
+  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  // beforeEach(async () => {
+  // game = new RockPaperScissors({
+  // playerOne: user1.\_id,
+  // playerTwo: user2.\_id,
+  // // BOARD SETUP
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // });
+  // await game.save();
 
-  //     // get the id of the game
-  //     allGames = await RockPaperScissors.find();
-  //     firstGame = allGames[0];
+  // // get the id of the game
+  // allGames = await RockPaperScissors.find();
+  // firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  //       .send({ row: row, col: col });
-  //   });
+  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  // response = await request(app)
+  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+  // .send({ row: row, col: col });
+  // });
 
-  //   // --------- ASSERT: Response code 401, returns a token & populated game with appropriate concealment -----------
-  //   test("responds with a 401 & auth error message", async () => {
-  //     await expectResponseCode(response, 401);
-  //   });
-  //   test("does not return a rockpaperscissors game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
-  //   test("the game in the database is unaffected", async () => {
-  //     const checkGame = await RockPaperScissors.findById(firstGame._id)
-  //       .populate("playerOne", "_id username points")
-  //       .populate("playerTwo", "_id username points")
-  //       .populate("winner", "_id username points");
+  // // --------- ASSERT: Response code 401, returns a token & populated game with appropriate concealment -----------
+  // test("responds with a 401 & auth error message", async () => {
+  // await expectResponseCode(response, 401);
+  // });
+  // test("does not return a rockpaperscissors game object", async () => {
+  // await expectNoGameObject(response);
+  // });
+  // test("the game in the database is unaffected", async () => {
+  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
+  // .populate("playerOne", "\_id username points")
+  // .populate("playerTwo", "\_id username points")
+  // .populate("winner", "\_id username points");
 
-  //     // Convert Mongoose document to a plain JavaScript object
-  //     const checkGameObject = checkGame.toObject();
+  // // Convert Mongoose document to a plain JavaScript object
+  // const checkGameObject = checkGame.toObject();
 
-  //     const expectedResponse = {
-  //       playerOne: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "first_user123",
-  //         points: 0,
-  //       },
-  //       playerTwo: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "second_user123",
-  //         points: 0,
-  //       },
-  //       title: gameTitle,
-  //       endpoint: gameEndpoint,
-  //       turn: 0,
-  //       winner: [],
-  //       finished: false,
+  // const expectedResponse = {
+  // playerOne: {
+  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
+  // username: "first_user123",
+  // points: 0,
+  // },
+  // playerTwo: {
+  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
+  // username: "second_user123",
+  // points: 0,
+  // },
+  // title: gameTitle,
+  // endpoint: gameEndpoint,
+  // turn: 0,
+  // winner: [],
+  // finished: false,
 
-  //       // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     };
-  //     expect(checkGameObject).toMatchObject(expectedResponse);
-  //   });
+  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // };
+  // expect(checkGameObject).toMatchObject(expectedResponse);
+  // });
   // });
   // // -------------- GAME NOT FOUND -------------------
   // describe("Game not found ", () => {
-  //   const row = 0;
-  //   const col = 0;
-  //   const fakeGameID = "65a5303a0aaf4a563f531d92";
-  //   const errorMessage = "Game not found";
-  //   const errorCode = 404;
+  // const row = 0;
+  // const col = 0;
+  // const fakeGameID = "65a5303a0aaf4a563f531d92";
+  // const errorMessage = "Game not found";
+  // const errorCode = 404;
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new RockPaperScissors({
-  //       playerOne: user1._id,
-  //       playerTwo: user2._id,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     });
-  //     await game.save();
+  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  // beforeEach(async () => {
+  // game = new RockPaperScissors({
+  // playerOne: user1.\_id,
+  // playerTwo: user2.\_id,
+  // // BOARD SETUP
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // });
+  // await game.save();
 
-  //     // get the id of the game
-  //     allGames = await RockPaperScissors.find();
-  //     firstGame = allGames[0];
+  // // get the id of the game
+  // allGames = await RockPaperScissors.find();
+  // firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${fakeGameID}/${putEndpoint}`)
-  //       .set("Authorization", `Bearer ${token}`)
-  //       .send({ row: row, col: col });
-  //   });
+  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  // response = await request(app)
+  // .put(`/${gameEndpoint}/${fakeGameID}/${putEndpoint}`)
+  // .set("Authorization", `Bearer ${token}`)
+  // .send({ row: row, col: col });
+  // });
 
-  //   // --------- ASSERT: Response code 404, returns a token & populated game with appropriate concealment -----------
-  //   test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  //     await expectError(response, errorCode, errorMessage);
-  //   });
-  //   test("generates a new token", async () => {
-  //     await expectNewToken(response, token);
-  //   });
-  //   test("does not return a rockpaperscissors game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
+  // // --------- ASSERT: Response code 404, returns a token & populated game with appropriate concealment -----------
+  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+  // await expectError(response, errorCode, errorMessage);
+  // });
+  // test("generates a new token", async () => {
+  // await expectNewToken(response, token);
+  // });
+  // test("does not return a rockpaperscissors game object", async () => {
+  // await expectNoGameObject(response);
+  // });
   // });
   // // -------------- GAME OVER ERROR -------------------
   // describe("Game is already over ", () => {
-  //   const row = 0;
-  //   const col = 0;
-  //   const errorCode = 403;
-  //   const errorMessage = "Game already finished.";
+  // const row = 0;
+  // const col = 0;
+  // const errorCode = 403;
+  // const errorMessage = "Game already finished.";
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new RockPaperScissors({
-  //       playerOne: user1._id,
-  //       playerTwo: user2._id,
-  //       finished: true,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     });
-  //     await game.save();
+  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  // beforeEach(async () => {
+  // game = new RockPaperScissors({
+  // playerOne: user1.\_id,
+  // playerTwo: user2.\_id,
+  // finished: true,
+  // // BOARD SETUP
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // });
+  // await game.save();
 
-  //     // get the id of the game
-  //     allGames = await RockPaperScissors.find();
-  //     firstGame = allGames[0];
+  // // get the id of the game
+  // allGames = await RockPaperScissors.find();
+  // firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  //       .set("Authorization", `Bearer ${token}`)
-  //       .send({ row: row, col: col });
-  //   });
+  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  // response = await request(app)
+  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+  // .set("Authorization", `Bearer ${token}`)
+  // .send({ row: row, col: col });
+  // });
 
-  //   // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  //   test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  //     await expectError(response, errorCode, errorMessage);
-  //   });
-  //   test("generates a new token", async () => {
-  //     await expectNewToken(response, token);
-  //   });
-  //   test("does not return a rockpaperscissors game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
-  //   test("the game in the database is unaffected", async () => {
-  //     const checkGame = await RockPaperScissors.findById(firstGame._id)
-  //       .populate("playerOne", "_id username points")
-  //       .populate("playerTwo", "_id username points")
-  //       .populate("winner", "_id username points");
+  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+  // await expectError(response, errorCode, errorMessage);
+  // });
+  // test("generates a new token", async () => {
+  // await expectNewToken(response, token);
+  // });
+  // test("does not return a rockpaperscissors game object", async () => {
+  // await expectNoGameObject(response);
+  // });
+  // test("the game in the database is unaffected", async () => {
+  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
+  // .populate("playerOne", "\_id username points")
+  // .populate("playerTwo", "\_id username points")
+  // .populate("winner", "\_id username points");
 
-  //     // Convert Mongoose document to a plain JavaScript object
-  //     const checkGameObject = checkGame.toObject();
+  // // Convert Mongoose document to a plain JavaScript object
+  // const checkGameObject = checkGame.toObject();
 
-  //     const expectedResponse = {
-  //       playerOne: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "first_user123",
-  //         points: 0,
-  //       },
-  //       playerTwo: {
-  //         // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  //         username: "second_user123",
-  //         points: 0,
-  //       },
-  //       title: gameTitle,
-  //       endpoint: gameEndpoint,
-  //       turn: 0,
-  //       winner: [],
-  //       finished: true,
+  // const expectedResponse = {
+  // playerOne: {
+  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
+  // username: "first_user123",
+  // points: 0,
+  // },
+  // playerTwo: {
+  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
+  // username: "second_user123",
+  // points: 0,
+  // },
+  // title: gameTitle,
+  // endpoint: gameEndpoint,
+  // turn: 0,
+  // winner: [],
+  // finished: true,
 
-  //       // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     };
-  //     expect(checkGameObject).toMatchObject(expectedResponse);
-  //   });
+  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // };
+  // expect(checkGameObject).toMatchObject(expectedResponse);
+  // });
   // });
   // // -------------- OBSERVER ERROR -------------------
   // describe("When you are not in this game ", () => {
-  //   const row = 0;
-  //   const col = 0;
-  //   const errorCode = 403;
-  //   const errorMessage = "Observers cannot launch missiles";
+  // const row = 0;
+  // const col = 0;
+  // const errorCode = 403;
+  // const errorMessage = "Observers cannot launch missiles";
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new RockPaperScissors({
-  //       playerOne: user2._id,
-  //       playerTwo: user3._id,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     });
-  //     await game.save();
+  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  // beforeEach(async () => {
+  // game = new RockPaperScissors({
+  // playerOne: user2.\_id,
+  // playerTwo: user3.\_id,
+  // // BOARD SETUP
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // });
+  // await game.save();
 
-  //     // get the id of the game
-  //     allGames = await RockPaperScissors.find();
-  //     firstGame = allGames[0];
+  // // get the id of the game
+  // allGames = await RockPaperScissors.find();
+  // firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  //       .set("Authorization", `Bearer ${token}`)
-  //       .send({ row: row, col: col });
-  //   });
+  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  // response = await request(app)
+  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+  // .set("Authorization", `Bearer ${token}`)
+  // .send({ row: row, col: col });
+  // });
 
-  //   // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  //   test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  //     await expectError(response, errorCode, errorMessage);
-  //   });
-  //   test("generates a new token", async () => {
-  //     await expectNewToken(response, token);
-  //   });
-  //   test("does not return a rockpaperscissors game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
-  //   test("the game in the database is unaffected", async () => {
-  //     const checkGame = await RockPaperScissors.findById(firstGame._id)
-  //       .populate("playerOne", "_id username points")
-  //       .populate("playerTwo", "_id username points")
-  //       .populate("winner", "_id username points");
+  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+  // await expectError(response, errorCode, errorMessage);
+  // });
+  // test("generates a new token", async () => {
+  // await expectNewToken(response, token);
+  // });
+  // test("does not return a rockpaperscissors game object", async () => {
+  // await expectNoGameObject(response);
+  // });
+  // test("the game in the database is unaffected", async () => {
+  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
+  // .populate("playerOne", "\_id username points")
+  // .populate("playerTwo", "\_id username points")
+  // .populate("winner", "\_id username points");
 
-  //     // Convert Mongoose document to a plain JavaScript object
-  //     const checkGameObject = checkGame.toObject();
+  // // Convert Mongoose document to a plain JavaScript object
+  // const checkGameObject = checkGame.toObject();
 
-  //     const expectedResponse = {
-  //       playerOne: {
-  //         username: "second_user123",
-  //         points: 0,
-  //       },
-  //       playerTwo: {
-  //         username: "third_user123",
-  //         points: 0,
-  //       },
-  //       title: gameTitle,
-  //       endpoint: gameEndpoint,
-  //       turn: 0,
-  //       winner: [],
-  //       finished: false,
+  // const expectedResponse = {
+  // playerOne: {
+  // username: "second_user123",
+  // points: 0,
+  // },
+  // playerTwo: {
+  // username: "third_user123",
+  // points: 0,
+  // },
+  // title: gameTitle,
+  // endpoint: gameEndpoint,
+  // turn: 0,
+  // winner: [],
+  // finished: false,
 
-  //       // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: initialBoard,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     };
-  //     expect(checkGameObject).toMatchObject(expectedResponse);
-  //   });
+  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: initialBoard,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // };
+  // expect(checkGameObject).toMatchObject(expectedResponse);
+  // });
   // });
 
   // // -------------- OPPONENT NOT READY ERROR -------------------
   // describe("When the opponent has not submitted their ships ", () => {
-  //   const row = 0;
-  //   const col = 0;
-  //   const errorCode = 403;
-  //   const errorMessage = "Opponent has not set up their board yet.";
+  // const row = 0;
+  // const col = 0;
+  // const errorCode = 403;
+  // const errorMessage = "Opponent has not set up their board yet.";
 
-  //   // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  //   beforeEach(async () => {
-  //     game = new RockPaperScissors({
-  //       playerOne: user1._id,
-  //       playerTwo: user2._id,
-  //       turn: 0,
-  //       // BOARD SETUP
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: emptyBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     });
-  //     await game.save();
+  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+  // beforeEach(async () => {
+  // game = new RockPaperScissors({
+  // playerOne: user1.\_id,
+  // playerTwo: user2.\_id,
+  // turn: 0,
+  // // BOARD SETUP
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: emptyBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // });
+  // await game.save();
 
-  //     // get the id of the game
-  //     allGames = await RockPaperScissors.find();
-  //     firstGame = allGames[0];
+  // // get the id of the game
+  // allGames = await RockPaperScissors.find();
+  // firstGame = allGames[0];
 
-  //     // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  //     response = await request(app)
-  //       .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  //       .set("Authorization", `Bearer ${token}`)
-  //       .send({ row: row, col: col });
-  //   });
+  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+  // response = await request(app)
+  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+  // .set("Authorization", `Bearer ${token}`)
+  // .send({ row: row, col: col });
+  // });
 
-  //   // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  //   test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  //     await expectError(response, errorCode, errorMessage);
-  //   });
-  //   test("generates a new token", async () => {
-  //     await expectNewToken(response, token);
-  //   });
-  //   test("does not return a rockpaperscissors game object", async () => {
-  //     await expectNoGameObject(response);
-  //   });
-  //   test("the game in the database is unaffected", async () => {
-  //     const checkGame = await RockPaperScissors.findById(firstGame._id)
-  //       .populate("playerOne", "_id username points")
-  //       .populate("playerTwo", "_id username points")
-  //       .populate("winner", "_id username points");
+  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+  // await expectError(response, errorCode, errorMessage);
+  // });
+  // test("generates a new token", async () => {
+  // await expectNewToken(response, token);
+  // });
+  // test("does not return a rockpaperscissors game object", async () => {
+  // await expectNoGameObject(response);
+  // });
+  // test("the game in the database is unaffected", async () => {
+  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
+  // .populate("playerOne", "\_id username points")
+  // .populate("playerTwo", "\_id username points")
+  // .populate("winner", "\_id username points");
 
-  //     // Convert Mongoose document to a plain JavaScript object
-  //     const checkGameObject = checkGame.toObject();
+  // // Convert Mongoose document to a plain JavaScript object
+  // const checkGameObject = checkGame.toObject();
 
-  //     const expectedResponse = {
-  //       playerOne: {
-  //         username: "first_user123",
-  //         points: 0,
-  //       },
-  //       playerTwo: {
-  //         username: "second_user123",
-  //         points: 0,
-  //       },
-  //       title: gameTitle,
-  //       endpoint: gameEndpoint,
-  //       turn: 0,
-  //       winner: [],
-  //       finished: false,
+  // const expectedResponse = {
+  // playerOne: {
+  // username: "first_user123",
+  // points: 0,
+  // },
+  // playerTwo: {
+  // username: "second_user123",
+  // points: 0,
+  // },
+  // title: gameTitle,
+  // endpoint: gameEndpoint,
+  // turn: 0,
+  // winner: [],
+  // finished: false,
 
-  //       // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  //       playerOneBoard: initialBoard,
-  //       playerTwoBoard: emptyBoard,
-  //       playerOneShips: initialShips,
-  //       playerTwoShips: initialShips,
-  //       playerTwoPlacements: initialBoard,
-  //       playerOnePlacements: initialBoard,
-  //     };
-  //     expect(checkGameObject).toMatchObject(expectedResponse);
-  //   });
+  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
+  // playerOneBoard: initialBoard,
+  // playerTwoBoard: emptyBoard,
+  // playerOneShips: initialShips,
+  // playerTwoShips: initialShips,
+  // playerTwoPlacements: initialBoard,
+  // playerOnePlacements: initialBoard,
+  // };
+  // expect(checkGameObject).toMatchObject(expectedResponse);
+  // });
   // });
 });
