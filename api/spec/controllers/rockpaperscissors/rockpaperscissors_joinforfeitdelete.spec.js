@@ -27,7 +27,6 @@ let response;
 const gameEndpoint = "rockpaperscissors";
 const gameTitle = "RockPaperScissors";
 
-
 // ============================= JOIN ========================================= //
 describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
   // ---------------- ARRANGE: DB cleanup, create 3 Users & token ------------- //
@@ -80,11 +79,7 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
     beforeEach(async () => {
       game = new RockPaperScissors({
         playerOne: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
-      }); // playerOne: user2; playerTwo is empty
+      });
       await game.save();
 
       // get the id of the game;
@@ -118,10 +113,14 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
         turn: 0,
         winner: [],
         finished: false,
-        // BATTLESHIPS PROPERTIES
-        playerOneBoard: emptyBoard,
-        playerOneShips: concealedShips,
-        playerOnePlacements: null,
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -140,13 +139,6 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user3._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -196,13 +188,14 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
         winner: [],
         finished: false,
 
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoPlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -218,13 +211,6 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
       game = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user3._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -273,14 +259,14 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
         turn: 0,
         winner: [],
         finished: false,
-
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoPlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -292,10 +278,6 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
     beforeEach(async () => {
       game = new RockPaperScissors({
         playerOne: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -304,7 +286,9 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
       firstGame = allGames[0];
 
       // ------- ACT: user1 joins without a token ------------
-      response = await request(app).put(`/rockpaperscissors/${firstGame._id}/join`);
+      response = await request(app).put(
+        `/rockpaperscissors/${firstGame._id}/join`
+      );
     });
 
     // --------- ASSERTIONS -----------
@@ -337,10 +321,14 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
         winner: [],
         finished: false,
 
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
       expect(checkGameObject.playerTwo).toBeFalsy();
@@ -360,13 +348,6 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -394,8 +375,8 @@ describe(`JOIN - /${gameEndpoint}/:gameID/join `, () => {
   });
 });
 
-// // ============================== FORFEIT ====================================== //
-describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
+// ============================== FORFEIT ====================================== //
+describe(`/${gameEndpoint}/:gameID/forfeit, FORFEIT`, () => {
   // ---------------- ARRANGE: DB cleanup, create 3 Users & token ------------- //
   beforeAll(async () => {
     // create 3 users. user1 is our sessionUser
@@ -449,13 +430,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -495,13 +469,14 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
           },
         ],
         finished: true,
-        // BATTLESHIPS PROPERTIES // NOTE THAT CONCEALMENT IS OFF BC GAME IS OVER.
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(response.body.game).toMatchObject(expectedResponse);
     });
@@ -520,13 +495,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
       game = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user3._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -575,12 +543,13 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
         finished: false,
 
         // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -597,13 +566,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
         playerOne: user1._id,
         playerTwo: user2._id,
         finished: true,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -653,13 +615,14 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
         winner: [],
         finished: true,
 
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -674,10 +637,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
     beforeEach(async () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -722,11 +681,14 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
         winner: [],
         finished: false,
 
-        // === BATTLESHIP PROPERTIES ====== //
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -739,13 +701,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
       });
       await game.save();
 
@@ -789,13 +744,14 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
         winner: [],
         finished: false,
 
-        // === BATTLESHIP PROPERTIES ====== //
-        playerOneBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerOnePlacements: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
+        // === RPS PROPERTIES ====== //
+        maxRounds: 3,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
       };
       expect(checkGameObject).toMatchObject(expectedResponse);
     });
@@ -812,13 +768,6 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -845,8 +794,8 @@ describe("/rockpaperscissors/:gameID/forfeit, FORFEIT", () => {
   });
 });
 
-// // ==================== DELETE ================================
-describe("/rockpaperscissors/:gameID/delete, DELETE", () => {
+// ==================== DELETE ================================
+describe(`/${gameEndpoint}/:gameID/delete, DELETE`, () => {
   // ---------------- ARRANGE: DB cleanup, create 3 Users & token ------------- //
   beforeAll(async () => {
     // create 3 users. user1 is our sessionUser
@@ -936,7 +885,9 @@ describe("/rockpaperscissors/:gameID/delete, DELETE", () => {
       firstGame = allGames[0];
 
       // ------- ACT: user1 deletes the game ----------------
-      response = await request(app).delete(`/rockpaperscissors/${firstGame._id}/`);
+      response = await request(app).delete(
+        `/rockpaperscissors/${firstGame._id}/`
+      );
     });
 
     // ------- ASSERT: response code 401, returns no token, no gamesList, and the game has not been removed --------------
@@ -963,13 +914,6 @@ describe("/rockpaperscissors/:gameID/delete, DELETE", () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1009,13 +953,6 @@ describe("/rockpaperscissors/:gameID/delete, DELETE", () => {
       game = new RockPaperScissors({
         playerOne: user1._id,
         playerTwo: user2._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
@@ -1055,13 +992,6 @@ describe("/rockpaperscissors/:gameID/delete, DELETE", () => {
       game = new RockPaperScissors({
         playerOne: user2._id,
         playerTwo: user1._id,
-        // BOARD SETUP
-        playerOneBoard: initialBoard,
-        playerTwoBoard: initialBoard,
-        playerOneShips: initialShips,
-        playerTwoShips: initialShips,
-        playerTwoPlacements: initialBoard,
-        playerOnePlacements: initialBoard,
       });
       await game.save();
 
