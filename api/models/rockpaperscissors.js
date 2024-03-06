@@ -46,23 +46,30 @@ const RockPaperScissorsSchema = new mongoose.Schema(
 
     // =========== PROPERTIES SPECIFIC TO ROCK PAPER SCISSORS ==================
 
-    currentRound: {
+    turn: {
+      // NOTE: Changed back to turn from currentRound, as turns is used in all game types and used in games controller.
+      // This property is close to a "round" rather than a "turn" as both players go at once.
       type: Number,
-      default: 0, // when second player joins, set currentRound to 1.
+      default: 0,
     },
+
+    // =========== PROPERTIES SPECIFIC TO ROCK PAPER SCISSORS ==================
     maxRounds: {
       type: Number,
-      default: 3, // if rounds.length <= maxRounds, keep playing.
+      default: 3, // if turn+1 <= maxRounds, keep playing.
     },
-    rounds: [
+    finishedRounds: [
       {
         playerOneChoice: { type: String }, // "R", "P", "S"
         playerTwoChoice: { type: String }, // "R", "P", "S"
         outcome: { type: String }, // playerOne, playerTwo or draw
       },
     ],
-    // To determine the winner, at the end of maxRounds (for round in rounds, round.outcome is truthy)
-    // Count the number of playerOne vs playerTwo wins --> find winner or draw.
+    currentRound: {
+      playerOneChoice: { type: String, default: null }, // "R", "P", "S"
+      playerTwoChoice: { type: String, default: null }, // "R", "P", "S"
+      outcome: { type: String, default: null }, // playerOne, playerTwo or draw
+    },
   },
   {
     timestamps: true, // this creates createdAt and updatedAt properties that are auto-updated

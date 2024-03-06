@@ -1,52 +1,48 @@
 const RockPaperScissors = require("../models/rockpaperscissors");
 const TokenGenerator = require("../lib/token_generator");
 const { TokenExpiredError } = require("jsonwebtoken");
+const GamesController = require("./games");
+
 // TODO ADD IN GAME CONTROLLER FOR WIN CONDITIONS
 // TODO Add points for this game if there is a win condition
 // test codespaces
 
 // ============ HELPER FUNCTIONS FOR CONCEALMENT: ===================
-const concealedGameView = (populatedGame, viewerID) => {
+const concealedRockPaperScissorsView = (populatedGame, viewerID) => {
   // All concealment occurs in the backend before the final game data is returned, rather than in the frontend display methods, so that players cannot cheat by inspecting the data.
-  // If the viewer is not the owner of a board or shipyard, they will get a concealed version of each.
+  // If the viewer is not the owner of a player's hand AND the round is not yet submitted, the viewer will not see the player's hand, only that they have submitted a hand.
   // If the game is over (finished === true): no concealment occurs and the function returns the original populatedGame.
 
   // The structure below allows for concealment for both opponents and observers.
-  const concealBoard = (board) => {
-    // Iterate over all spaces and change all spaces with "s" to ""
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
-        if (shipCodes.includes(board[i][j])) {
-          board[i][j] = "";
-        }
-      }
+  const concealHand = (hand) => {
+    const SUBMITTED = "submitted";
+    const NOTSUBMITTED = null;
+
+    if (hand) {
+      return SUBMITTED;
+    } else {
+      return NOTSUBMITTED;
     }
-    return board;
   };
 
   if (populatedGame && !populatedGame.finished) {
     // If viewer is not playerOne: (viewer is playerTwo or observer)
     if (viewerID != populatedGame.playerOne._id) {
       // Needs to be != and not !== due to mongoose having its own data types
-      const concealedBoard = concealBoard(populatedGame.playerOneBoard);
-      populatedGame.playerOneBoard = concealedBoard;
-
-      for (const ship in populatedGame.playerOneShips) {
-        delete populatedGame.playerOneShips[ship].units;
-      }
-      populatedGame.playerOnePlacements = null;
+      const concealedHand = concealHand(
+        populatedGame.currentRound.playerOneChoice
+      );
+      populatedGame.currentRound.playerOneChoice = concealedHand;
     }
+
     // If viewer is not playerTwo: (viewer is playerOne or observer)
     if (viewerID != populatedGame.playerTwo?._id) {
       // this syntax for when there is no player two yet.
       // Needs to be != and not !== due to mongoose having its own data types
-      const concealedBoard = concealBoard(populatedGame.playerTwoBoard);
-      populatedGame.playerTwoBoard = concealedBoard;
-
-      for (const ship in populatedGame.playerTwoShips) {
-        delete populatedGame.playerTwoShips[ship].units;
-      }
-      populatedGame.playerTwoPlacements = null;
+      const concealedHand = concealHand(
+        populatedGame.currentRound.playerTwoChoice
+      );
+      populatedGame.currentRound.playerTwoChoice = concealedHand;
     }
   }
   return populatedGame;
@@ -63,6 +59,7 @@ const RockPaperScissorsController = {
       RockPaperScissors,
       concealedRockPaperScissorsView
     );
+    console.log("Successfully found RPS Games");
   },
 
   // Method to fetch a specific RockPaperScissors game by ID
