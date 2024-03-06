@@ -155,12 +155,21 @@ const RockPaperScissorsController = {
       const roundIndex = game.currentRound - 1;
       const userPlayerStr =
         userID == game.playerOne ? "playerOne" : "playerTwo";
-      const userRoundChoice = game.rounds[roundIndex][userPlayerStr + "Choice"];
+      const userRoundChoice = game.currentRound[userPlayerStr + "Choice"];
 
       if (userRoundChoice) {
         console.log("ERROR: ALREADY MADE CHOICE");
         return res.status(403).json({
           error: "Choice already made.",
+          token: token,
+        });
+      }
+
+      // Users cannot submit if the choice is not "R", "P", or "S"
+      if (choice !== "R" && choice !== "P" && choice !== "S") {
+        console.log("ERROR: INVALID CHOICE");
+        return res.status(403).json({
+          error: "Invalid choice.",
           token: token,
         });
       }
@@ -171,11 +180,11 @@ const RockPaperScissorsController = {
       const opponentPlayerStr =
         userID == game.playerOne ? "playerTwo" : "playerOne";
       const opponentRoundChoice =
-        game.rounds[roundIndex][opponentPlayerStr + "Choice"];
+        game.currentRound[opponentPlayerStr + "Choice"];
 
       if (opponentRoundChoice) {
         // Update the working game with the sessionUsers's choice:
-        game.rounds[roundIndex][userPlayerStr + "Choice"] = choice;
+        game.currentRound[userPlayerStr + "Choice"] = choice;
 
         // Check for round win
         const findRoundWinner = (game) => {
@@ -199,7 +208,7 @@ const RockPaperScissorsController = {
         };
 
         roundOutcome = findRoundWinner(game);
-        game.rounds.roundIndex.outcome = roundOutcome;
+        game.currentRound.outcome = roundOutcome;
 
         // If currentRound === maxRounds, find the winner;
         if (game.currentRound === game.maxRounds) {
