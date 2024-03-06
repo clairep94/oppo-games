@@ -349,10 +349,10 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
                     <div className="flex flex-col bg-gray-600/40 rounded-[1rem] h-full overflow-y-auto px-4 py-2 border-2 space-y-1 border-white/20">
                         {/* MESSAGES */}
                         <div className="flex flex-col h-full overflow-auto px-1 ">
-                            {messages.length === 0 ? (
+                            {messages?.length === 0 ? (
                                     <p className="text-white/80">Write a message...</p>
                                 ) : (
-                                    messages.map(message => (
+                                    messages?.map(message => (
                                         <p key={message._id} className={'' + (message.author._id === sessionUserID ? 'text-yellow-400/80' : '')}>
                                             <span className="font-bold">{message.author.username}:</span> {' '}{message.body}
                                         </p>
