@@ -271,8 +271,8 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
       return(
         // BACKGROUND
         <div
-            className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
-            style={{ backgroundImage: 'url(/backgrounds/Welcome2.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
+          className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
+          style={{ backgroundImage: 'url(/backgrounds/Welcome2.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
 
           {/* PAGE CONTAINER */}
           <div className='flex flex-col w-full h-full justify-between'>
@@ -296,11 +296,11 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
               {/* OUR GAMES - GAME CARDS WHERE YOU CAN SELECT TO CREATE A GAME OR VIEW OPEN GAMES OR VIEW CURRENT GAMES*/}
               <div className='flex flex-row bg-gray-600/40 rounded-[1rem] h-[60%] overflow-x-scroll pt-3 pl-2 pr-2 pb-6 border-2 space-x-3 border-white/20'>
 
-                  {/* ALL GAMES CARD */}
-                  <AllGamesCard showGames={showGames}/>
+                {/* ALL GAMES CARD */}
+                <AllGamesCard showGames={showGames}/>
 
                   {gamesMenu.map((game, index) => (
-                      <GameTypeCard game={game} index={index} showGames={showGames} createGame={createGame}/>
+                    <GameTypeCard game={game} index={index} showGames={showGames} createGame={createGame}/>
                   ))}
 
               </div>
@@ -316,10 +316,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
                   <SingleGameCard game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
                 )))}
               </div>
-          </div>
-
-
-
+            </div>
           </div>
         </div>
       )
