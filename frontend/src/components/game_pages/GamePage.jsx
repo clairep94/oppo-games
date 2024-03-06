@@ -1,46 +1,32 @@
 import React, {useState, useRef, useEffect} from "react";
 import {useParams} from "react-router-dom";
-import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
+// import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
 import io from "socket.io-client";
 
-export default function GamePage({sessionUser, navigate, gameTitle}) {
+export default function GamePage({sessionUser, navigate, gameTitle, token, setToken, sessionUserID}) {
 
-    const game = {
-        title: gameTitle,
-        endpoint: "tictactoe",
-        id: "659ce476f549713d72573bab",
-        background: "TTT.jpg",
-        mapName: "Icy Alpine"
-    }
-
-    const gameBackgrounds = {
-        "Tic-Tac-Toe" : "TTT.jpg",
-        "Rock Paper Scissors" : "",
-        "Battleships" : ""
-    }
-
-    const getGamePresentation = (game) => {
+    const getGamePresentation = (gameTitle) => {
         let gameDict
-        if (game.title === "Tic-Tac-Toe") {
+        if (gameTitle === "Tic-Tac-Toe") {
             gameDict = {
-                title: game.title,
-                opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
+                title: gameTitle,
+                // opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
                 background: 'TTT.jpg',
                 mapName: 'Icy Alpine',
                 // component: <TicTacToe game={game}/>            
             }
-        } else if (game.title === "Battleships") {
+        } else if (gameTitle === "Battleships") {
             gameDict = {
-                title: game.title,
-                opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
+                title: gameTitle,
+                // opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
                 background: 'BS2.jpg',
                 mapName: 'River Map',
                 // component: <Battleships game={game}/>            
             }
         } else {
             gameDict = {
-                title: game.title,
-                opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
+                title: gameTitle,
+                // opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
                 background: 'RPS.jpg',
                 mapName: 'River Map',
                 // component: <Battleships game={game}/>            
@@ -49,7 +35,7 @@ export default function GamePage({sessionUser, navigate, gameTitle}) {
         return gameDict
     }
 
-
+    const gameDict = getGamePresentation(gameTitle)
 
     // =========== TAILWIND ==============
     const frostedGlass = ` bg-gradient-to-r from-gray-300/30 via-purple-100/20 to-purple-900/20 backdrop-blur-sm
@@ -63,7 +49,7 @@ export default function GamePage({sessionUser, navigate, gameTitle}) {
     // BACKGROUND
     <div
         className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
-        style={{ backgroundImage: `url(/backgrounds/${game.background})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
+        style={{ backgroundImage: `url(/backgrounds/${gameDict.background})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
         {/* PAGE CONTAINER */}
         <div className='flex flex-col w-full h-full justify-between space-y-5'>
             {/* HEADER */}
@@ -71,7 +57,7 @@ export default function GamePage({sessionUser, navigate, gameTitle}) {
                 {/* HEADER GREETING */}
                 <div className='flex flex-col space-y-5'>
                     <h3 className='text-5xl text-white font-extrabold'>
-                        {game.mapName}: {game.title} vs. YOUR OPPONENT
+                        {gameDict.mapName}: {gameDict.title} vs. YOUR OPPONENT
                     </h3>
                 </div>
             </div>
@@ -107,5 +93,4 @@ export default function GamePage({sessionUser, navigate, gameTitle}) {
 
     )
 }
-
 
