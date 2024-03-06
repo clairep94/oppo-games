@@ -34,44 +34,47 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
     }
   ] 
 
-  // ============= GETTING ALL GAMES ================= //
+  // ============= GETTING ALL GAMES & SORTING BY ANTI-CHRONOLOGICAL ================= //
+  const fetchAllGames = async () => {
+    // Function to fetch all games in the gamesMenu
+    // Iterate through gamesMenu and add the resulting games data to allGames
+    // allGames is stored in the order of the GET requests, then in chronological order
+    // displayGames is stored by default in a mixed, antichronological order
 
-  useEffect(() => {
+    try {
+      const fetchedResults = [];
+      for (const game of gamesMenu) {
 
-    const fetchAllGames = async () => {
-      // Function to fetch all games in the gamesMenu
-      // Iterate through gamesMenu and add the resulting games data to allGames
-      // allGames is stored in the order of the GET requests, then in chronological order
-      // displayGames is stored by default in a mixed, antichronological order
+        // PERFORM GET REQUEST FOR EACH GAME TYPE
+        const response = await fetch(`/${game.endpoint}`, {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
 
-      try {
-        const fetchedResults = [];
-        for (const game of gamesMenu) {
-
-          // PERFORM GET REQUEST FOR EACH GAME TYPE
-          const response = await fetch(`/${game.endpoint}`, {
-            headers: {'Authorization': `Bearer ${token}`}
-          });
-
-          // HANDLE ERROR IF ERROR
-          if (!response.ok) {
-            const errorMessage = await response.text(); // Get the error message from the response body
-            throw new Error(`Failed to fetch data from ${game.endpoint}: ${response.statusText}. Error message: ${errorMessage}`);
-          }
-          const data = await response.json();
-          fetchedResults.push(...data.games)
-          window.localStorage.setItem("token", data.token)
-          setToken(window.localStorage.getItem("token"))
+        // HANDLE ERROR IF ERROR
+        if (!response.ok) {
+          const errorMessage = await response.text(); // Get the error message from the response body
+          throw new Error(`Failed to fetch data from ${game.endpoint}: ${response.statusText}. Error message: ${errorMessage}`);
         }
-
-        setAllGames(fetchedResults);
-        setDisplayGames(fetchedResults);
-
-      } catch (error) {
-        console.error(`Error fetching results:`, error);
+        const data = await response.json();
+        fetchedResults.push(...data.games)
+        window.localStorage.setItem("token", data.token)
+        setToken(window.localStorage.getItem("token"))
       }
-    };
 
+      setAllGames(fetchedResults);
+      setDisplayGames(sortByRecent(fetchedResults));
+    } catch (error) {
+      console.error(`Error fetching results:`, error);
+    }
+  };
+
+  const sortByRecent = (games) => {
+    return [...games].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  };
+
+
+  // ============= USE EFFECT HOOK TO GETTING ALL GAMES ================= //
+  useEffect(() => {
     if(token){
       fetchAllGames();
     } else {
@@ -217,32 +220,32 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
 
     switch (view) {
       case "All":
-        setDisplayGames(allGames);
+        setDisplayGames(sortByRecent(allGames));
         break;
 
       case "Open":
         const openGames = allGames.filter(game => !game.playerTwo);
-        setDisplayGames(openGames);
+        setDisplayGames(sortByRecent(openGames));
         break;
 
-      case "Your":
-        const yourGames = allGames.filter(game => game.playerOne._id === sessionUserID || game.playerTwo._id === sessionUserID);
-        setDisplayGames(yourGames);
+      case "Your": // INDEX 
+        const yourGames = allGames.filter(game => game.playerOne._id === sessionUserID || game.playerTwo?._id === sessionUserID);
+        setDisplayGames(sortByRecent(yourGames));
         break;
 
       case "Tic-Tac-Toe":
         const tttGames = allGames.filter(game => game.endpoint === 'tictactoe');
-        setDisplayGames(tttGames);
+        setDisplayGames(sortByRecent(tttGames));
         break;
 
       case "Rock-Paper-Scissors":
         const rpsGames = allGames.filter(game => game.endpoint === 'rockpaperscissors');
-        setDisplayGames(rpsGames);
+        setDisplayGames(sortByRecent(rpsGames));
         break;
 
       case "Battleships":
         const bsGames = allGames.filter(game => game.endpoint === 'battleships');
-        setDisplayGames(bsGames);
+        setDisplayGames(sortByRecent(bsGames));
         break;
 
       default:
