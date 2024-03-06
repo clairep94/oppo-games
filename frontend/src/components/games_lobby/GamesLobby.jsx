@@ -92,16 +92,18 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
-            });
-        
-            if (response.status === 201) {
-            const data = await response.json();
-            const gameID = data.game._id;
+          });
+      
+        if (response.status === 201) {
+          const data = await response.json();
+          const gameID = data.game._id;
 
-            navigate(`/${game.endpoint}/${gameID}`);
-            } else {
-            console.log("error creating game")
-            }
+          navigate(`/${game.endpoint}/${gameID}`);
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+        } else {
+          console.log("Error creating game:", response.error)
+        }
       } catch (error) {
         console.error(`Error creating new ${game.title} game:`, error);
       }
@@ -112,8 +114,6 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   // join a game and re-direct to the unique game's page
   const joinGame = async (game) => {
     console.log(`Join ${game.title}`)
-    console.log(game._id)
-    console.log(game.endpoint)
     if(token){
       try {
         const response = await fetch (`/${game.endpoint}/${game._id}/join`, {
@@ -129,8 +129,11 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
           const gameID = data.game._id;
 
           navigate(`/${game.endpoint}/${gameID}`);
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
         } else {
-          console.log("Error joining game")
+          console.log("Error joining game:", response.error)
         }
       } catch (error) {
         console.error(`Error joining ${game.title} game:`, error);
@@ -156,14 +159,18 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
           const data = await response.json();
           const gameID = data.game._id;
 
-          setAllGames(allGames.map(game => game._id === gameID ? game : data.game)) // update All Games with the new forfeit
-          setDisplayGames(displayGames.map(game => game._id === gameID ? game : data.game)) // update Display Games with the new forfeit
+          setAllGames(allGames.map(game => game._id === gameID ? data.game : game)) // update All Games with the new forfeit
+          setDisplayGames(displayGames.map(game => game._id === gameID ? data.game : game)) // update Display Games with the new forfeit
+
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
 
         } else {
-          console.log("Error joining game")
+          console.log("Error forfeiting game:", response.error)
         }
       } catch (error) {
-        console.error(`Error joining ${game.title} game:`, error);
+        console.error(`Error forfeiting ${game.title} game:`, error);
       }
     }
   }
@@ -185,12 +192,17 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
         });
 
         if (response.status === 200) {
+          const data = await response.json();
 
-          setAllGames(allGames.filter(game => game._id !== IDToDelete)) // update All Games with the new forfeit
-          setDisplayGames(displayGames.filter(game => game._id !== IDToDelete)) // update Display Games with the new forfeit
+          setAllGames(allGames.filter(game => game._id !== IDToDelete)) // update All Games with the new delete
+          setDisplayGames(displayGames.filter(game => game._id !== IDToDelete)) // update Display Games with the new delete
+
+          window.localStorage.setItem("token", data.token)
+          setToken(window.localStorage.getItem("token"))
+
 
         } else {
-          console.log("Error deleting game")
+          console.log("Error deleting game:", response.error)
         }
       } catch (error) {
         console.error(`Error deleting ${game.title} game:`, error);

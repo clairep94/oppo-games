@@ -7,10 +7,9 @@ import LoginPopup from "../auth/LoginPopup";
 import { findUser } from "../../api_calls/usersAPI";
 
 import NavBar from "../navbar/NavBar";
-import GamesLobby from "../games_lobby/GamesLobby2";
+import GamesLobby from "../games_lobby/GamesLobby";
 import TicTacToe from "../../games/tictactoe/TicTacToe_Lowpoly";
 import ProfilePage from "../profile_page/ProfilePage";
-import MessagePage from "../messages/MessagePage";
 // import GamePage from '../game-page/GamePage';
 import GamePage from "../game_pages/GamePage";
 import TTTGamePage from "../game_pages/TTTGamePage";
