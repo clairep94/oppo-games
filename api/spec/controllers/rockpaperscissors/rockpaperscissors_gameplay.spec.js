@@ -617,362 +617,444 @@ describe(`SUBMIT_CHOICE - /${gameEndpoint}/:gameID/${putEndpoint}`, () => {
   });
 
   // ============== ERRORS =========================
-  // // -------------- LAUNCH MISSILE NO TOKEN -------------------
-  // describe("When no token is present ", () => {
-  // const row = 0;
-  // const col = 0;
 
-  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  // beforeEach(async () => {
-  // game = new RockPaperScissors({
-  // playerOne: user1.\_id,
-  // playerTwo: user2.\_id,
-  // // BOARD SETUP
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // });
-  // await game.save();
+  // -------------- SUBMIT CHOICE, NO TOKEN -------------------
+  describe("When no token is present ", () => {
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      });
+      await game.save();
 
-  // // get the id of the game
-  // allGames = await RockPaperScissors.find();
-  // firstGame = allGames[0];
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
 
-  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  // response = await request(app)
-  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  // .send({ row: row, col: col });
-  // });
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .send({ choice: "S" });
+    });
 
-  // // --------- ASSERT: Response code 401, returns a token & populated game with appropriate concealment -----------
-  // test("responds with a 401 & auth error message", async () => {
-  // await expectResponseCode(response, 401);
-  // });
-  // test("does not return a rockpaperscissors game object", async () => {
-  // await expectNoGameObject(response);
-  // });
-  // test("the game in the database is unaffected", async () => {
-  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
-  // .populate("playerOne", "\_id username points")
-  // .populate("playerTwo", "\_id username points")
-  // .populate("winner", "\_id username points");
+    // --------- ASSERT: Response code 401, returns a token & populated game with appropriate concealment -----------
+    test("responds with a 401 & auth error message", async () => {
+      await expectResponseCode(response, 401);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
 
-  // // Convert Mongoose document to a plain JavaScript object
-  // const checkGameObject = checkGame.toObject();
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
 
-  // const expectedResponse = {
-  // playerOne: {
-  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  // username: "first_user123",
-  // points: 0,
-  // },
-  // playerTwo: {
-  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  // username: "second_user123",
-  // points: 0,
-  // },
-  // title: gameTitle,
-  // endpoint: gameEndpoint,
-  // turn: 0,
-  // winner: [],
-  // finished: false,
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 
-  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // };
-  // expect(checkGameObject).toMatchObject(expectedResponse);
-  // });
-  // });
-  // // -------------- GAME NOT FOUND -------------------
-  // describe("Game not found ", () => {
-  // const row = 0;
-  // const col = 0;
-  // const fakeGameID = "65a5303a0aaf4a563f531d92";
-  // const errorMessage = "Game not found";
-  // const errorCode = 404;
+  // -------------- GAME NOT FOUND -------------------
+  describe("Game not found ", () => {
+    const fakeGameID = "65a5303a0aaf4a563f531d92";
+    const errorMessage = "Game not found";
+    const errorCode = 404;
 
-  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  // beforeEach(async () => {
-  // game = new RockPaperScissors({
-  // playerOne: user1.\_id,
-  // playerTwo: user2.\_id,
-  // // BOARD SETUP
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // });
-  // await game.save();
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      });
+      await game.save();
 
-  // // get the id of the game
-  // allGames = await RockPaperScissors.find();
-  // firstGame = allGames[0];
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
 
-  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  // response = await request(app)
-  // .put(`/${gameEndpoint}/${fakeGameID}/${putEndpoint}`)
-  // .set("Authorization", `Bearer ${token}`)
-  // .send({ row: row, col: col });
-  // });
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${fakeGameID}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "R" });
+    });
 
-  // // --------- ASSERT: Response code 404, returns a token & populated game with appropriate concealment -----------
-  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  // await expectError(response, errorCode, errorMessage);
-  // });
-  // test("generates a new token", async () => {
-  // await expectNewToken(response, token);
-  // });
-  // test("does not return a rockpaperscissors game object", async () => {
-  // await expectNoGameObject(response);
-  // });
-  // });
-  // // -------------- GAME OVER ERROR -------------------
-  // describe("Game is already over ", () => {
-  // const row = 0;
-  // const col = 0;
-  // const errorCode = 403;
-  // const errorMessage = "Game already finished.";
+    // --------- ASSERT: Response code 404, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
 
-  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  // beforeEach(async () => {
-  // game = new RockPaperScissors({
-  // playerOne: user1.\_id,
-  // playerTwo: user2.\_id,
-  // finished: true,
-  // // BOARD SETUP
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // });
-  // await game.save();
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
 
-  // // get the id of the game
-  // allGames = await RockPaperScissors.find();
-  // firstGame = allGames[0];
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 
-  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  // response = await request(app)
-  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  // .set("Authorization", `Bearer ${token}`)
-  // .send({ row: row, col: col });
-  // });
+  // -------------- GAME OVER ERROR -------------------
+  describe("Game is already over ", () => {
+    const errorCode = 403;
+    const errorMessage = "Game already finished.";
 
-  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  // await expectError(response, errorCode, errorMessage);
-  // });
-  // test("generates a new token", async () => {
-  // await expectNewToken(response, token);
-  // });
-  // test("does not return a rockpaperscissors game object", async () => {
-  // await expectNoGameObject(response);
-  // });
-  // test("the game in the database is unaffected", async () => {
-  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
-  // .populate("playerOne", "\_id username points")
-  // .populate("playerTwo", "\_id username points")
-  // .populate("winner", "\_id username points");
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        finished: true,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      });
+      await game.save();
 
-  // // Convert Mongoose document to a plain JavaScript object
-  // const checkGameObject = checkGame.toObject();
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
 
-  // const expectedResponse = {
-  // playerOne: {
-  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  // username: "first_user123",
-  // points: 0,
-  // },
-  // playerTwo: {
-  // // \_id: expect.any(String), // commented this out as it doesn't work with this checking technique
-  // username: "second_user123",
-  // points: 0,
-  // },
-  // title: gameTitle,
-  // endpoint: gameEndpoint,
-  // turn: 0,
-  // winner: [],
-  // finished: true,
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "R" });
+    });
 
-  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // };
-  // expect(checkGameObject).toMatchObject(expectedResponse);
-  // });
-  // });
-  // // -------------- OBSERVER ERROR -------------------
-  // describe("When you are not in this game ", () => {
-  // const row = 0;
-  // const col = 0;
-  // const errorCode = 403;
-  // const errorMessage = "Observers cannot launch missiles";
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
 
-  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  // beforeEach(async () => {
-  // game = new RockPaperScissors({
-  // playerOne: user2.\_id,
-  // playerTwo: user3.\_id,
-  // // BOARD SETUP
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // });
-  // await game.save();
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
 
-  // // get the id of the game
-  // allGames = await RockPaperScissors.find();
-  // firstGame = allGames[0];
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: true,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 
-  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  // response = await request(app)
-  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  // .set("Authorization", `Bearer ${token}`)
-  // .send({ row: row, col: col });
-  // });
+  // -------------- OBSERVER ERROR -------------------
+  describe("When you are not in this game ", () => {
+    const errorCode = 403;
+    const errorMessage = "Observers cannot play";
 
-  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  // await expectError(response, errorCode, errorMessage);
-  // });
-  // test("generates a new token", async () => {
-  // await expectNewToken(response, token);
-  // });
-  // test("does not return a rockpaperscissors game object", async () => {
-  // await expectNoGameObject(response);
-  // });
-  // test("the game in the database is unaffected", async () => {
-  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
-  // .populate("playerOne", "\_id username points")
-  // .populate("playerTwo", "\_id username points")
-  // .populate("winner", "\_id username points");
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user2._id,
+        playerTwo: user3._id,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+      });
+      await game.save();
 
-  // // Convert Mongoose document to a plain JavaScript object
-  // const checkGameObject = checkGame.toObject();
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
 
-  // const expectedResponse = {
-  // playerOne: {
-  // username: "second_user123",
-  // points: 0,
-  // },
-  // playerTwo: {
-  // username: "third_user123",
-  // points: 0,
-  // },
-  // title: gameTitle,
-  // endpoint: gameEndpoint,
-  // turn: 0,
-  // winner: [],
-  // finished: false,
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "S" });
+    });
 
-  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: initialBoard,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // };
-  // expect(checkGameObject).toMatchObject(expectedResponse);
-  // });
-  // });
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
 
-  // // -------------- OPPONENT NOT READY ERROR -------------------
-  // describe("When the opponent has not submitted their ships ", () => {
-  // const row = 0;
-  // const col = 0;
-  // const errorCode = 403;
-  // const errorMessage = "Opponent has not set up their board yet.";
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
 
-  // // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
-  // beforeEach(async () => {
-  // game = new RockPaperScissors({
-  // playerOne: user1.\_id,
-  // playerTwo: user2.\_id,
-  // turn: 0,
-  // // BOARD SETUP
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: emptyBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // });
-  // await game.save();
+      const expectedResponse = {
+        playerOne: {
+          username: "second_user123",
+          points: 0,
+        },
+        playerTwo: {
+          username: "third_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
 
-  // // get the id of the game
-  // allGames = await RockPaperScissors.find();
-  // firstGame = allGames[0];
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: "S",
+          outcome: null,
+        },
+        finishedRounds: [],
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 
-  // // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
-  // response = await request(app)
-  // .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
-  // .set("Authorization", `Bearer ${token}`)
-  // .send({ row: row, col: col });
-  // });
+  // -------------- NO PLAYER TWO ERROR -------------------
+  describe("When player two has not joined", () => {
+    const errorCode = 403;
+    const errorMessage = "Cannot play till player two joins.";
 
-  // // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
-  // test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
-  // await expectError(response, errorCode, errorMessage);
-  // });
-  // test("generates a new token", async () => {
-  // await expectNewToken(response, token);
-  // });
-  // test("does not return a rockpaperscissors game object", async () => {
-  // await expectNoGameObject(response);
-  // });
-  // test("the game in the database is unaffected", async () => {
-  // const checkGame = await RockPaperScissors.findById(firstGame.\_id)
-  // .populate("playerOne", "\_id username points")
-  // .populate("playerTwo", "\_id username points")
-  // .populate("winner", "\_id username points");
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        turn: 0,
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      });
+      await game.save();
 
-  // // Convert Mongoose document to a plain JavaScript object
-  // const checkGameObject = checkGame.toObject();
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
 
-  // const expectedResponse = {
-  // playerOne: {
-  // username: "first_user123",
-  // points: 0,
-  // },
-  // playerTwo: {
-  // username: "second_user123",
-  // points: 0,
-  // },
-  // title: gameTitle,
-  // endpoint: gameEndpoint,
-  // turn: 0,
-  // winner: [],
-  // finished: false,
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "R" });
+    });
 
-  // // === ROCKPAPERSCISSORS PROPERTIES ====== //
-  // playerOneBoard: initialBoard,
-  // playerTwoBoard: emptyBoard,
-  // playerOneShips: initialShips,
-  // playerTwoShips: initialShips,
-  // playerTwoPlacements: initialBoard,
-  // playerOnePlacements: initialBoard,
-  // };
-  // expect(checkGameObject).toMatchObject(expectedResponse);
-  // });
-  // });
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          username: "first_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+
+        // === ROCKPAPERSCISSORS PROPERTIES ====== //
+        currentRound: {
+          playerOneChoice: null,
+          playerTwoChoice: null,
+          outcome: null,
+        },
+        finishedRounds: [],
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
+
+  // -------------- ALREADY SUBMITTED CHOICE ERROR -------------------
+  describe("When player has already submitted a choice", () => {
+    const errorCode = 403;
+    const errorMessage = "Choice already made.";
+
+    // ------- ARRANGE: create a game where sessionUser is playerOne and there is a playerTwo and we have a token,
+    beforeEach(async () => {
+      game = new RockPaperScissors({
+        playerOne: user1._id,
+        playerTwo: user2._id,
+        currentRound: {
+          playerOneChoice: "S",
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      });
+      await game.save();
+
+      // get the id of the game
+      allGames = await RockPaperScissors.find();
+      firstGame = allGames[0];
+
+      // ------ ACT: user1 (playerOne) makes the put request to launch missile with a token ---------
+      response = await request(app)
+        .put(`/${gameEndpoint}/${firstGame._id}/${putEndpoint}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ choice: "R" });
+    });
+
+    // --------- ASSERT: Response code 403, returns a token & populated game with appropriate concealment -----------
+    test(`responds with a ${errorCode} & error message: ${errorMessage}`, async () => {
+      await expectError(response, errorCode, errorMessage);
+    });
+    test("generates a new token", async () => {
+      await expectNewToken(response, token);
+    });
+    test("does not return a rockpaperscissors game object", async () => {
+      await expectNoGameObject(response);
+    });
+    test("the game in the database is unaffected", async () => {
+      const checkGame = await RockPaperScissors.findById(firstGame._id)
+        .populate("playerOne", "_id username points")
+        .populate("playerTwo", "_id username points")
+        .populate("winner", "_id username points");
+
+      // Convert Mongoose document to a plain JavaScript object
+      const checkGameObject = checkGame.toObject();
+
+      const expectedResponse = {
+        playerOne: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "first_user123",
+          points: 0,
+        },
+        playerTwo: {
+          // _id: expect.any(String), // commented this out as it doesn't work with this checking technique
+          username: "second_user123",
+          points: 0,
+        },
+        title: gameTitle,
+        endpoint: gameEndpoint,
+        turn: 0,
+        winner: [],
+        finished: false,
+        finishedRounds: [],
+        currentRound: {
+          playerOneChoice: "S",
+          playerTwoChoice: null,
+          outcome: null,
+        },
+      };
+      expect(checkGameObject).toMatchObject(expectedResponse);
+    });
+  });
 });
