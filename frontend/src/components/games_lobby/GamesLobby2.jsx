@@ -10,7 +10,6 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   const [displayGames, setDisplayGames] = useState([]);
   const [viewTitle, setViewTitle] = useState("All"); // ---> Controls view of the games list: "All", "Open", "Your", "TTT", "RPS", "BS"
 
-
   const gamesMenu = [ // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
     {
       title:'Tic-Tac-Toe', 
@@ -36,45 +35,49 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   ] 
 
   // ============= GETTING ALL GAMES ================= //
+
   useEffect(() => {
-  //   let allGames = []
 
-  //   const fetchAllGames = async (token, game) => {
-  //     try {
-  //         const response = await fetch(`${game.endpoint}`, {
-  //             headers: {
-  //             Authorization: `Bearer ${token}`,
-  //         },
-  //         });
-  //         const gameData = await response.json();
-  //         console.log(gameData)
-  //         return gameData;
-  //     } catch (error) {
-  //         console.error("TictactoeAPI.allUsers:", error);
-  //         throw error;
-  //     }
-  // }
+    const fetchAllGames = async () => {
+      // Function to fetch all games in the gamesMenu
+      // Iterate through gamesMenu and add the resulting games data to allGames
+      // allGames is stored in the order of the GET requests, then in chronological order
+      // displayGames is stored by default in a mixed, antichronological order
 
-    if(token) {
-      // gamesMenu.map((game) => {
-      //   const games = fetchAllGames(token)
-      //   allGames = allGames.concat(games);
-        
-      // })
-      fetch("/tictactoe", {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-        .then(response => response.json())
-        .then(async data => {
+      try {
+        const fetchedResults = [];
+        for (const game of gamesMenu) {
+
+          // PERFORM GET REQUEST FOR EACH GAME TYPE
+          const response = await fetch(`/${game.endpoint}`, {
+            headers: {'Authorization': `Bearer ${token}`}
+          });
+
+          // HANDLE ERROR IF ERROR
+          if (!response.ok) {
+            const errorMessage = await response.text(); // Get the error message from the response body
+            throw new Error(`Failed to fetch data from ${game.endpoint}: ${response.statusText}. Error message: ${errorMessage}`);
+          }
+          const data = await response.json();
+          fetchedResults.push(...data.games)
           window.localStorage.setItem("token", data.token)
           setToken(window.localStorage.getItem("token"))
-          setAllGames(data.games);
-          setDisplayGames(data.games);
-        })
-    
-  }}, [])
+        }
+
+        setAllGames(fetchedResults);
+        setDisplayGames(fetchedResults);
+
+      } catch (error) {
+        console.error(`Error fetching results:`, error);
+      }
+    };
+
+    if(token){
+      fetchAllGames();
+    } else {
+      console.log("No token!")
+    }
+  }, [])
 
 
   // =========== CREATING A GAME =================== //
@@ -88,16 +91,14 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            } // @Perran, I don't use body with my create method, please amend conditionally accordingly
+            }
             });
         
             if (response.status === 201) {
             const data = await response.json();
             const gameID = data.game._id;
-            setAllGames([...allGames, data.game])
 
             navigate(`/${game.endpoint}/${gameID}`);
-
             } else {
             console.log("error creating game")
             }
@@ -171,14 +172,33 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   // ============ DELETE GAME ============= //
   // Delete a game and stay on the same page with the updated data
   const deleteGame = async (game) => {
-    // TODO have not written this yet for any games --> Just update page view for demo
-    setAllGames(allGames.filter(el => el._id !== game._id)) // update All Games with the new forfeit
-    setDisplayGames(displayGames.filter(el => el._id !== game._id)) // update Display Games with the new forfeit
+    console.log(`Delete ${game.title}`)
+    if(token){
+      try {
+        const IDToDelete = game._id // store the ID to delete for render update after response.ok
+        const response = await fetch (`/${game.endpoint}/${game._id}`, {
+          method: 'delete',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.status === 200) {
+
+          setAllGames(allGames.filter(game => game._id !== IDToDelete)) // update All Games with the new forfeit
+          setDisplayGames(displayGames.filter(game => game._id !== IDToDelete)) // update Display Games with the new forfeit
+
+        } else {
+          console.log("Error deleting game")
+        }
+      } catch (error) {
+        console.error(`Error deleting ${game.title} game:`, error);
+      }
+    }
   }
 
-
   // ======= GAME LIST VIEW ==============    
-
   const showGames = (view) => { // Function that filters using the corresponding view
     setViewTitle(view)
     // fetch Games
@@ -204,7 +224,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
         break;
 
       case "Rock-Paper-Scissors":
-        const rpsGames = allGames.filter(game => game.endpoint === 'rps');
+        const rpsGames = allGames.filter(game => game.endpoint === 'rockpaperscissors');
         setDisplayGames(rpsGames);
         break;
 
@@ -217,7 +237,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
         console.log("Invalid view");
         // Code for handling an invalid view
     }
-};
+  };
 
 
 
