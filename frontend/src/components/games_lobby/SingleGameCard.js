@@ -62,7 +62,7 @@ const SingleGameCard = (props) => {
   if (game && game.playerOne) {
     return (
       <div className="bg-gray-700/30 rounded-lg w-full px-10 py-5 flex flex-row justify-between items-center">
-        <a href={`/tictactoe/${game._id}`}>
+        <a href={`/${game.endpoint}/${game._id}`}>
           <span className="font-bold text-lg">{game.title} </span>#
           {game._id.substring(18)}:
           {game.playerTwo
