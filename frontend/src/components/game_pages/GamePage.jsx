@@ -28,7 +28,7 @@ export default function GamePage({sessionUser, navigate, gameTitle, token, setTo
                 title: gameTitle,
                 // opponentUsername: ((game.playerTwo._id === sessionUser._id ? game.playerOne.username : game.playerTwo.username)),
                 background: 'RPS.jpg',
-                mapName: 'River Map',
+                mapName: 'Mellow Meadow',
                 // component: <Battleships game={game}/>            
             }
         }
@@ -57,7 +57,8 @@ export default function GamePage({sessionUser, navigate, gameTitle, token, setTo
                 {/* HEADER GREETING */}
                 <div className='flex flex-col space-y-5'>
                     <h3 className='text-5xl text-white font-extrabold'>
-                        {gameDict.mapName}: {gameDict.title} 
+                        {/* {gameDict.mapName}: {gameDict.title}  */}
+                        {gameDict.title}
                     </h3>
                 </div>
             </div>
