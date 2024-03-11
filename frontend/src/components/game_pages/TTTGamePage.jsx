@@ -91,7 +91,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
 
 
     useState(() => {
-        fetchMessages(gameID)
+        fetchMessages(gameID, token)
         .then(messagesData => {
             setMessages(messagesData.allMessages);
         })
@@ -260,7 +260,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
 
     // Send the message to the database:
     if (newMessage.trim()) { // check that there is a conversationPartner and that newMessage is not all whitespaces
-        addMessage(messageToSend)
+        addMessage(messageToSend, token)
             .then(sentMessageData => {
                 const sentMessage = sentMessageData.newMessage
                 // add newMessage to the messages array:

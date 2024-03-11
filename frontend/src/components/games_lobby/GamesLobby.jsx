@@ -9,7 +9,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   const [allGames, setAllGames] = useState([]); // ---> USE FILTERING METHOD
   const [displayGames, setDisplayGames] = useState([]);
   const [viewTitle, setViewTitle] = useState("All"); // ---> Controls view of the games list: "All", "Open", "Your", "TTT", "RPS", "BS"
-
+  // fix "YOUR "view
   const gamesMenu = [ // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
     {
       title:'Tic-Tac-Toe', 
@@ -82,7 +82,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
     }
   }, [])
 
-
+  // TODO Create game object, all functions below as methods
   // =========== CREATING A GAME =================== //
   // add new game to allGames
   const createGame = async (game) => {
@@ -168,7 +168,6 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
           window.localStorage.setItem("token", data.token)
           setToken(window.localStorage.getItem("token"))
 
-
         } else {
           console.log("Error forfeiting game:", response.error)
         }
@@ -229,7 +228,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
         break;
 
       case "Your": // INDEX 
-        const yourGames = allGames.filter(game => game.playerOne._id === sessionUserID || game.playerTwo?._id === sessionUserID);
+        const yourGames = allGames.filter(game => game.playerOne?._id === sessionUserID || game.playerTwo?._id === sessionUserID);
         setDisplayGames(sortByRecent(yourGames));
         break;
 
