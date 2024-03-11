@@ -57,7 +57,7 @@ export default function GamePage({sessionUser, navigate, gameTitle, token, setTo
                 {/* HEADER GREETING */}
                 <div className='flex flex-col space-y-5'>
                     <h3 className='text-5xl text-white font-extrabold'>
-                        {gameDict.mapName}: {gameDict.title} vs. YOUR OPPONENT
+                        {gameDict.mapName}: {gameDict.title} 
                     </h3>
                 </div>
             </div>
@@ -65,8 +65,17 @@ export default function GamePage({sessionUser, navigate, gameTitle, token, setTo
 
             {/* GAMES CONTAINER -- this is the max size of the game, actual game board is inside */}
             <div className="flex flex-col items-center justify-center  h-full w-full">
-                <div className="flex flex-col bg-red-200/60 w-[40rem] h-[40rem]">
-                    EXAMPLE GAME BOARD
+                {/* <div className="flex flex-col bg-red-200/60 w-[45rem] h-[45rem]"> */}
+                <div className={frostedGlass + 'flex flex-col justify-center items-center text-center w-[50rem] h-[45rem] rounded-[8rem]'}>
+                    <h3 className='text-6xl text-white font-extrabold'>
+                            UNDER CONSTRUCTION
+                    </h3>
+
+                    <img
+                        class="w-[34rem] h-[30rem] opacity-95 rounded-[4rem] mt-4"
+                        src="/UNDERCONSTRUCTION.png"
+                        alt="UNDER CONSTRUCTION"
+                    />
                 </div>
             </div>
 
@@ -78,7 +87,7 @@ export default function GamePage({sessionUser, navigate, gameTitle, token, setTo
                 </h3>
                 <div className="flex flex-col bg-gray-600/40 rounded-[1rem] h-full overflow-y-auto px-5 py-2 border-2 space-y-1 border-white/20">
                     <div className="flex flex-col h-full overflow-auto">
-                        MESSAGES
+                        {/* MESSAGES */}
                     </div>
                     <div className="flex flex-col h-2/5 bg-white/10 rounded-lg border-2 border-white/20 p-2">
                         Write a message... 
