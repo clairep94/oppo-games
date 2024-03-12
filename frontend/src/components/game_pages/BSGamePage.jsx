@@ -5,6 +5,8 @@ import { addMessage, fetchMessages } from "../../api_calls/messageAPI";
 import io from "socket.io-client";
 import InputEmoji from 'react-input-emoji';
 
+import Draggable from 'react-draggable';
+
 // TODO will refactor
 // Hardcoding before refactoring BS into GamePage
 
@@ -12,6 +14,8 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
 
     const background = 'BS2.jpg'
     const mapName = 'River Map'
+    const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
+
 
     // ============================= STATE VARIABLES ===========================================
     // --------- Session & Game ID ----------
@@ -25,6 +29,7 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
     const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
     const [errorMessage, setErrorMessage] = useState(null);
     const [forfeitButtonMessage, setForfeitButtonMessage] = useState("Forfeit Game");
+
 
     const findWinMessage = (game) => {
         if (game.winner.length === 0) {
@@ -292,7 +297,7 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
         return (
         // BACKGROUND
         <div
-            className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] py-[1rem]"
+            className=" flex flex-row items-center justify-center pl-[10rem] pr-[2rem] p-[1rem]"
             style={{ backgroundImage: `url(/backgrounds/${background})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100vh' }}>
             {/* PAGE CONTAINER */}
             <div className='flex flex-col w-full h-full justify-between space-y-5'>
@@ -311,7 +316,7 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                 <div className="flex flex-col items-center justify-center  h-full w-full">
 
                     {/* BATTLESHIPS CONTAINER */}
-                    <div className={"flex flex-col bg-gray-500/40 w-[80rem] h-[40rem] items-center justify-between py-[2rem] rounded-[2rem]" +  frostedGlass}>
+                    <div className={"flex flex-col bg-gray-500/40 w-[80rem] h-[40rem] items-center justify-between pt-[2rem] rounded-[2rem]" +  frostedGlass}>
     
                         {/* OPPONENT & TURN HEADER */}
                         {game.playerTwo ? (   
@@ -325,39 +330,58 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                             
                             {/* PLAYER ONE SHIPS */}
                             <div className="flex flex-col w-full h-full">
-                                Player One:
-                                {Object.entries(game.playerOneShips).map(([ship, {units}]) => (
-                                    <div key={ship}>
-                                    <p>Ship Type: {ship}</p>
-                                    <p>Units: {units}</p>
-                                  </div>
-                                ))}
+                                <h5 className="font-bold text-[2rem]">
+                                Player One: {game.playerOne._id === sessionUserID ? "You" : game.playerOne.username}
+                                </h5>
 
+                                <div className={`flex flex-${shipDirectionHorizontal ? "col" : "row"}`}>
+                                    {Object.entries(game.playerOneShips).map(([ship, {units}]) => (
+                                        <Draggable grid={[50, 50]}>
+                                        <div key={ship}>
+                                            <p>{ship}</p>
+                                            {/* Render draggable squares */}
+                                                <div className={`flex flex-${shipDirectionHorizontal ? "row" : "col"}`}
+                                                key={ship}
+                                                >
+                                                    {Array.from({ length: units }, (_, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className={`w-8 h-8 bg-red-400 mr-[0px]`}
+                                                    ></div>
+                                                    ))}
+                                                </div>
+                                        </div>
+                                        </Draggable>
+                                    ))}
+                                </div>
 
                             </div>
 
                             {/* PLAYER TWO SHIPS */}
-                            <div className="flex flex-col w-full h-full">
-                            Player Two:
+                            {/* <div className="flex flex-col w-full h-full">
+                            Player Two: {game.playerTwo?._id === sessionUserID ? "You" : game.playerTwo?.username}
                                 {Object.entries(game.playerTwoShips).map(([ship, {units}]) => (
                                     <div key={ship}>
                                     <p>Ship Type: {ship}</p>
                                     <p>Units: {units}</p>
                                   </div>
                                 ))}
-
-                            </div>
+                            </div> */}
 
                         </div>
                         
 
                         
+                        <button onClick={() => {setShipDirectionHorizontal(!shipDirectionHorizontal)}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
+                            Toggle Ship Direction
+                        </button>
+
                         {/* FORFEIT BUTTON-- only shows if sessionUser is a player && game is not over */}
-                        {!game.finished && game.playerTwo && (sessionUserID === game.playerOne._id || sessionUserID === game.playerTwo._id) &&
+                        {/* {!game.finished && game.playerTwo && (sessionUserID === game.playerOne._id || sessionUserID === game.playerTwo._id) &&
                             (<button onClick={handleForfeit} className="bg-black/70 p-4 w-[13rem] rounded-lg">
                                 {forfeitButtonMessage}
                             </button>)
-                        }
+                        } */}
                         
                         {errorMessage && 
                             <h2 className="text-red-600/80 font-semibold text-2xl p-3">{errorMessage}</h2>}
