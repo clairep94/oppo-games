@@ -15,6 +15,9 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
     const background = 'BS2.jpg'
     const mapName = 'River Map'
     const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
+    const handleClick = (row, col) => {
+        console.log(`Clicked on row ${row} and column ${col}`);
+      };
 
 
     // ============================= STATE VARIABLES ===========================================
@@ -319,11 +322,12 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                     <div className={"flex flex-col bg-gray-500/40 w-[80rem] h-[40rem] items-center justify-between pt-[2rem] rounded-[2rem]" +  frostedGlass}>
     
                         {/* OPPONENT & TURN HEADER */}
-                        {game.playerTwo ? (   
+                        {/* {game.playerTwo ? (   
                                 <p className="text-3xl font-bold">Whose turn: {" "}
                                     <span className="text-3xl font-bold">{whoseTurn.username}</span>
                                 </p>
-                        ):( <p className="text-3xl font-bold">Awaiting player two</p>)}
+                        ):( <p className="text-3xl font-bold">Awaiting player two</p>)} */}
+                        <p className="text-3xl font-bold">Place your ships</p>
 
                         {/*  GAME BOARD */}
                         <div className="flex flex-row bg-red-200/30 w-full h-full">
@@ -359,12 +363,30 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                             </div>
 
                             {/* BOARD */}
-                            <div className="flex flex-row w-full h-full bg-green-50/10">
+                            <div className="flex flex-col w-full h-full bg-green-50/10">
                                 <h5 className="font-bold text-[2rem]">
                                     Your Board
                                 </h5>
-                                
 
+                                <div className="grid grid-cols-10 gap-0 w-[20rem]">
+                                    {/* Create the 10x10 grid */}
+      {Array.from({ length: 10 * 10 }).map((_, index) => {
+        const row = Math.floor(index / 10);
+        const col = index % 10;
+
+        return (
+          <div
+            key={index}
+            className={`bg-gray-400/50 border border-black w-8 h-8`}
+            onClick={() => handleClick(row, col)}
+          ></div>
+        );
+      })}
+                                </div>
+                                
+                                <p>
+                                    {JSON.stringify(game.playerOneBoard)}
+                                </p>
                             </div>
                             
 
