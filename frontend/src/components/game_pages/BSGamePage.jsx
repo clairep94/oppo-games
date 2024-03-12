@@ -339,9 +339,9 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                                 Your Shipyard
                                 </h5>
 
-                                <div className={`flex flex-${shipDirectionHorizontal ? "col" : "row"}`}>
+                                <div className={`flex flex-${shipDirectionHorizontal ? "col" : "row"} cursor-move`}>
                                     {Object.entries(game.playerOneShips).map(([ship, {units}]) => (
-                                        <Draggable grid={[25, 25]}>
+                                        <Draggable>
                                         <div key={ship}>
                                             {/* <p>{ship}</p> */}
                                             {/* Render draggable squares */}
@@ -351,7 +351,7 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                                                     {Array.from({ length: units }, (_, index) => (
                                                     <div
                                                         key={index}
-                                                        className={`w-8 h-8 bg-red-400 mr-[0px]`}
+                                                        className={`w-8 h-8 bg-red-400/70 mr-[0px]`}
                                                     ></div>
                                                     ))}
                                                 </div>
@@ -370,18 +370,18 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
 
                                 <div className="grid grid-cols-10 gap-0 w-[20rem]">
                                     {/* Create the 10x10 grid */}
-      {Array.from({ length: 10 * 10 }).map((_, index) => {
-        const row = Math.floor(index / 10);
-        const col = index % 10;
+                                        {Array.from({ length: 10 * 10 }).map((_, index) => {
+                                            const row = Math.floor(index / 10);
+                                            const col = index % 10;
 
-        return (
-          <div
-            key={index}
-            className={`bg-gray-400/50 border border-black w-8 h-8`}
-            onClick={() => handleClick(row, col)}
-          ></div>
-        );
-      })}
+                                            return (
+                                            <div
+                                                key={index}
+                                                className={`bg-gray-400/50 border border-black w-8 h-8`}
+                                                onClick={() => handleClick(row, col)}
+                                            ></div>
+                                            );
+                                        })}
                                 </div>
                                 
                                 <p>
