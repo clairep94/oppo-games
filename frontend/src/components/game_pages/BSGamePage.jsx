@@ -331,16 +331,17 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
                             {/* PLAYER ONE SHIPS */}
                             <div className="flex flex-col w-full h-full">
                                 <h5 className="font-bold text-[2rem]">
-                                Player One: {game.playerOne._id === sessionUserID ? "You" : game.playerOne.username}
+                                {/* Player One: {game.playerOne._id === sessionUserID ? "You" : game.playerOne.username} */}
+                                Your Shipyard
                                 </h5>
 
                                 <div className={`flex flex-${shipDirectionHorizontal ? "col" : "row"}`}>
                                     {Object.entries(game.playerOneShips).map(([ship, {units}]) => (
-                                        <Draggable grid={[50, 50]}>
+                                        <Draggable grid={[25, 25]}>
                                         <div key={ship}>
-                                            <p>{ship}</p>
+                                            {/* <p>{ship}</p> */}
                                             {/* Render draggable squares */}
-                                                <div className={`flex flex-${shipDirectionHorizontal ? "row" : "col"}`}
+                                                <div className={`flex flex-${shipDirectionHorizontal ? "row" : "col"} m${shipDirectionHorizontal ? "y" : "x"}-1`}
                                                 key={ship}
                                                 >
                                                     {Array.from({ length: units }, (_, index) => (
@@ -357,16 +358,15 @@ export default function BSGamePage({ token, setToken, sessionUserID, sessionUser
 
                             </div>
 
-                            {/* PLAYER TWO SHIPS */}
-                            {/* <div className="flex flex-col w-full h-full">
-                            Player Two: {game.playerTwo?._id === sessionUserID ? "You" : game.playerTwo?.username}
-                                {Object.entries(game.playerTwoShips).map(([ship, {units}]) => (
-                                    <div key={ship}>
-                                    <p>Ship Type: {ship}</p>
-                                    <p>Units: {units}</p>
-                                  </div>
-                                ))}
-                            </div> */}
+                            {/* BOARD */}
+                            <div className="flex flex-row w-full h-full bg-green-50/10">
+                                <h5 className="font-bold text-[2rem]">
+                                    Your Board
+                                </h5>
+                                
+
+                            </div>
+                            
 
                         </div>
                         
