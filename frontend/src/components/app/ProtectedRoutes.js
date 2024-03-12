@@ -8,11 +8,10 @@ import { findUser } from "../../api_calls/usersAPI";
 
 import NavBar from "../navbar/NavBar";
 import GamesLobby from "../games_lobby/GamesLobby";
-import TicTacToe from "../../games/tictactoe/TicTacToe_Lowpoly";
 import ProfilePage from "../profile_page/ProfilePage";
-// import GamePage from '../game-page/GamePage';
 import GamePage from "../game_pages/GamePage";
 import TTTGamePage from "../game_pages/TTTGamePage";
+import BSGamePage from "../game_pages/BSGamePage";
 
 const ProtectedRoutes = ({ navigate }) => {
   // =========== TOKEN & SESSION USER DATA =======================
@@ -119,10 +118,22 @@ const ProtectedRoutes = ({ navigate }) => {
             />
 
             {/* ---- Battleships ---- */}
-            <Route
+            {/* <Route
               path="/battleships/:gameId"
               element={
                 <GamePage navigate={navigate} gameTitle={"Battleships"} />
+              }
+            /> */}
+
+            <Route
+              path="/battleships/:id"
+              element={
+                <BSGamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  sessionUser={sessionUser}
+                />
               }
             />
 
