@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import GameTypeCard from './GameTypeCard';
 import SingleGameCard from './SingleGameCard';
 import AllGamesCard from './AllGamesCard';
+import { gamesMenu } from '../games/gamesMenu';
 
 const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, setSessionUser }) => {
 
@@ -10,29 +11,6 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   const [displayGames, setDisplayGames] = useState([]);
   const [viewTitle, setViewTitle] = useState("All"); // ---> Controls view of the games list: "All", "Open", "Your", "TTT", "RPS", "BS"
   // fix "YOUR "view
-  const gamesMenu = [ // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
-    {
-      title:'Tic-Tac-Toe', 
-      endpoint: 'tictactoe',
-      hardCodePlayersOnline: "234",
-      mapName: "Icy Alpines",
-      imgSource: '/cards/TTT.jpg'
-    },
-    {
-      title:'Rock-Paper-Scissors', 
-      endpoint: 'rockpaperscissors',
-      hardCodePlayersOnline: "108",
-      mapName: "Mellow Meadow",
-      imgSource: '/cards/RPS.jpg'
-    },
-    {
-      title: 'Battleships', 
-      endpoint: 'battleships',
-      hardCodePlayersOnline: "84",
-      mapName: "Rocky River",
-      imgSource: '/cards/BS2.jpg'
-    }
-  ] 
 
   // ============= GETTING ALL GAMES & SORTING BY ANTI-CHRONOLOGICAL ================= //
   const fetchAllGames = async () => {
