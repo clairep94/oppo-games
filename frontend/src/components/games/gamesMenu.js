@@ -1,3 +1,7 @@
+import RockPaperScissors from "../games/rockpaperscissors/RockPaperScissors";
+import Battleships from "../games/battleships/Battleships";
+import TicTacToe from "../games/tictactoe/TicTacToe";
+
 export const gamesMenu = [
   // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
   {
@@ -6,7 +10,8 @@ export const gamesMenu = [
     hardCodePlayersOnline: "234",
     mapName: "Icy Alpines",
     imgSource: "/cards/TTT.jpg",
-    // component: TicTacToeGamboard
+    bgImageSource: "TTT.jpg",
+    component: TicTacToe,
   },
   {
     title: "Rock-Paper-Scissors",
@@ -14,7 +19,8 @@ export const gamesMenu = [
     hardCodePlayersOnline: "108",
     mapName: "Mellow Meadow",
     imgSource: "/cards/RPS.jpg",
-    // component: RockPaperScissorsGameboard
+    bgImageSource: "RPS.jpg",
+    component: RockPaperScissors,
   },
   {
     title: "Battleships",
@@ -22,6 +28,7 @@ export const gamesMenu = [
     hardCodePlayersOnline: "84",
     mapName: "Rocky River",
     imgSource: "/cards/BS2.jpg",
-    // component: BattleshipsGameboard
+    bgImageSource: "BS2.jpg",
+    component: Battleships,
   },
 ];

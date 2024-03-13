@@ -95,7 +95,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
     const [receivedMessage, setReceivedMessage] = useState("");
 
 
-    useState(() => {
+    useEffect(() => {
         fetchMessages(gameID, token)
         .then(messagesData => {
             setMessages(messagesData.allMessages);

@@ -1,7 +1,7 @@
 class AllGamesAPI {
   async newGame(token, endpoint) {
     try {
-      const response = await fetch(`${endpoint}`, {
+      const response = await fetch(`/${endpoint}`, {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -18,7 +18,7 @@ class AllGamesAPI {
 
   async fetchGame(token, endpoint, id) {
     try {
-      const response = await fetch(`${endpoint}/${id}`, {
+      const response = await fetch(`/${endpoint}/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -33,7 +33,7 @@ class AllGamesAPI {
 
   async allGames(token, endpoint) {
     try {
-      const response = await fetch(`${endpoint}`, {
+      const response = await fetch(`/${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -48,7 +48,7 @@ class AllGamesAPI {
 
   async joinGame(token, endpoint, id) {
     try {
-      const response = await fetch(`${endpoint}/${id}/join`, {
+      const response = await fetch(`/${endpoint}/${id}/join`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +65,7 @@ class AllGamesAPI {
 
   async forfeitGame(token, endpoint, id) {
     try {
-      const response = await fetch(`${endpoint}/${id}/forfeit`, {
+      const response = await fetch(`/${endpoint}/${id}/forfeit`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +82,7 @@ class AllGamesAPI {
 
   async deleteGame(token, endpoint, id) {
     try {
-      const response = await fetch(`${endpoint}/${id}/delete`, {
+      const response = await fetch(`/${endpoint}/${id}/delete`, {
         method: "delete",
         headers: {
           "Content-Type": "application/json",

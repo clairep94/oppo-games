@@ -6,7 +6,7 @@ class GameAPI {
 
   async newGame(token) {
     try {
-      const response = await fetch(`${this.endpoint}`, {
+      const response = await fetch(`/${this.endpoint}`, {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -23,7 +23,7 @@ class GameAPI {
 
   async fetchGame(token, id) {
     try {
-      const response = await fetch(`${this.endpoint}/${id}`, {
+      const response = await fetch(`/${this.endpoint}/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -38,7 +38,7 @@ class GameAPI {
 
   async allGames(token) {
     try {
-      const response = await fetch(`${this.endpoint}`, {
+      const response = await fetch(`/${this.endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +53,7 @@ class GameAPI {
 
   async joinGame(token, id) {
     try {
-      const response = await fetch(`${this.endpoint}/${id}/join`, {
+      const response = await fetch(`/${this.endpoint}/${id}/join`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +70,7 @@ class GameAPI {
 
   async forfeitGame(token, id) {
     try {
-      const response = await fetch(`${this.endpoint}/${id}/forfeit`, {
+      const response = await fetch(`/${this.endpoint}/${id}/forfeit`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",

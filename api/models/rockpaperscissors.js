@@ -5,7 +5,7 @@ const RockPaperScissorsSchema = new mongoose.Schema(
     // ----------- Title & Endpoint -- necessary for mapping over gamesList ------------
     title: {
       type: String,
-      default: "RockPaperScissors",
+      default: "Rock-Paper-Scissors",
     },
     endpoint: {
       // don't include the '/'
