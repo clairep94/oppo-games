@@ -7,12 +7,12 @@ import GamePageButtons from "../../game_pages_refactored/GamePageButtonRow";
 
 
 export default function TicTacToe({ game, setGame, gameID, sessionUserID, socket, token, setToken,
-joinGame, deleteGame, forfeitGame, frostedGlass
+joinGame, deleteGame, forfeitGame, frostedGlass, errorMessage, setErrorMessage, winMessage, setWinMessage
 }) {
 
   // ============================= STATE VARIABLES ===========================================
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
+  // const [errorMessage, setErrorMessage] = useState(null);
+  // const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
   const whoseTurn = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
   
   const ticTacToeAPI = new TicTacToeAPI();
@@ -33,7 +33,7 @@ joinGame, deleteGame, forfeitGame, frostedGlass
 
   useEffect(() => {
     findWinMessage(game)
-  }, [])
+  }, [game])
 
 
   // =================================== PLACING A ==============================================================

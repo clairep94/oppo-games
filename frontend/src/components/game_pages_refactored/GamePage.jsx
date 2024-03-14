@@ -28,20 +28,34 @@ export default function GamePage({
 
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null); // TODO move this to Game Component!!!
   const [announcement, setAnnouncement] = useState(null);
+  const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
+
   // 404 error
 
   // --------- Message state variables ---------
   // Fetch happens inside the chatbox component
   // NOTE had to do this organisation because I can't separate socket listen events
-  const [messages, setMessages] = useState([]);
-
 
   // ============================= GETTING THE PRESENTATION FOR THE PAGE FROM GAMETITLE PROP (non-async) ===========================
   // Get the presentation for the Game
   const gamePresentation = gamesMenu.find((gameType) => gameType.title === gameTitle);
   const GameComponent = gamePresentation.component;
+
+  const findWinMessage = (game) => {
+    if (game.winner.length === 0) {
+        setWinMessage('');
+    } else if (game.winner.length === 2) {
+        setWinMessage("It's a draw!");
+    } else {
+        if (game.winner[0]._id === sessionUserID) {
+            setWinMessage("You win!")
+        } else {
+            setWinMessage(`${game.winner[0].username} wins!`)
+        }
+    }
+  };
 
 
   // ============================= LOADING THE GAME & GAME STATE VARIABLES (async) ===========================
@@ -81,10 +95,11 @@ export default function GamePage({
       const gameData = await gameServer.joinGame(token, gamePresentation.endpoint, gameID);
       window.localStorage.setItem("token", gameData.token);
       setToken(window.localStorage.getItem("token"));
+      const updatedGame = gameData.game
+      setGame(updatedGame);
+      const socketEventMessage = `user ${sessionUserID} joined game ${gameID}`
 
-      setGame(gameData.game);
-      // opponent message
-      // socket
+      socket.current.emit("send-game-update", { gameID, updatedGame, socketEventMessage })
     } catch (error) {
       setErrorMessage(error.message);
     }
@@ -99,9 +114,13 @@ export default function GamePage({
       window.localStorage.setItem("token", gameData.token);
       setToken(window.localStorage.getItem("token"));
 
-      setGame(gameData.game);
-      // win message
-      // socket
+      const updatedGame = gameData.game;
+      setGame(updatedGame);
+      findWinMessage(updatedGame);
+
+
+      const socketEventMessage = `user ${sessionUserID} forfeited game ${gameID}`
+      socket.current.emit("send-game-update", { gameID, updatedGame, socketEventMessage })
     } catch (error) {
       setErrorMessage(error.message);
     }
@@ -196,12 +215,13 @@ export default function GamePage({
             <GameComponent game={game} setGame={setGame} gameID={gameID}
             sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
             joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
+            winMessage={winMessage} setWinMessage={setWinMessage}
             />
           )}
         </div>
 
         {/* MESSAGES CONTAINER */}
-        <ChatBox sessionUserID={sessionUserID} gameID={gameID} token={token} message={messages} setMessages={setMessages} socket={socket}/>
+        <ChatBox sessionUserID={sessionUserID} gameID={gameID} token={token} socket={socket}/>
       </div>
 
     </div>
