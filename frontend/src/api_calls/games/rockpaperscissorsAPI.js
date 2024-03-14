@@ -8,7 +8,7 @@ class RockPaperScissorsAPI extends GameAPI {
   async placePiece(token, id, movePayload) {
     // Payload = {row: row, col: col}
     try {
-      const response = await fetch(`/${endpoint}/${id}/place_piece`, {
+      const response = await fetch(`/${this.endpoint}/${id}/place_piece`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",

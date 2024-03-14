@@ -133,14 +133,8 @@ const ProtectedRoutes = ({ navigate }) => {
             />
 
             {/* ---- Battleships ---- */}
-            {/* <Route
-              path="/battleships/:gameId"
-              element={
-                <GamePage navigate={navigate} gameTitle={"Battleships"} />
-              }
-            /> */}
 
-            <Route
+            {/* <Route
               path="/battleships/:id"
               element={
                 <BSGamePage
@@ -148,6 +142,19 @@ const ProtectedRoutes = ({ navigate }) => {
                   setToken={setToken}
                   sessionUserID={sessionUserID}
                   sessionUser={sessionUser}
+                />
+              }
+            /> */}
+
+            <Route
+              path="/battleships/:id"
+              element={
+                <GamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  navigate={navigate}
+                  gameTitle={"Battleships"}
                 />
               }
             />

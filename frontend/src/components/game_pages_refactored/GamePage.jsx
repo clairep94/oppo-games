@@ -158,9 +158,6 @@ export default function GamePage({
         setErrorMessage("");
     });
 
-    //---------------- Receiving forfeit -------------------
-    //---------------- Receiving join -------------------
-
     //---------------- Receiving messages ------------------
     // socket.current.on("receive-message", ({gameID, receivedMessage}) => {
     //   console.log("received message from socket", receivedMessage);
@@ -216,6 +213,7 @@ export default function GamePage({
             sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
             joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
             winMessage={winMessage} setWinMessage={setWinMessage} errorMessage={errorMessage} setErrorMessage={setErrorMessage}
+            findWinMessage={findWinMessage} loading={loading}
             />
           )}
         </div>

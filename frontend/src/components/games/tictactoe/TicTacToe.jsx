@@ -7,36 +7,20 @@ import GamePageButtons from "../../game_pages_refactored/GamePageButtonRow";
 
 
 export default function TicTacToe({ game, setGame, gameID, sessionUserID, socket, token, setToken,
-joinGame, deleteGame, forfeitGame, frostedGlass, errorMessage, setErrorMessage, winMessage, setWinMessage
+joinGame, deleteGame, forfeitGame, frostedGlass, errorMessage, setErrorMessage, winMessage, setWinMessage, findWinMessage,
 }) {
 
   // ============================= STATE VARIABLES ===========================================
-  // const [errorMessage, setErrorMessage] = useState(null);
-  // const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
   const whoseTurn = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
   
   const ticTacToeAPI = new TicTacToeAPI();
-
-  const findWinMessage = (game) => {
-    if (game.winner.length === 0) {
-        setWinMessage('');
-} else if (game.winner.length === 2) {
-        setWinMessage("It's a draw!");
-    } else {
-        if (game.winner[0]._id === sessionUserID) {
-            setWinMessage("You win!")
-        } else {
-            setWinMessage(`${game.winner[0].username} wins!`)
-        }
-    }
-  };
 
   useEffect(() => {
     findWinMessage(game)
   }, [game])
 
 
-  // =================================== PLACING A ==============================================================
+  // =================================== PLACING A PIECE ==============================================================
   const placePiece = async(row, col) => {
     const coordinates = `${row}${col}`
     console.log(`Coordinates: ${row} ${col}`)
