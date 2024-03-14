@@ -215,7 +215,7 @@ export default function GamePage({
             <GameComponent game={game} setGame={setGame} gameID={gameID}
             sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
             joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
-            winMessage={winMessage} setWinMessage={setWinMessage}
+            winMessage={winMessage} setWinMessage={setWinMessage} errorMessage={errorMessage} setErrorMessage={setErrorMessage}
             />
           )}
         </div>

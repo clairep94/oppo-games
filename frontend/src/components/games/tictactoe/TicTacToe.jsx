@@ -20,7 +20,7 @@ joinGame, deleteGame, forfeitGame, frostedGlass, errorMessage, setErrorMessage, 
   const findWinMessage = (game) => {
     if (game.winner.length === 0) {
         setWinMessage('');
-    } else if (game.winner.length === 2) {
+} else if (game.winner.length === 2) {
         setWinMessage("It's a draw!");
     } else {
         if (game.winner[0]._id === sessionUserID) {
