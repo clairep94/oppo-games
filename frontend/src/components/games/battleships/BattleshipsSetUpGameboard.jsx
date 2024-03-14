@@ -1,13 +1,12 @@
 import React, {useState, useRef, useEffect} from "react";
 
-export default function BattleshipsSetUpGameboard(game, placeShip, submitPlacements, loading) {
+export default function BattleshipsSetUpGameboard({game, placeShip, submitPlacements, loading}) {
 
   // takes in sessionUserID
   // If sessionUser is one of the players --> show board && show if other player is ready
   // If sessionUser is NOT an owner OR for other user's board --> show 
 
   const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
-  game = game.game // NOTE, not sure why passing this prop made it game.game ==> game data, but I had to do this fix
 
   // =================================== JSX FOR UI ==============================================================
   return (
@@ -36,9 +35,8 @@ export default function BattleshipsSetUpGameboard(game, placeShip, submitPlaceme
                             ))}
                         </div>
                 </div>
-
             ))}
-        </div>
+    </div>
 
     </div>
 
