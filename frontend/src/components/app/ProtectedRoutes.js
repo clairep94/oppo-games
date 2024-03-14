@@ -94,7 +94,7 @@ const ProtectedRoutes = ({ navigate }) => {
             />
 
             {/* ------ Tictactoe ------  */}
-            <Route
+            {/* <Route
               path="/tictactoe/:id"
               element={
                 <TTTGamePage
@@ -102,6 +102,18 @@ const ProtectedRoutes = ({ navigate }) => {
                   setToken={setToken}
                   sessionUserID={sessionUserID}
                   sessionUser={sessionUser}
+                />
+              }
+            /> */}
+            <Route
+              path="/tictactoe/:id"
+              element={
+                <GamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  navigate={navigate}
+                  gameTitle={"Tic-Tac-Toe"}
                 />
               }
             />

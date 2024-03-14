@@ -7,8 +7,7 @@ import GamePageHeader from "./GamePageHeader";
 import UnderConstruction from "../games/UnderConstruction";
 import ChatBox from "../messages/ChatBox";
 
-// Import all 3 game types and their boards
-// Import Messages component
+// TODO Add socket functionality back into messages, games etc.
 
 export default function GamePage({
   sessionUser,
@@ -33,29 +32,16 @@ export default function GamePage({
   const [announcement, setAnnouncement] = useState(null);
   // 404 error
 
+  // --------- Message state variables ---------
+  // Fetch happens inside the chatbox component
+  // NOTE had to do this organisation because I can't separate socket listen events
+  const [messages, setMessages] = useState([]);
+
+
   // ============================= GETTING THE PRESENTATION FOR THE PAGE FROM GAMETITLE PROP (non-async) ===========================
   // Get the presentation for the Game
   const gamePresentation = gamesMenu.find((gameType) => gameType.title === gameTitle);
-
   const GameComponent = gamePresentation.component;
-  // const [whoseTurn, setWhoseTurn] = useState(null); // this needs to be stored and updated explicitly due to issues with game.turn
-  const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
-
-
-  // Find win message -> move to the game itself
-  const findWinMessage = (game) => {
-    if (game.winner.length === 0) {
-        setWinMessage('');
-    } else if (game.winner.length === 2) {
-        setWinMessage("It's a draw!");
-    } else {
-        if (game.winner[0]._id === sessionUserID) {
-            setWinMessage("You win!")
-        } else {
-            setWinMessage(`${game.winner[0].username} wins!`)
-        }
-    }
-};
 
 
   // ============================= LOADING THE GAME & GAME STATE VARIABLES (async) ===========================
@@ -68,6 +54,7 @@ export default function GamePage({
       setToken(window.localStorage.getItem("token"));
 
       setGame(gameData.game);
+      setLoading(false);
       // opponent message
       // socket
     } catch (error) {
@@ -145,37 +132,31 @@ export default function GamePage({
         setOnlineUsers(users)}) // get the onlineUsers, which should now include the sessionUserID
     
     //---------------- Receiving new move -------------------
-    // socket.current.on("receive-game-update", ({ gameID, gameState }) => {
-    //     console.log("received game from socket", gameState);
-    //     setGame(gameState);
-    //     setWhoseTurn(
-    //         gameState.turn % 2 === 0
-    //         ? gameState.playerOne
-    //         : gameState.playerTwo
-    //     );
-    //     findWinMessage(gameState);
-    //     setErrorMessage("");
-    // });
-
-    //---------------- Receiving forfeit -------------------
-    socket.current.on("receive-forfeit-game", ({ gameID, gameState }) => {
-        console.log("received forfeit game from socket", gameState);
+    // NOTE Cannot feed this into game component, need to keep here.
+    socket.current.on("receive-game-update", ({ gameID, gameState }) => {
+        console.log("received game from socket", gameState);
         setGame(gameState);
-        // setWhoseTurn(
-        //     gameState.turn % 2 === 0
-        //     ? gameState.playerOne
-        //     : gameState.playerTwo
-        // );
-        setWinMessage(gameState); // setting a "opponent forfeited, you win" message makes both windows have this message.
         setErrorMessage("");
     });
 
+    //---------------- Receiving forfeit -------------------
     //---------------- Receiving join -------------------
-    socket.current.on("receive-join-game", ({ gameID, gameState }) => {
-      console.log("received joined game from socket", gameState);
-      setGame(gameState);
-      setErrorMessage("");
-    })
+
+    //---------------- Receiving messages ------------------
+    // socket.current.on("receive-message", ({gameID, receivedMessage}) => {
+    //   console.log("received message from socket", receivedMessage);
+    //               // const newMessage = {
+    //         //     _id: receivedMessage._id,
+    //         //     gameID: receivedMessage.gameID,
+    //         //     author: receivedMessage.author,
+    //         //     body: receivedMessage.body
+    //         // }
+    //         // setMessages([...messages, receivedMessage])
+
+    //         // setMessages((prevMessages) => prevMessages.concat(newMessage));
+    //         // setMessages(currentMessages)
+
+    // })
 
   }, [sessionUserID])
 
@@ -188,10 +169,6 @@ export default function GamePage({
   // =================================== JSX FOR UI ==============================================================
   // if (loading) {
   //   return <div>Loading...</div>;
-  // }
-
-  // if (errorMessage) {
-  //   return <div>Error: {errorMessage}</div>;
   // }
 
   return (
@@ -213,13 +190,18 @@ export default function GamePage({
 
         {/* GAMES CONTAINER -- this is the max size of the game, actual game board is inside */}
         <div className="flex flex-col items-center justify-center  h-full w-full">
-          <GameComponent game={game} setGame={setGame}/>
-          {game?._id}
-          {/* <UnderConstruction/> */}
+          {loading ? (
+            <p>LOADING...</p>
+          ):(
+            <GameComponent game={game} setGame={setGame} gameID={gameID}
+            sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
+            joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
+            />
+          )}
         </div>
 
         {/* MESSAGES CONTAINER */}
-        <ChatBox sessionUserID={sessionUserID} gameID={gameID} token={token}/>
+        <ChatBox sessionUserID={sessionUserID} gameID={gameID} token={token} message={messages} setMessages={setMessages} socket={socket}/>
       </div>
 
     </div>

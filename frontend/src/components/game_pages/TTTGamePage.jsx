@@ -153,8 +153,9 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
                     setWhoseTurn((gameData.game.turn % 2 === 0) ? gameData.game.playerOne : gameData.game.playerTwo)
                     findWinMessage(gameData.game)
                     setErrorMessage("")
+                    const socketEventMessage = `user ${sessionUserID} played at ${row}${col}`
 
-                    socket.current.emit("place-piece", {gameID, updatedGame})
+                    socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
                 })
             }
         }
@@ -177,8 +178,9 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
                 const updatedGame = gameData.game
                 setGame(gameData.game)
                 findWinMessage(gameData.game)
+                const socketEventMessage = `user ${sessionUserID} forfeitted`
 
-                socket.current.emit("forfeit-game", {gameID, updatedGame})
+                socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
 
                 ;})
             }}

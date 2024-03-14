@@ -2,13 +2,13 @@ import GameAPI from "./gameAPI";
 
 class TicTacToeAPI extends GameAPI {
   constructor() {
-    super("/tictactoe", "TicTacToe");
+    super("tictactoe", "TicTacToe");
   }
 
   async placePiece(token, id, movePayload) {
     // Payload = {row: row, col: col}
     try {
-      const response = await fetch(`${this.endpoint}/${id}/place_piece`, {
+      const response = await fetch(`/${this.endpoint}/${id}/place_piece`, {
         method: "put",
         headers: {
           "Content-Type": "application/json",

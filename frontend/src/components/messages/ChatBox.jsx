@@ -1,23 +1,27 @@
 import React, {useState, useRef, useEffect} from "react";
 import { addMessage, fetchMessages } from "../../api_calls/messageAPI";
 import InputEmoji from 'react-input-emoji';
+import io from "socket.io-client";
 
 
-export default function ChatBox({sessionUserID, gameID, socketCurrent, token}) {
+
+export default function ChatBox({sessionUserID, gameID, socket, token, }) {
   const frostedGlass = ` bg-gradient-to-r from-gray-300/30 via-purple-100/20 to-purple-900/20 backdrop-blur-sm
   shadow-lg shadow-[#363b54] border-[3px] border-white/10 `
 
   // ======================= LOADING MESSAGES =============================================
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [receivedMessage, setReceivedMessage] = useState("");
+  // const [receivedMessage, setReceivedMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
+    console.log("Fetching messages")
     fetchMessages(gameID, token)
     .then(messagesData => {
         setMessages(messagesData.allMessages);
+        console.log(messagesData.allMessages)
         setLoading(false);
     })
   }, [])
@@ -29,67 +33,76 @@ export default function ChatBox({sessionUserID, gameID, socketCurrent, token}) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
   
-  // ======================= RECIEVING MESSAGES =============================================
-  // useEffect(() => {
-  //   socketCurrent.on("receive-message", ({gameID, receivedMessage}) => {
-  //     console.log("received message from socket", receivedMessage);
-  //     // const newMessage = {
-  //     //     _id: receivedMessage._id,
-  //     //     gameID: receivedMessage.gameID,
-  //     //     author: receivedMessage.author,
-  //     //     body: receivedMessage.body
-  //     // }
-  //     setMessages([...messages, receivedMessage])
+  const [onlineUsers, setOnlineUsers] = useState(null);
 
-  //     // setMessages((prevMessages) => prevMessages.concat(newMessage));
-  //     // setMessages(currentMessages)
-  // })
-  // }, [sessionUserID])
+  // ======================= RECIEVING MESSAGES =============================================
+  useEffect(() => {
+    socket.current = io('http://localhost:8800'); // this is the socket port
+    socket.current.emit("add-new-user", sessionUserID, gameID); // send the sessionUserID to the socket server
+    socket.current.on('get-users', (users)=>{
+      setOnlineUsers(users)})
+
+    socket.current.on("receive-message", ({gameID, receivedMessage}) => {
+      console.log("received message from socket", receivedMessage);
+      // const newMessage = {
+      //     _id: receivedMessage._id,
+      //     gameID: receivedMessage.gameID,
+      //     author: receivedMessage.author,
+      //     body: receivedMessage.body
+      // }
+      setMessages([...messages, receivedMessage])
+
+      // setMessages((prevMessages) => prevMessages.concat(newMessage));
+      // setMessages(currentMessages)
+  })
+  }, [sessionUserID])
 
   // ======================= RECIEVING MESSAGES =============================================
   // Change newMessage when something is written to InputEmoji 
   const handleChange=(newMessage)=>{
     setNewMessage(newMessage); // --> Don't need to use event.target because it is not a 'form'
-}
+  }
 
-// Sending a message to both the Backend API and socket.io 
-const handleSend = async (event) => {
+  // Sending a message to both the Backend API and socket.io 
+  const handleSend = async (event) => {
 
-    const messageToSend = {
-        gameID: gameID,
-        author: sessionUserID,
-        body: newMessage
+      const messageToSend = {
+          gameID: gameID,
+          author: sessionUserID,
+          body: newMessage
+      }
+
+      console.log("sending message", messageToSend)
+
+    // Send the message to the database:
+    if (newMessage.trim()) { // check that there is a conversationPartner and that newMessage is not all whitespaces
+        addMessage(messageToSend, token)
+            .then(sentMessageData => {
+                const sentMessage = sentMessageData.newMessage
+                // add newMessage to the messages array:
+                setMessages([...messages, sentMessage]);
+                // send message to the socket server:
+                socket.current.emit("send-message", {gameID, sentMessage})
+                // clear newMessage: -- check if this needs to be after
+                setNewMessage("");
+      })
     }
-
-    console.log(messageToSend)
-
-// Send the message to the database:
-if (newMessage.trim()) { // check that there is a conversationPartner and that newMessage is not all whitespaces
-    addMessage(messageToSend, token)
-        .then(sentMessageData => {
-            const sentMessage = sentMessageData.newMessage
-            // add newMessage to the messages array:
-            setMessages([...messages, sentMessage]);
-            // send message to the socket server:
-            // socketCurrent.emit("send-message", {gameID, sentMessage})
-            // clear newMessage: -- check if this needs to be after
-            setNewMessage("");
-  })
-}
-}
+  }
   // =================================== JSX FOR UI ==============================================================
   return (
     <>
     {/* MESSAGES container */}
     <div className='flex flex-col h-[22%]'>
+      {/* HEADER */}
       <h3 className='text-3xl text-white font-extrabold ml-5 -translate-y-2'>
         Messages
       </h3>
+      
       {/* MESSAGES BOX */}
       <div className="flex flex-col bg-gray-600/40 rounded-[1rem] h-full overflow-y-auto px-4 py-2 border-2 space-y-1 border-white/20">
+
         {/* MESSAGES */}
-        {
-          loading ? 
+        {loading ? 
           (<div className="flex flex-col h-full overflow-auto px-1 ">
             <p className="text-yellow-400/80"
             >Loading...</p>
@@ -107,7 +120,6 @@ if (newMessage.trim()) { // check that there is a conversationPartner and that n
           {/* Empty div to scroll to the last message */}
           <div ref={messagesEndRef}></div>
           </div>
-
           )
         }
       
