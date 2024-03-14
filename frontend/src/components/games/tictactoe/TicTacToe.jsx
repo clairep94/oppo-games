@@ -36,35 +36,11 @@ joinGame, deleteGame, forfeitGame, frostedGlass
   }, [])
 
 
-  // =================================== JSX FOR UI ==============================================================
+  // =================================== PLACING A ==============================================================
   const placePiece = async(row, col) => {
     const coordinates = `${row}${col}`
     console.log(`Coordinates: ${row} ${col}`)
 
-    // check if there is a second player:
-    if (!game.playerTwo) {
-      console.log("Must wait for player two!")
-      setErrorMessage("You must wait for player two to join")
-
-    // check if the space is already occupied:
-    } else if (game.xPlacements.includes(coordinates) || game.oPlacements.includes(coordinates)){
-      console.log("already a piece here")
-      setErrorMessage("There is already a piece here!")
-      
-    // check if game is already over:
-    } else if (game.finished) {
-      setErrorMessage("The game is already over!")
-
-    // check if the sessionUserID === whoseTurn._id -> if not, setErrorMessage
-    } else if (sessionUserID !== whoseTurn._id) {
-      if (sessionUserID === game.playerOne._id || sessionUserID === game.playerTwo._id){
-        setErrorMessage("It's not your turn!")
-      } else {
-        setErrorMessage("You're not in this game!")
-      }
-      
-    // if all checks pass, place the piece and update game with returned game data
-    } else {
       if (token) {
         const movePayload = {row: row, col: col}
         ticTacToeAPI.placePiece(token, gameID, movePayload)
@@ -72,17 +48,23 @@ joinGame, deleteGame, forfeitGame, frostedGlass
           window.localStorage.setItem("token", gameData.token);
           setToken(window.localStorage.getItem("token"));
 
-          const updatedGame = gameData.game;
+          if (gameData.error){ // Backend handles errors and creates an error message
+            setErrorMessage(gameData.error)
 
-          setGame(gameData.game);
-          findWinMessage(gameData.game)
-          setErrorMessage("")
-          const socketEventMessage = `user ${sessionUserID} played at ${row}${col}`
+          } else {
+            const updatedGame = gameData.game;
+  
+            setGame(gameData.game);
+            findWinMessage(gameData.game)
+            setErrorMessage("")
+            const socketEventMessage = `user ${sessionUserID} played at ${row}${col}`
+  
+            socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
 
-          socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+          }
         })
       }
-    }
+    // }
     
   }
 

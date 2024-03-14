@@ -38,9 +38,6 @@ export default function ChatBox({sessionUserID, gameID, socket, token, }) {
   // ======================= RECIEVING MESSAGES =============================================
   useEffect(() => {
     socket.current = io('http://localhost:8800'); // this is the socket port
-    socket.current.emit("add-new-user", sessionUserID, gameID); // send the sessionUserID to the socket server
-    socket.current.on('get-users', (users)=>{
-      setOnlineUsers(users)})
 
     socket.current.on("receive-message", ({gameID, receivedMessage}) => {
       console.log("received message from socket", receivedMessage);
@@ -55,7 +52,7 @@ export default function ChatBox({sessionUserID, gameID, socket, token, }) {
       // setMessages((prevMessages) => prevMessages.concat(newMessage));
       // setMessages(currentMessages)
   })
-  }, [sessionUserID])
+  }, [])
 
   // ======================= RECIEVING MESSAGES =============================================
   // Change newMessage when something is written to InputEmoji 
