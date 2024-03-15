@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import GameTypeCard from './GameTypeCard';
 import SingleGameCard from './SingleGameCard';
 import AllGamesCard from './AllGamesCard';
+import { gamesMenu } from '../games/gamesMenu';
 
 const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, setSessionUser }) => {
 
@@ -9,30 +10,8 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
   const [allGames, setAllGames] = useState([]); // ---> USE FILTERING METHOD
   const [displayGames, setDisplayGames] = useState([]);
   const [viewTitle, setViewTitle] = useState("All"); // ---> Controls view of the games list: "All", "Open", "Your", "TTT", "RPS", "BS"
+  const [loading, setLoading] = useState(true);
   // fix "YOUR "view
-  const gamesMenu = [ // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
-    {
-      title:'Tic-Tac-Toe', 
-      endpoint: 'tictactoe',
-      hardCodePlayersOnline: "234",
-      mapName: "Icy Alpines",
-      imgSource: '/cards/TTT.jpg'
-    },
-    {
-      title:'Rock-Paper-Scissors', 
-      endpoint: 'rockpaperscissors',
-      hardCodePlayersOnline: "108",
-      mapName: "Mellow Meadow",
-      imgSource: '/cards/RPS.jpg'
-    },
-    {
-      title: 'Battleships', 
-      endpoint: 'battleships',
-      hardCodePlayersOnline: "84",
-      mapName: "Rocky River",
-      imgSource: '/cards/BS2.jpg'
-    }
-  ] 
 
   // ============= GETTING ALL GAMES & SORTING BY ANTI-CHRONOLOGICAL ================= //
   const fetchAllGames = async () => {
@@ -63,6 +42,7 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
 
       setAllGames(fetchedResults);
       setDisplayGames(sortByRecent(fetchedResults));
+      setLoading(false);
     } catch (error) {
       console.error(`Error fetching results:`, error);
     }
@@ -311,9 +291,17 @@ const GamesLobby = ({ navigate, token, setToken, sessionUserID, sessionUser, set
               
               {/* GAMES LIST - Show only unfinished games in the lobby */}
               <div className='flex flex-col bg-gray-600/40 rounded-[1rem] h-[40%] overflow-y-auto pt-3 pl-2 pr-2 pb-6 border-2 space-y-1 border-white/20'>
-                {displayGames.map((game => (
-                  <SingleGameCard game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
-                )))}
+                { loading ? (
+                  <p className='ml-2 font-bold'>
+                    LOADING GAMES...
+                  </p>
+                ):
+                (<>
+                  {displayGames.map((game => (
+                    <SingleGameCard game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
+                  )))}
+                </>
+                )}
               </div>
             </div>
           </div>

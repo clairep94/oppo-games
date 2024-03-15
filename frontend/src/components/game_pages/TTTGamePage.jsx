@@ -1,9 +1,12 @@
 import React, {useState, useRef, useEffect} from "react";
 import {useParams} from "react-router-dom";
-import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
+// import { newGame, fetchGame, allGames, placePiece, forfeitGame } from "../../api_calls/tictactoeAPI";
+import TicTacToeAPI from "../../api_calls/games/tictactoeAPI";
 import { addMessage, fetchMessages } from "../../api_calls/messageAPI";
 import io from "socket.io-client";
 import InputEmoji from 'react-input-emoji';
+
+
 
 
 
@@ -24,6 +27,8 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
     const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
     const [errorMessage, setErrorMessage] = useState(null);
     const [forfeitButtonMessage, setForfeitButtonMessage] = useState("Forfeit Game");
+
+    const ticTacToeAPI = new TicTacToeAPI();
 
     const findWinMessage = (game) => {
         if (game.winner.length === 0) {
@@ -65,7 +70,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
     // ===================== LOADING THE BOARD ====================================
     // Function to fetch the tictactoe data
     const fetchGameData = () => {
-        fetchGame(token, gameID) //TODO fix? this version of fetchGameData always refreshes the token so the user never times out
+        ticTacToeAPI.fetchGame(token, gameID) //TODO fix? this version of fetchGameData always refreshes the token so the user never times out
             .then(gameData => {
                 window.localStorage.setItem("token", gameData.token);
                 setToken(window.localStorage.getItem("token"));
@@ -90,7 +95,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
     const [receivedMessage, setReceivedMessage] = useState("");
 
 
-    useState(() => {
+    useEffect(() => {
         fetchMessages(gameID, token)
         .then(messagesData => {
             setMessages(messagesData.allMessages);
@@ -137,7 +142,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
         } else {
             if (token) {
                 const movePayload = {row: row, col: col}
-                placePiece(token, gameID, movePayload)
+                ticTacToeAPI.placePiece(token, gameID, movePayload)
                 .then(gameData => {
                     window.localStorage.setItem("token", gameData.token);
                     setToken(window.localStorage.getItem("token"));
@@ -148,8 +153,9 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
                     setWhoseTurn((gameData.game.turn % 2 === 0) ? gameData.game.playerOne : gameData.game.playerTwo)
                     findWinMessage(gameData.game)
                     setErrorMessage("")
+                    const socketEventMessage = `user ${sessionUserID} played at ${row}${col}`
 
-                    socket.current.emit("place-piece", {gameID, updatedGame})
+                    socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
                 })
             }
         }
@@ -164,7 +170,7 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
             setForfeitButtonMessage("Are you sure?")
         }
         if (token && (forfeitButtonMessage === "Are you sure?")) {
-            forfeitGame(token, gameID)
+            ticTacToeAPI.forfeitGame(token, gameID)
             .then(gameData => {
                 window.localStorage.setItem("token", gameData.token);
                 setToken(window.localStorage.getItem("token"));
@@ -172,8 +178,9 @@ export default function TTTGamePage({ token, setToken, sessionUserID, sessionUse
                 const updatedGame = gameData.game
                 setGame(gameData.game)
                 findWinMessage(gameData.game)
+                const socketEventMessage = `user ${sessionUserID} forfeitted`
 
-                socket.current.emit("forfeit-game", {gameID, updatedGame})
+                socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
 
                 ;})
             }}

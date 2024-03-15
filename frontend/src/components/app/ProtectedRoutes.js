@@ -8,11 +8,10 @@ import { findUser } from "../../api_calls/usersAPI";
 
 import NavBar from "../navbar/NavBar";
 import GamesLobby from "../games_lobby/GamesLobby";
-import TicTacToe from "../../games/tictactoe/TicTacToe_Lowpoly";
 import ProfilePage from "../profile_page/ProfilePage";
-// import GamePage from '../game-page/GamePage';
-import GamePage from "../game_pages/GamePage";
+import GamePage from "../game_pages_refactored/GamePage";
 import TTTGamePage from "../game_pages/TTTGamePage";
+import BSGamePage from "../game_pages/BSGamePage";
 
 const ProtectedRoutes = ({ navigate }) => {
   // =========== TOKEN & SESSION USER DATA =======================
@@ -95,7 +94,7 @@ const ProtectedRoutes = ({ navigate }) => {
             />
 
             {/* ------ Tictactoe ------  */}
-            <Route
+            {/* <Route
               path="/tictactoe/:id"
               element={
                 <TTTGamePage
@@ -105,24 +104,58 @@ const ProtectedRoutes = ({ navigate }) => {
                   sessionUser={sessionUser}
                 />
               }
+            /> */}
+            <Route
+              path="/tictactoe/:id"
+              element={
+                <GamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  navigate={navigate}
+                  gameTitle={"Tic-Tac-Toe"}
+                />
+              }
             />
 
             {/* -------- RPS ----------- */}
             <Route
-              path="/rockpaperscissors/:gameId"
+              path="/rockpaperscissors/:id"
               element={
                 <GamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
                   navigate={navigate}
-                  gameTitle={"Rock Paper Scissors"}
+                  gameTitle={"Rock-Paper-Scissors"}
                 />
               }
             />
 
             {/* ---- Battleships ---- */}
-            <Route
-              path="/battleships/:gameId"
+
+            {/* <Route
+              path="/battleships/:id"
               element={
-                <GamePage navigate={navigate} gameTitle={"Battleships"} />
+                <BSGamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  sessionUser={sessionUser}
+                />
+              }
+            /> */}
+
+            <Route
+              path="/battleships/:id"
+              element={
+                <GamePage
+                  token={token}
+                  setToken={setToken}
+                  sessionUserID={sessionUserID}
+                  navigate={navigate}
+                  gameTitle={"Battleships"}
+                />
               }
             />
 
