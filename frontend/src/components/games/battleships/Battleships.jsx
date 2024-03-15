@@ -76,13 +76,13 @@ export default function Battleships({ game, setGame, gameID, sessionUserID, sock
     <div className={"flex flex-col bg-gray-500/40 w-[80rem] h-[40rem] items-center justify-between pt-[2rem] rounded-[2rem]" +  frostedGlass}>
       {/* OPPONENT & TURN HEADER */}
       {game.playerTwo ? ( 
-        !attackStage ? (
+        attackStage ? (
           <p className="text-3xl font-bold">Whose turn: {" "}
             <span className="text-3xl font-bold">{whoseTurn?.username}</span>
           </p>
           ):( 
-          <p className="text-3xl font-bold">Awaiting player two</p>)
-        ):(<p className="text-3xl font-bold">Place ships</p>)  }
+          <p className="text-3xl font-bold">Placing Ships</p>)
+        ):(<p className="text-3xl font-bold">Awaiting Player Two</p>)  }
 
 
       {/*  GAME BOARD -- diff gameboard for placing ships vs. ready */}

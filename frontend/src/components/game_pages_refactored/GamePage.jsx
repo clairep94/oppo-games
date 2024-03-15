@@ -6,6 +6,7 @@ import { gamesMenu } from "../games/gamesMenu";
 import GamePageHeader from "./GamePageHeader";
 import UnderConstruction from "../games/UnderConstruction";
 import ChatBox from "../messages/ChatBox";
+import AwaitingPlayerTwo from "../games/AwaitingPlayerTwo";
 
 // TODO Add socket functionality back into messages, games etc.
 
@@ -28,7 +29,7 @@ export default function GamePage({
 
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(null); // TODO move this to Game Component!!!
+  const [errorMessage, setErrorMessage] = useState(null); 
   const [announcement, setAnnouncement] = useState(null);
   const [winMessage, setWinMessage] = useState(null); // same as above but with game.winner.length
 
@@ -206,15 +207,23 @@ export default function GamePage({
 
         {/* GAMES CONTAINER -- this is the max size of the game, actual game board is inside */}
         <div className="flex flex-col items-center justify-center  h-full w-full">
+
+          {/* LOADING SCREEN, AWAITING PLAYER TWO SCREEN, OR GAME COMPONENT */}
           {loading ? (
-            <p>LOADING...</p>
-          ):(
-            <GameComponent game={game} setGame={setGame} gameID={gameID}
-            sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
-            joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
-            winMessage={winMessage} setWinMessage={setWinMessage} errorMessage={errorMessage} setErrorMessage={setErrorMessage}
-            findWinMessage={findWinMessage} loading={loading}
-            />
+            <p className="font-bold">
+              LOADING...
+            </p>
+          ):( 
+            game.playerTwo ? (
+              <GameComponent game={game} setGame={setGame} gameID={gameID}
+                sessionUserID={sessionUserID} socket={socket} token={token} setToken={setToken}
+                joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} frostedGlass={frostedGlass}
+                winMessage={winMessage} setWinMessage={setWinMessage} errorMessage={errorMessage} setErrorMessage={setErrorMessage}
+                findWinMessage={findWinMessage} loading={loading}
+              />
+            ) : (
+              <AwaitingPlayerTwo game={game} sessionUserID={sessionUserID} frostedGlass={frostedGlass}/>
+            )
           )}
         </div>
 
