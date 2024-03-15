@@ -1,8 +1,8 @@
 import React from 'react'
 
-export default function GamePageButtons({game, joinGame, forfeitGame, deleteGame, sessionUserID}) {
+export default function GamePageButtons({game, joinGame, forfeitGame, deleteGame, sessionUserID, }) {
   return (
-    <div className='flex flex-rol'>
+    <div className='flex flex-row'>
       
       {/* FORFEIT BUTTON-- only shows if sessionUser is a player && game is not over */}
       {!game.finished && game.playerTwo && (sessionUserID === game.playerOne._id || sessionUserID === game.playerTwo._id) &&

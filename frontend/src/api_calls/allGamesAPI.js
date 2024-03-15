@@ -82,7 +82,7 @@ class AllGamesAPI {
 
   async deleteGame(token, endpoint, id) {
     try {
-      const response = await fetch(`/${endpoint}/${id}/delete`, {
+      const response = await fetch(`/${endpoint}/${id}`, {
         method: "delete",
         headers: {
           "Content-Type": "application/json",

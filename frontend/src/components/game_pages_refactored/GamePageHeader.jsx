@@ -5,7 +5,7 @@ export default function GamePageHeader({ frostedGlass, sessionUserID, gamePresen
 
   const findOpponentMessage = (game) => {
     if (!game.playerTwo) {
-        if (game.playerOne._id === game.playerOne._id){
+        if (game.playerOne._id === sessionUserID){
             return ": You are awaiting Challenger"
         } else {
             return `: ${game.playerOne.username} is awaiting challenger`

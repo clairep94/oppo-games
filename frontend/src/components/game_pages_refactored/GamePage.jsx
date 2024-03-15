@@ -222,7 +222,9 @@ export default function GamePage({
                 findWinMessage={findWinMessage} loading={loading}
               />
             ) : (
-              <AwaitingPlayerTwo game={game} sessionUserID={sessionUserID} frostedGlass={frostedGlass}/>
+              <AwaitingPlayerTwo game={game} sessionUserID={sessionUserID} frostedGlass={frostedGlass}
+              joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} errorMessage={errorMessage}
+              />
             )
           )}
         </div>

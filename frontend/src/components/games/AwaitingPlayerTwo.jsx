@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
+import GamePageButtons from '../game_pages_refactored/GamePageButtonRow';
 
-export default function AwaitingPlayerTwo({game, sessionUserID, frostedGlass}) {
+export default function AwaitingPlayerTwo({game, sessionUserID, frostedGlass, joinGame, deleteGame, forfeitGame, errorMessage}) {
 
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [copyButtonMessage, setCopyButtonMessage] = useState("Copy URL");
 
   const copyUrlToClipboard = () => {
     const url = window.location.href
     navigator.clipboard.writeText(url);
-    setCopySuccess(true);
+    setCopyButtonMessage("Success!");
   }
 
   // =================================== JSX FOR UI ==============================================================
@@ -16,14 +17,23 @@ export default function AwaitingPlayerTwo({game, sessionUserID, frostedGlass}) {
       <h3 className='text-4xl font-bold py-2'>
         Awaiting Player Two
       </h3>
+      {(game.playerOne._id === sessionUserID) &&
+      <>
       <p className='text-xl pb-2'>
         Share this link to play with a friend
       </p>
-      <button onClick={copyUrlToClipboard} className="bg-gray-600/70 hover:bg-gray-600/90 focus:outline-black border-gray-600/50 active:bg-gray-700/80 
+      <button onClick={copyUrlToClipboard} className="bg-gray-600/80 hover:bg-gray-600/90 focus:outline-black border-gray-600/50 active:bg-gray-700/90 
       p-4 mb-2 w-[13rem] rounded-lg text-md font-medium">
-        Copy URL
+        {copyButtonMessage}
       </button>
-      {copySuccess && <p>URL copied!</p>}
+    </>    
+    }
+    <GamePageButtons game={game} sessionUserID={sessionUserID} joinGame={joinGame} deleteGame={deleteGame} forfeitGame={forfeitGame} />
+
+    {/* ERROR MESSAGE */}
+    {errorMessage && 
+    <h2 className="text-red-600/80 font-semibold text-l p-3">{errorMessage}</h2>}
+
     </div>
   )
 }
