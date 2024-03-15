@@ -73,55 +73,6 @@ export default function Battleships({ game, setGame, gameID, sessionUserID, sock
   
   return (
 
-    <div className={"flex flex-col bg-gray-500/40 w-[80rem] h-[40rem] items-center justify-between pt-[2rem] rounded-[2rem]" +  frostedGlass}>
-      {/* OPPONENT & TURN HEADER */}
-      {game.playerTwo ? ( 
-        attackStage ? (
-          <p className="text-3xl font-bold">Whose turn: {" "}
-            <span className="text-3xl font-bold">{whoseTurn?.username}</span>
-          </p>
-          ):( 
-          <p className="text-3xl font-bold">Placing Ships</p>)
-        ):(<p className="text-3xl font-bold">Awaiting Player Two</p>)  }
-
-
-      {/*  GAME BOARD -- diff gameboard for placing ships vs. ready */}
-      {loading ? (
-      <p>STILL LOADING</p>
-      ):(<>
-      {!attackStage ? (
-        <>
-        {/* PLACING SHIPS */}
-          {/* BOARD */}
-          {/* SHIPYARD */}
-          {/* TOGGLE SHIPS BUTTON */}
-        <BattleshipsSetUpGameboard game={game} placeShip={placeShip} submitPlacements={submitPlacements} loading={loading}/>
-        {/* <UnderConstruction/> */}
-        </>
-      ):(
-        <>
-        {/* ATTACKING BOARDS */}
-          {/* PLAYER ONE BOARD */}
-          {/* PLAYER TWO BOARD */}
-        <BattleshipsAttackGameboard game={game} launchMissile={launchMissile}/>
-        </>
-      )}
-      </>
-      )}
-
-    {/* BUTTON ROW */}
-    <GamePageButtons game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
-
-    {/* ERROR MESSAGE */}
-    {errorMessage && 
-        <h2 className="text-red-600/80 font-semibold text-2xl p-3">{errorMessage}</h2>}
-
-    <h2 className="text-white font-bold text-3xl p-3">
-        {winMessage}
-    </h2>
-
-
-
-    </div>
+    <UnderConstruction/>
   )
 }
