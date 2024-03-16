@@ -184,9 +184,6 @@ export default function GamePage({
   
 
   // =================================== JSX FOR UI ==============================================================
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
 
   return (
     <div

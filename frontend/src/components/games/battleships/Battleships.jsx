@@ -7,29 +7,29 @@ import BattleshipsSetUpGameboard from "./BattleshipsSetUpGameboard";
 import BattleshipsAttackGameboard from "./BattleshipsAttackGameboard";
 
 
-export default function Battleships({ game, setGame, gameID, sessionUserID, socket, token, setToken,
-  joinGame, deleteGame, forfeitGame, frostedGlass, errorMessage, setErrorMessage, winMessage, setWinMessage, findWinMessage, loading }) {
+export default function Battleships({ 
+  game, setGame, gameID, sessionUserID, socket, token, setToken,
+  joinGame, deleteGame, forfeitGame, errorMessage, setErrorMessage, 
+  winMessage, findWinMessage, loading, frostedGlass }) {
 
   // ============================= STATE VARIABLES ===========================================
   const battleshipsAPI = new BattleshipsAPI();
 
   const whoseTurn = (game.turn % 2 === 0) ? game.playerOne : game.playerTwo
-  const attackStage = (game.playerOnePlacements && game.playerTwoPlacements) // if NOT attack stage, don't show whose turn. show "Place your ships"
-  // TODO figure out UI for game stages ^^
+  const attackStage = (game.playerOnePlacements.length !== 0 && game.playerTwoPlacements.length !== 0) // if NOT attack stage, don't show whose turn. show "Place your ships"
+
   useEffect(() => {
     findWinMessage(game)
   }, [game])
 
-
-
-
   // find the userPlayer string
   // find if the user had submitted ships --> userPlayerStr+Placements.length === 0
 
+
   // =========================== SUBMITTING SHIP PLACEMENTS ============================
-  const placeShip = async(row, col) => { // function for frontend selection of placements
-    console.log(`Clicked on row ${row} and column ${col}`);
-  };
+  // const placeShip = async(row, col, element) => { // function for frontend selection of placements
+  //   console.log(`Clicked on row ${row} and column ${col}. Element: ${element}`);
+  // };
 
   const submitPlacements = async(event) => { // submitting the full gameboard to the backend
     // convert board buttons into an array
@@ -39,8 +39,7 @@ export default function Battleships({ game, setGame, gameID, sessionUserID, sock
 
   // =========================== LAUNCHING A MISSILE ============================
   const launchMissile = async(row, col) => {
-    const coordinates = `${row}${col}`
-    console.log(`Coordinates: ${row} ${col}`)
+    console.log(`Coordinates: row:${row} col:${col}`)
 
     if (token) {
       const missilePayload = {row: row, col: col}
@@ -64,8 +63,6 @@ export default function Battleships({ game, setGame, gameID, sessionUserID, sock
   }
 
 
-
-
   // ============================== TAILWIND ==============================================
     const headerContainer = 'flex flex-row w-full h-[8rem] rounded-[1.5rem] p-10 pl-[5rem] justify-right'
 
@@ -73,6 +70,54 @@ export default function Battleships({ game, setGame, gameID, sessionUserID, sock
   
   return (
 
-    <UnderConstruction/>
+    <div className={"flex flex-col bg-gray-500/40 w-full h-full items-center justify-between pt-[2rem] rounded-[2rem]" + frostedGlass}>
+    {/* OPPONENT & TURN HEADER */}
+    {attackStage ? (
+        <p className="text-3xl font-bold">Whose turn: {" "}
+          <span className="text-3xl font-bold">{whoseTurn?.username}</span>
+        </p>
+        ):( 
+        <p className="text-3xl font-bold">Placing Ships</p>)}
+
+
+    {/*  GAME BOARD -- diff gameboard for placing ships vs. ready */}
+    {loading ? (
+    <p>STILL LOADING</p>
+    ):(<>
+    {!attackStage ? (
+      <>
+      {/* PLACING SHIPS */}
+        {/* BOARD */}
+        {/* SHIPYARD */}
+        {/* TOGGLE SHIPS BUTTON */}
+      <BattleshipsSetUpGameboard game={game} submitPlacements={submitPlacements} sessionUserID={sessionUserID}/>
+      {/* <UnderConstruction/> */}
+      </>
+    ):(
+      <>
+      {/* ATTACKING BOARDS */}
+        {/* PLAYER ONE BOARD */}
+        {/* PLAYER TWO BOARD */}
+      <BattleshipsAttackGameboard game={game} launchMissile={launchMissile}/>
+      </>
+    )}
+    {JSON.stringify(game)}
+    </>
+    )}
+
+  {/* BUTTON ROW */}
+  <GamePageButtons game={game} sessionUserID={sessionUserID} joinGame={joinGame} forfeitGame={forfeitGame} deleteGame={deleteGame}/>
+
+  {/* ERROR MESSAGE */}
+  {errorMessage && 
+      <h2 className="text-red-600/80 font-semibold text-xl p-3">{errorMessage}</h2>}
+
+  <h2 className="text-white font-bold text-3xl p-3">
+      {winMessage}
+  </h2>
+
+
+
+  </div>
   )
 }

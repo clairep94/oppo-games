@@ -35,7 +35,9 @@ const concealedBattleshipsView = (populatedGame, viewerID) => {
       for (const ship in populatedGame.playerOneShips) {
         delete populatedGame.playerOneShips[ship].units;
       }
-      populatedGame.playerOnePlacements = null;
+      if (populatedGame.playerOnePlacements.length !== 0) {
+        populatedGame.playerOnePlacements = "submitted";
+      }
     }
     // If viewer is not playerTwo: (viewer is playerOne or observer)
     if (viewerID != populatedGame.playerTwo?._id) {
@@ -47,7 +49,9 @@ const concealedBattleshipsView = (populatedGame, viewerID) => {
       for (const ship in populatedGame.playerTwoShips) {
         delete populatedGame.playerTwoShips[ship].units;
       }
-      populatedGame.playerTwoPlacements = null;
+      if (populatedGame.playerTwoPlacements.length !== 0) {
+        populatedGame.playerTwoPlacements = "submitted";
+      }
     }
   }
   return populatedGame;
