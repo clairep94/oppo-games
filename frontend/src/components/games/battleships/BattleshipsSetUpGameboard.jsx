@@ -61,7 +61,12 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     }
 
     // PLACING A SHIP
-    const placeShip = (row, col, element) => {
+    const placeShip = (row, col) => {
+        // Check if all units are valid (in bounds & empty)
+        // If current space is not empty --> set error message, return none
+        // If not in bounds --> set error message, return none
+        // If not empty --> set error message, return none
+
         if (currentShip) {
             const shipLength = currentShip.units;
             const code = currentShip.code;
@@ -78,6 +83,15 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
                 }
             }
             setPlacementBoard(newBoard);
+            setPlacementShipyard(prevShipyard => {
+                return prevShipyard.map(ship => {
+                    if (ship.title === currentShip.title) {
+                        return { ...ship, placed: true };
+                    }
+                    return ship;
+                });
+            });
+            setCurrentShip(null);
         }
     };
 
@@ -107,17 +121,6 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     //     return units
     // }
 
-    const changeUnit = (row, col, code) => {
-        console.log("changing unit: ")
-        placementBoard[row][col] = code
-        
-        // // Create a deep copy of the current placementBoard
-        // const updatedBoard = placementBoard.map(rowArr => [...rowArr]);
-        // // Update the specific cell with the new code
-        // updatedBoard[row][col] = code;
-        // // Set the updated placementBoard as the new state
-        // setPlacementBoard(updatedBoard);
-    };
 
     // ADD A HOVER FUNCTION --> on hover, change the colour of the units that will be selected
 
@@ -127,7 +130,8 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
         console.log("Resetting ship placements")
         setCurrentShip(null);
         // placementBoard = resetShipPlacements
-        setPlacementShipyard(resetShipPlacements);
+        setPlacementBoard(emptyBoard);
+        setPlacementShipyard(resetShipYard);
     }
 
     // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
