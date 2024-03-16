@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from "react";
 import BattleshipsSetUpShipyard from "./BattleshipsSetUpShipyard";
 
-export default function BattleshipsSetUpGameboard({game, submitPlacements, sessionUserID}) {
+export default function BattleshipsSetUpGameboard({game, submitPlacements, sessionUserID, setErrorMessage}) {
 
     // ================ GAME DATA & VIEW ======================
     // Is the sessionUser an observer
@@ -53,14 +53,40 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
             setCurrentShip(shipType)
             console.log(`Selecting ${shipDirectionHorizontal ? "Horizontal" : "Vertical"} Ship: `, currentShip)
         }
+        setErrorMessage("")
     }
 
     // PLACING A SHIP
     const placeShip = (row, col, element) => {
         console.log(`Unit: row: ${row}, column: ${col}, element: ${element}\n ${shipDirectionHorizontal ? "Horizontal" : "Vertical"}`, currentShip)
-
+        console.log("current ship: ", currentShip)
+        findTargetUnits(row, col)
     }
 
+    // FINDING THE UNITS NEEDED
+    const findTargetUnits = (startingRowIndex, startingColIndex) => {
+        const shipLength = currentShip.units;
+        let units = [];
+        let currentRowIndex = startingRowIndex;
+        let currentColIndex = startingColIndex;
+
+        while (units.length < shipLength) {
+            units.push([currentRowIndex, currentColIndex]);
+            if (shipDirectionHorizontal) {
+                currentColIndex++;
+            } else {
+                currentRowIndex++;
+            }
+            // Add a condition to catch if we are going beyond the array bounds
+            if (currentRowIndex >= 10 || currentColIndex >= 10) {
+                setErrorMessage("Selected ship placement is out of bounds")
+                return null;
+            }
+        }
+        console.log("Found units: ", units)
+        setErrorMessage("")
+        return units
+    }
 
 
     // RESETTING THE SHIP PLACEMENTS
@@ -74,28 +100,28 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
   // =================================== JSX FOR UI ==============================================================
 
   // OBSERVER
-  if (isObserver) {
-    return (
-        <>
-            {/* SHIP PLACEMENTS BOARD */}
-            <div className="flex flex-row bg-red-200/30 w-full h-full">
-                Players are placing their pieces
-            </div>
-        </>
-    )
-  } 
+    if (isObserver) {
+        return (
+            <>
+                {/* SHIP PLACEMENTS BOARD */}
+                <div className="flex flex-row bg-red-200/30 w-full h-full">
+                    Players are placing their pieces
+                </div>
+            </>
+        )
+    } 
 
-  // ALREADY SUBMITTED SHIPS:
-  if (alreadySubmitted) {
-    return(
-        <>
-            {/* SHIP PLACEMENTS BOARD */}
-            <div className="flex flex-row bg-red-200/30 w-full h-full">
-                Already submitted ships. Please await opponent to submit their ships
-            </div>
-        </>
-    )
-  }
+    // ALREADY SUBMITTED SHIPS:
+    if (alreadySubmitted) {
+        return(
+            <>
+                {/* SHIP PLACEMENTS BOARD */}
+                <div className="flex flex-row bg-red-200/30 w-full h-full">
+                    Already submitted ships. Please await opponent to submit their ships
+                </div>
+            </>
+        )
+    }
 
   // SESSIONUSER IS ONE OF THE PLAYERS
   return (
@@ -109,8 +135,10 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
             <h5 className="font-bold text-[2rem]">
             Your Shipyard
             </h5>
-            <BattleshipsSetUpShipyard placementShipyard={placementShipyard} shipDirectionHorizontal={shipDirectionHorizontal} selectShip={selectShip}/>
-
+            {/* SETUP SHIPYARD */}
+            <BattleshipsSetUpShipyard placementShipyard={placementShipyard} shipDirectionHorizontal={shipDirectionHorizontal} selectShip={selectShip}
+            currentShip={currentShip}
+            />
         </div>
 
         {/* BOARD */}

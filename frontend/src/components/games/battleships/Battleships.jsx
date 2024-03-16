@@ -90,7 +90,7 @@ export default function Battleships({
         {/* BOARD */}
         {/* SHIPYARD */}
         {/* TOGGLE SHIPS BUTTON */}
-      <BattleshipsSetUpGameboard game={game} submitPlacements={submitPlacements} sessionUserID={sessionUserID}/>
+      <BattleshipsSetUpGameboard game={game} submitPlacements={submitPlacements} sessionUserID={sessionUserID} setErrorMessage={setErrorMessage}/>
       {/* <UnderConstruction/> */}
       </>
     ):(
