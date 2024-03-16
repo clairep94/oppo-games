@@ -5,7 +5,7 @@ export default function BattleshipsSetUpShipyard({placementShipyard, shipDirecti
 
   return (
     <div className={`flex flex-${shipDirectionHorizontal ? "col" : "row"}`}>
-      {placementShipyard.map((ship) => (
+      {placementShipyard.filter((ship) => ship.placed === false).map((ship) => (
         // SHIP DIV        
         <div
           key={ship.title}

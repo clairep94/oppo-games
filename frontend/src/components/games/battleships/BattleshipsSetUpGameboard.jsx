@@ -37,13 +37,17 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     ]
     
     // PLACING THE SHIPS
-    const [placementBoard, setPlacementBoard] = useState(emptyBoard); // STORES THE WORKING STATE OF THE PLACEMENT BOARD
+    const [placementBoard, setPlacementBoard] = useState(() => (
+        Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => ""))
+    ));
+     // STORES THE WORKING STATE OF THE PLACEMENT BOARD
     const [placementShipyard, setPlacementShipyard] = useState(resetShipYard); // STORES THE WORKING STATE OF THE SHIPYARD
 
     const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
     const [currentShip, setCurrentShip] = useState(null);
 
 
+    // ================= FUNCTIONS FOR SELECTION SHIP PLACEMENTS =============================
 
     // SELECTING A SHIP
     const selectShip = (shipType) => {
@@ -58,42 +62,75 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
     // PLACING A SHIP
     const placeShip = (row, col, element) => {
-        console.log(`Unit: row: ${row}, column: ${col}, element: ${element}\n ${shipDirectionHorizontal ? "Horizontal" : "Vertical"}`, currentShip)
-        console.log("current ship: ", currentShip)
-        findTargetUnits(row, col)
-    }
+        if (currentShip) {
+            const shipLength = currentShip.units;
+            const code = currentShip.code;
+            let newBoard = [...placementBoard];
+            let currentRowIndex = row;
+            let currentColIndex = col;
+
+            for (let i = 0; i < shipLength; i++) {
+                newBoard[currentRowIndex][currentColIndex] = code;
+                if (shipDirectionHorizontal) {
+                    currentColIndex++;
+                } else {
+                    currentRowIndex++;
+                }
+            }
+            setPlacementBoard(newBoard);
+        }
+    };
 
     // FINDING THE UNITS NEEDED
-    const findTargetUnits = (startingRowIndex, startingColIndex) => {
-        const shipLength = currentShip.units;
-        let units = [];
-        let currentRowIndex = startingRowIndex;
-        let currentColIndex = startingColIndex;
+    // const findTargetUnits = (startingRowIndex, startingColIndex) => {
+    //     const shipLength = currentShip.units;
+    //     let units = [];
+    //     let currentRowIndex = startingRowIndex;
+    //     let currentColIndex = startingColIndex;
 
-        while (units.length < shipLength) {
-            units.push([currentRowIndex, currentColIndex]);
-            if (shipDirectionHorizontal) {
-                currentColIndex++;
-            } else {
-                currentRowIndex++;
-            }
-            // Add a condition to catch if we are going beyond the array bounds
-            if (currentRowIndex >= 10 || currentColIndex >= 10) {
-                setErrorMessage("Selected ship placement is out of bounds")
-                return null;
-            }
-        }
-        console.log("Found units: ", units)
-        setErrorMessage("")
-        return units
-    }
+    //     while (units.length < shipLength) {
+    //         units.push([currentRowIndex, currentColIndex]);
+
+    //         if (shipDirectionHorizontal) {
+    //             currentColIndex++;
+    //         } else {
+    //             currentRowIndex++;
+    //         }
+    //         // Add a condition to catch if we are going beyond the array bounds
+    //         if (currentRowIndex >= 10 || currentColIndex >= 10) {
+    //             setErrorMessage("Selected ship placement is out of bounds")
+    //             return null;
+    //         }
+    //     }
+    //     console.log("Found units: ", units)
+    //     setErrorMessage("")
+    //     return units
+    // }
+
+    const changeUnit = (row, col, code) => {
+        console.log("changing unit: ")
+        placementBoard[row][col] = code
+        
+        // // Create a deep copy of the current placementBoard
+        // const updatedBoard = placementBoard.map(rowArr => [...rowArr]);
+        // // Update the specific cell with the new code
+        // updatedBoard[row][col] = code;
+        // // Set the updated placementBoard as the new state
+        // setPlacementBoard(updatedBoard);
+    };
+
+    // ADD A HOVER FUNCTION --> on hover, change the colour of the units that will be selected
 
 
     // RESETTING THE SHIP PLACEMENTS
     const resetShipPlacements = () => {
         console.log("Resetting ship placements")
         setCurrentShip(null);
+        // placementBoard = resetShipPlacements
+        setPlacementShipyard(resetShipPlacements);
     }
+
+    // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
 
     // SUBMITTING THE SHIP PLACEMENTS
 
