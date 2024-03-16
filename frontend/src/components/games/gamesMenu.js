@@ -5,6 +5,15 @@ import TicTacToe from "../games/tictactoe/TicTacToe";
 export const gamesMenu = [
   // <------- LIST OF ENDPOINTS, TITLES, IMAGE SOURCES FOR EACH GAME!! --> USE TO MAP OVER THE CARDS
   {
+    title: "Battleships",
+    endpoint: "battleships",
+    hardCodePlayersOnline: "84",
+    mapName: "Rocky River",
+    imgSource: "/cards/BS2.jpg",
+    bgImageSource: "BS2.jpg",
+    component: Battleships,
+  },
+  {
     title: "Tic-Tac-Toe",
     endpoint: "tictactoe",
     hardCodePlayersOnline: "234",
@@ -21,14 +30,5 @@ export const gamesMenu = [
     imgSource: "/cards/RPS.jpg",
     bgImageSource: "RPS.jpg",
     component: RockPaperScissors,
-  },
-  {
-    title: "Battleships",
-    endpoint: "battleships",
-    hardCodePlayersOnline: "84",
-    mapName: "Rocky River",
-    imgSource: "/cards/BS2.jpg",
-    bgImageSource: "BS2.jpg",
-    component: Battleships,
   },
 ];

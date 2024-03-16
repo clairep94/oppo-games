@@ -45,6 +45,7 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
     const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
     const [currentShip, setCurrentShip] = useState(null);
+    const [hoveredUnits, setHoveredUnits] = useState([]);
 
 
     // ================= FUNCTIONS FOR SELECTION SHIP PLACEMENTS =============================
@@ -62,38 +63,69 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
     // PLACING A SHIP
     const placeShip = (row, col) => {
-        // Check if all units are valid (in bounds & empty)
-        // If current space is not empty --> set error message, return none
-        // If not in bounds --> set error message, return none
-        // If not empty --> set error message, return none
-
         if (currentShip) {
             const shipLength = currentShip.units;
             const code = currentShip.code;
             let newBoard = [...placementBoard];
             let currentRowIndex = row;
             let currentColIndex = col;
-
+            let outOfBounds = false;
+    
+            // Check if all units are valid (in bounds & empty)
             for (let i = 0; i < shipLength; i++) {
-                newBoard[currentRowIndex][currentColIndex] = code;
+                if (currentRowIndex >= 10 || currentColIndex >= 10) {
+                    outOfBounds = true;
+                    setErrorMessage("Selected ship placement is out of bounds");
+                    break;
+                }
+    
+                if (newBoard[currentRowIndex][currentColIndex] !== "") {
+                    setErrorMessage("Selected ship placement overlaps with another ship");
+                    return;
+                }
+    
                 if (shipDirectionHorizontal) {
                     currentColIndex++;
                 } else {
                     currentRowIndex++;
                 }
             }
-            setPlacementBoard(newBoard);
-            setPlacementShipyard(prevShipyard => {
-                return prevShipyard.map(ship => {
+    
+            if (!outOfBounds) {
+                // Update the board only if not out of bounds
+                let updatedBoard = [...placementBoard];
+                let updatedShipyard = [...placementShipyard];
+                currentRowIndex = row;
+                currentColIndex = col;
+    
+                for (let i = 0; i < shipLength; i++) {
+                    updatedBoard[currentRowIndex][currentColIndex] = code;
+    
+                    if (shipDirectionHorizontal) {
+                        currentColIndex++;
+                    } else {
+                        currentRowIndex++;
+                    }
+                }
+    
+                // Update the shipyard
+                updatedShipyard = updatedShipyard.map(ship => {
                     if (ship.title === currentShip.title) {
                         return { ...ship, placed: true };
                     }
                     return ship;
                 });
-            });
-            setCurrentShip(null);
+    
+                // Update state
+                setPlacementBoard(updatedBoard);
+                setPlacementShipyard(updatedShipyard);
+                setCurrentShip(null);
+            } else {
+                setErrorMessage("Selected ship placement is out of bounds");
+            }
         }
     };
+    
 
     // FINDING THE UNITS NEEDED
     // const findTargetUnits = (startingRowIndex, startingColIndex) => {
@@ -123,7 +155,44 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
 
     // ADD A HOVER FUNCTION --> on hover, change the colour of the units that will be selected
+    const handleHoverEnter = (row, col) => {
+        if (!currentShip) return; // If no ship is selected, do nothing
 
+        const shipLength = currentShip.units;
+        const newHoveredUnits = [];
+        let currentRowIndex = row;
+        let currentColIndex = col;
+        let outOfBounds = false;
+
+        // Check if all units are valid (in bounds & empty)
+        for (let i = 0; i < shipLength; i++) {
+            if (currentRowIndex >= 10 || currentColIndex >= 10) {
+                outOfBounds = true;
+                break;
+            }
+
+            if (placementBoard[currentRowIndex][currentColIndex] !== "") {
+                // Overlapping with another ship
+                return;
+            }
+
+            newHoveredUnits.push([currentRowIndex, currentColIndex]);
+
+            if (shipDirectionHorizontal) {
+                currentColIndex++;
+            } else {
+                currentRowIndex++;
+            }
+        }
+
+        if (!outOfBounds) {
+            setHoveredUnits(newHoveredUnits);
+        }
+    };
+
+    const handleHoverLeave = () => {
+        setHoveredUnits([]);
+    };
 
     // RESETTING THE SHIP PLACEMENTS
     const resetShipPlacements = () => {
@@ -132,6 +201,7 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
         // placementBoard = resetShipPlacements
         setPlacementBoard(emptyBoard);
         setPlacementShipyard(resetShipYard);
+        setErrorMessage("")
     }
 
     // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
@@ -189,19 +259,24 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
             </h5>
 
             <div className="grid grid-cols-10 gap-0 w-[20rem]">
-                    {/* Create the 10x10 grid */}
                         {placementBoard.map((row, rowIndex) => (
-                            row.map((element, colIndex) => (
-                                <div
-                                    key={`${rowIndex}-${colIndex}`}
-                                    className={`bg-gray-400/50 border border-black w-8 h-8`}
-                                    onClick={() => placeShip(rowIndex, colIndex, element)}
-                                >{element}</div>
-                            ))
-                            )
-                        )}
-
-            </div>
+                            row.map((element, colIndex) => {
+                                const isHovered = hoveredUnits.some(([hoverRow, hoverCol]) => hoverRow === rowIndex && hoverCol === colIndex);
+                                const cellColor = isHovered ? "bg-green-500 hover:bg-green-600" : "";
+                                return (
+                                    <div
+                                        key={`${rowIndex}-${colIndex}`}
+                                        className={`${element} ${cellColor} border border-black w-8 h-8 cursor-pointer`}
+                                        onClick={() => placeShip(rowIndex, colIndex)}
+                                        onMouseEnter={() => handleHoverEnter(rowIndex, colIndex)}
+                                        onMouseLeave={handleHoverLeave}
+                                    >
+                                        {element}
+                                    </div>
+                                );
+                            })
+                        ))}
+                    </div>
             
             <p>
                 {JSON.stringify(placementBoard)}
