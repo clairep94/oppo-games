@@ -63,69 +63,98 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
     // PLACING A SHIP
     const placeShip = (row, col) => {
-        if (currentShip) {
-            const shipLength = currentShip.units;
-            const code = currentShip.code;
-            let newBoard = [...placementBoard];
-            let currentRowIndex = row;
-            let currentColIndex = col;
-            let outOfBounds = false;
-    
-            // Check if all units are valid (in bounds & empty)
-            for (let i = 0; i < shipLength; i++) {
-                if (currentRowIndex >= 10 || currentColIndex >= 10) {
-                    outOfBounds = true;
-                    setErrorMessage("Selected ship placement is out of bounds");
-                    break;
-                }
-    
-                if (newBoard[currentRowIndex][currentColIndex] !== "") {
-                    setErrorMessage("Selected ship placement overlaps with another ship");
-                    return;
-                }
-    
-                if (shipDirectionHorizontal) {
-                    currentColIndex++;
-                } else {
-                    currentRowIndex++;
-                }
-            }
-    
-            if (!outOfBounds) {
-                // Update the board only if not out of bounds
-                let updatedBoard = [...placementBoard];
-                let updatedShipyard = [...placementShipyard];
-                currentRowIndex = row;
-                currentColIndex = col;
-    
+
+        if (placementBoard[row][col] !== ""){
+            resetInvalidShip(row, col)
+        } else {
+
+            if (currentShip) {
+                const shipLength = currentShip.units;
+                const code = currentShip.code;
+                let newBoard = [...placementBoard];
+                let currentRowIndex = row;
+                let currentColIndex = col;
+                let outOfBounds = false;
+        
+                // Check if all units are valid (in bounds & empty)
                 for (let i = 0; i < shipLength; i++) {
-                    updatedBoard[currentRowIndex][currentColIndex] = code;
-    
+                    if (currentRowIndex >= 10 || currentColIndex >= 10) {
+                        outOfBounds = true;
+                        setErrorMessage("Selected ship placement is out of bounds");
+                        break;
+                    }
+        
+                    if (newBoard[currentRowIndex][currentColIndex] !== "") {
+                        setErrorMessage("Selected ship placement overlaps with another ship");
+                        return;
+                    }
+        
                     if (shipDirectionHorizontal) {
                         currentColIndex++;
                     } else {
                         currentRowIndex++;
                     }
                 }
-    
-                // Update the shipyard
-                updatedShipyard = updatedShipyard.map(ship => {
-                    if (ship.title === currentShip.title) {
-                        return { ...ship, placed: true };
+        
+                if (!outOfBounds) {
+                    // Update the board only if not out of bounds
+                    let updatedBoard = [...placementBoard];
+                    let updatedShipyard = [...placementShipyard];
+                    currentRowIndex = row;
+                    currentColIndex = col;
+        
+                    for (let i = 0; i < shipLength; i++) {
+                        updatedBoard[currentRowIndex][currentColIndex] = code;
+        
+                        if (shipDirectionHorizontal) {
+                            currentColIndex++;
+                        } else {
+                            currentRowIndex++;
+                        }
                     }
-                    return ship;
-                });
-    
-                // Update state
-                setPlacementBoard(updatedBoard);
-                setPlacementShipyard(updatedShipyard);
-                setCurrentShip(null);
-            } else {
-                setErrorMessage("Selected ship placement is out of bounds");
+        
+                    // Update the shipyard
+                    updatedShipyard = updatedShipyard.map(ship => {
+                        if (ship.title === currentShip.title) {
+                            return { ...ship, placed: true };
+                        }
+                        return ship;
+                    });
+        
+                    // Update state
+                    setPlacementBoard(updatedBoard);
+                    setPlacementShipyard(updatedShipyard);
+                    setCurrentShip(null);
+                } else {
+                    setErrorMessage("Selected ship placement is out of bounds");
+                }
             }
         }
+
     };
     
+    const resetInvalidShip = (row, col) => {
+        const updatedBoard = [...placementBoard];
+        const updatedShipyard = [...placementShipyard];
+        const shipCode = updatedBoard[row][col];
+    
+        updatedBoard.forEach((row, rowIndex) => {
+            row.forEach((element, colIndex) => {
+                if (element === shipCode) {
+                    updatedBoard[rowIndex][colIndex] = ""; // Reset the board cell
+                }
+            });
+        });
+    
+        const resetShip = updatedShipyard.find(ship => ship.code === shipCode);
+        if (resetShip) {
+            resetShip.placed = false; // Reset the ship's placed status
+        }
+    
+        setPlacementBoard(updatedBoard);
+        setPlacementShipyard(updatedShipyard);
+        setCurrentShip(null);
+    };
 
     // FINDING THE UNITS NEEDED
     // const findTargetUnits = (startingRowIndex, startingColIndex) => {
