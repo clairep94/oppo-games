@@ -208,26 +208,42 @@ setGame, token, setToken, battleshipsAPI, socket, gameID
     }
 
     // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
-    const submitPlacements = async() => { // submitting the full gameboard to the backend
-        if (placementShipyard.filter((ship) => ship.placed === false).length !== 0){
-            setErrorMessage("Incomplete ship placements")
-        } else {
-            if (token) {
-                const shipPlacementsPayload = {placements: placementBoard}
-                const gameData = battleshipsAPI.submitShipPlacements(token, game._id, shipPlacementsPayload)
-                window.localStorage.setItem("token", gameData.token);
-                setToken(window.localStorage.getItem("token"));
-                const updatedGame = gameData.game;
-                setGame(updatedGame);
-                setErrorMessage("");
-                const socketEventMessage = `user ${sessionUserID} submitted placements`
-        
-                socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+    const submitPlacements = async () => {
+        if (token) {
+            try {
+                const response = await fetch(`/${game.endpoint}/${game._id}/submit_placements`, {
+                    method: 'put',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ placements: placementBoard }) // Send placementBoard instead of placementShipyard
+                });
+
+                const data = await response.json();
+    
+                if (response.status === 200) {
+                    console.log("Data success", data)
+                    const gameID = data.game._id;
+    
+                    setGame(data.game);
+                    window.localStorage.setItem("token", data.token);
+                    setToken(window.localStorage.getItem("token"));
+    
+                } else {
+                    console.log("Data error", data)
+
+
+                    console.log("Error submitting placements:", data.error);
+                    setErrorMessage(data.error);
+    
+                }
+            } catch (error) {
+                console.error(`Error submitting ${game.title} game:`, error);
             }
         }
-        
-
     }
+    
     
 
     
@@ -315,7 +331,10 @@ setGame, token, setToken, battleshipsAPI, socket, gameID
     {/* SHIP PLACEMENTS BUTTONS */}
     <div className="flex flex-row space-x-2">
         {/* TOGGLE SHIPS BUTTON */}
-        <button onClick={() => {setShipDirectionHorizontal(!shipDirectionHorizontal)}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
+        <button onClick={() => {
+            setShipDirectionHorizontal(!shipDirectionHorizontal)
+            setErrorMessage("")
+            }} className="bg-black/70 p-4 w-[13rem] rounded-lg">
             Toggle Ship Direction
         </button>
         {/* SUBMIT SHIP PLACEMENTS */}
