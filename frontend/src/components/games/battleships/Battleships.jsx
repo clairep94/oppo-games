@@ -81,7 +81,7 @@ export default function Battleships({
       {/* ATTACKING BOARDS */}
         {/* PLAYER ONE BOARD */}
         {/* PLAYER TWO BOARD */}
-      <BattleshipsAttackGameboard game={game} launchMissile={launchMissile}/>
+      <BattleshipsAttackGameboard game={game} sessionUserID={sessionUserID} setErrorMessage={setErrorMessage} setGame={setGame} token={token} setToken={setToken} socket={socket} />
       </>
     )}
     {JSON.stringify(game)}

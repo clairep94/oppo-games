@@ -242,6 +242,7 @@ const BattleshipsController = {
     try {
       // 1) =========== Find the current game and Catch Errors: =================
       const currentGame = await Battleships.findById(gameID);
+      console.log(currentGame);
 
       // Game not found
       if (!currentGame) {

@@ -14,6 +14,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
     console.log(`Coordinates: row:${row} col:${col}`)
 
     if (token) {
+      console.log("has token")
       try {
         const response = await fetch(`/${game.endpoint}/${game._id}/launch_missile`, {
           method: 'put',
@@ -25,8 +26,9 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
         })
 
         const gameData = await response.json();
+        console.log(gameData)
 
-        if (response === 200) {
+        if (response.status === 200) {
           const gameID = gameData.game._id;
           const updatedGame = gameData.game;
 
@@ -65,6 +67,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
         {/* BOARD */}
         <BattleshipsAttackBoard attackBoard={game.playerOneBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize}/>
+        {/* SHIPYARD */}
       </div>
 
 
@@ -77,6 +80,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
         {/* BOARD */}
         <BattleshipsAttackBoard attackBoard={game.playerTwoBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize}/>
+        {/* SHIPYARD */}
       </div>
 
 
