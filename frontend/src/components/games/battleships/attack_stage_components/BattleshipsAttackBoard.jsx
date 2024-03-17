@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from "react";
 
-export default function BattleshipsAttackBoard({ attackBoard, launchMissile, TWUnitSize }) {
+export default function BattleshipsAttackBoard({ attackBoard, launchMissile, TWUnitSize, owner }) {
 
   // ================= STATE VARIABLES =============================
   const [hoveredUnit, setHoveredUnit] = useState(null); // Array of units that are hovered over for colour-change
@@ -28,15 +28,15 @@ export default function BattleshipsAttackBoard({ attackBoard, launchMissile, TWU
       {attackBoard.map((row, rowIndex) => (
         row.map((element, colIndex) => {
           const cellColor = (hoveredUnit && JSON.stringify(hoveredUnit) === JSON.stringify([rowIndex, colIndex])) ? (
-            hasError ?  "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
+            (hasError || owner) ?  "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
           ) : "";
           
           // SINGLE UNIT
           return(
             <div
               key={`${rowIndex}-${colIndex}`}
-              className={`${element} ${cellColor} border border-black w-${TWUnitSize} h-${TWUnitSize} cursor-pointer text-center`}
-              onClick={() => launchMissile(rowIndex, colIndex)}
+              className={`${element} ${cellColor} border border-black w-${TWUnitSize} h-${TWUnitSize} cursor-pointer text-center justify-center flex flex-col`}
+              onClick={() => launchMissile(rowIndex, colIndex, owner)}
               onMouseEnter={() => handleHoverEnter(rowIndex, colIndex)}
               onMouseLeave={handleHoverLeave}
             >

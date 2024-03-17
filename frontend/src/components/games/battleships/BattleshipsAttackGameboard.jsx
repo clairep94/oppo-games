@@ -10,7 +10,12 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
   // ================ FUNCTION FOR SUBMITTING SHIP PLACEMENTS =========================
 
-  const launchMissile = async(row, col) => {
+  const launchMissile = async(row, col, owner) => {
+
+    if (owner){
+      setErrorMessage("Cannot launch on own board!")
+      return null;
+    }
     console.log(`Coordinates: row:${row} col:${col}`)
 
     if (token) {
@@ -38,6 +43,8 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
           const socketEventMessage =  `user ${sessionUserID} attacked row: ${row}, col: ${col}. Result: ${gameData.message}`
           socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+
+          setErrorMessage("");
         } else {
           console.log(`Error launching missile`, gameData.error)
           setErrorMessage(gameData.error)
@@ -62,11 +69,16 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
       <div className='flex flex-col w-full h-full'>
         {/* HEADER */}
         <h5 className="font-bold text-[2rem]">
-          Player One: {game.playerOne.username}
+          {(game.playerOne._id === sessionUserID) ? (
+            <>Your Board</>
+          ): (
+            <>Player One: {game.playerOne.username}</>
+          )
+          }
         </h5>
 
         {/* BOARD */}
-        <BattleshipsAttackBoard attackBoard={game.playerOneBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize}/>
+        <BattleshipsAttackBoard attackBoard={game.playerOneBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize} owner={(game.playerOne._id === sessionUserID)}/>
         {/* SHIPYARD */}
       </div>
 
@@ -75,16 +87,18 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
       <div className='flex flex-col w-full h-full'>
         {/* HEADER */}
         <h5 className="font-bold text-[2rem]">
-          Player Two: {game.playerTwo.username}
+        {(game.playerTwo._id === sessionUserID) ? (
+            <>Your Board</>
+          ): (
+            <>Player Two: {game.playerTwo.username}</>
+          )
+          }
         </h5>
 
         {/* BOARD */}
-        <BattleshipsAttackBoard attackBoard={game.playerTwoBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize}/>
+        <BattleshipsAttackBoard attackBoard={game.playerTwoBoard} launchMissile={launchMissile} TWUnitSize={TWUnitSize} owner={(game.playerTwo._id === sessionUserID)}/>
         {/* SHIPYARD */}
       </div>
-
-
-      {/* BOARD */}
 
     </div>
 

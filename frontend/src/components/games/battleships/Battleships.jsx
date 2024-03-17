@@ -56,7 +56,7 @@ export default function Battleships({
   
   return (
 
-    <div className={"flex flex-col bg-gray-500/40 w-full h-full items-center justify-between pt-[2rem] rounded-[2rem]" + frostedGlass}>
+    <div className={"flex flex-col bg-gray-500/40 w-full h-full overflow-auto items-center justify-between pt-[2rem] rounded-[2rem]" + frostedGlass}>
     {/* OPPONENT & TURN HEADER */}
     {attackStage ? (
         <p className="text-3xl font-bold">Whose turn: {" "}

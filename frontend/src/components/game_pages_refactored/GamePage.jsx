@@ -203,7 +203,7 @@ export default function GamePage({
         />
 
         {/* GAMES CONTAINER -- this is the max size of the game, actual game board is inside */}
-        <div className="flex flex-col items-center justify-center  h-full w-full">
+        <div className="flex flex-col items-center justify-center  h-full w-full overflow-auto">
 
           {/* LOADING SCREEN, AWAITING PLAYER TWO SCREEN, OR GAME COMPONENT */}
           {loading ? (
