@@ -154,10 +154,19 @@ export default function GamePage({
     //---------------- Receiving new move -------------------
     // NOTE Cannot feed this into game component, need to keep here.
     socket.current.on("receive-game-update", ({ gameID, gameState }) => {
-        console.log("received game from socket", gameState);
-        setGame(gameState);
-        setErrorMessage("");
+      console.log("received game from socket", gameState);
+      setGame(gameState);
+      setErrorMessage("");
     });
+
+    // RECEIVE MISSILE FOR BATTLESHIPS --- not able to pass the receiving socket down to battleships so keeping this here.
+    socket.current.on("receive-missile", ({ gameID, gameData }) => {
+      console.log("receive missile from socket", gameData)
+      fetchGame() // This was the easiest solution, instead of figuring out a different way to unconceal and conceal the game.
+      setErrorMessage("");
+      // findAnnouncement(gameData)
+      // TODO add something to update the announcement
+    })
 
     //---------------- Receiving messages ------------------
     // socket.current.on("receive-message", ({gameID, receivedMessage}) => {
@@ -176,6 +185,16 @@ export default function GamePage({
     // })
 
   }, [sessionUserID])
+
+  const findAnnouncement = (gameData) => {
+    const actorID = gameData.actor
+    const eventString = gameData.message
+    const playerString = (actorID === sessionUserID) ? ("You") : (
+      (actorID === gameData.game.playerOne._id) ? (gameData.game.playerOne.username) : (gameData.game.playerTwo.username)
+    )
+    const announcementString = `${playerString.toUpperCase()} ${eventString}!`
+    setAnnouncement(announcementString)
+  }
 
   // ============================== TAILWIND ==============================================
   const frostedGlass = ` bg-gradient-to-r from-gray-300/30 via-purple-100/20 to-purple-900/20 backdrop-blur-sm

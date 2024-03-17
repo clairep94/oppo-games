@@ -6,6 +6,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
   // ================ GAME DATA & VIEW ======================
   const [announcment, setAnnouncement] = useState("");
+  // const [gameData, setGameData] = useState(null); // this is just used for the message, there might be a better way to do this.
   const TWUnitSize = 8;
 
   // ================ FUNCTION FOR SUBMITTING SHIP PLACEMENTS =========================
@@ -30,6 +31,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
 
         const gameData = await response.json();
         console.log(gameData)
+        // setGameData(gameData)
 
         if (response.status === 200) {
           const gameID = gameData.game._id;
@@ -39,8 +41,10 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
           window.localStorage.setItem("token", gameData.token);
           setToken(window.localStorage.getItem("token"));
 
-          const socketEventMessage =  `user ${sessionUserID} attacked row: ${row}, col: ${col}. Result: ${gameData.message}`
-          socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+          socket.current.emit("launch-missile", { gameID, gameData }) // emit the entire gameData, not just gameData.game
+
+          // const socketEventMessage =  `user ${sessionUserID} attacked row: ${row}, col: ${col}. Result: ${gameData.message}`
+          // socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
 
           setErrorMessage("");
           findAnnouncement(gameData);
@@ -49,10 +53,13 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
           setErrorMessage(gameData.error)
         }
       } catch (error) {
-        console.log(`Error launching missile`)
+        console.log(`ServerError`)
+        setErrorMessage("Server Error. Please try again later.")
       }
     }
   }
+
+  
 
   // =============== FUNCTION FOR FINDING THE GAME ANNOUNCEMENT: ====================
   const findAnnouncement = (gameData) => {
@@ -64,6 +71,12 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
     const announcementString = `${playerString.toUpperCase()} ${eventString}!`
     setAnnouncement(announcementString)
   }
+
+  // useEffect(() => {
+  //   if (gameData){
+  //     findAnnouncement(gameData)
+  //   }
+  // }, [gameData])
 
 
   // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================

@@ -68,6 +68,20 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("launch-missile", ({ gameID, gameData }) => {
+    if (activeGames[gameID]) {
+      io.to(gameID).emit("receive-missile", {
+        gameID,
+        gameData,
+      });
+
+      console.log("Launching Missile:", gameID);
+    } else {
+      console.log("No active game found", gameID);
+      console.log("Active Games: ", activeGames);
+    }
+  });
+
   socket.on("send-message", ({ gameID, sentMessage }) => {
     console.log("sending a message: ", gameID);
     if (activeGames[gameID]) {

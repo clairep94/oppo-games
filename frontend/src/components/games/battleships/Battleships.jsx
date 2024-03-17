@@ -23,32 +23,6 @@ export default function Battleships({
   }, [game])
 
 
-  // =========================== LAUNCHING A MISSILE ============================
-  const launchMissile = async(row, col) => {
-    console.log(`Coordinates: row:${row} col:${col}`)
-
-    if (token) {
-      const missilePayload = {row: row, col: col}
-      const gameData = battleshipsAPI.launchMissile(token, gameID, missilePayload)
-      window.localStorage.setItem("token", gameData.token);
-      setToken(window.localStorage.getItem("token"));
-
-      if (gameData.error) {
-        setErrorMessage(gameData.error)
-      } else {
-        const updateGame = gameData.game;
-
-        setGame(updateGame);
-        findWinMessage(updateGame);
-        setErrorMessage("");
-        const socketEventMessage = `user ${sessionUserID} launched at row: ${row}, col: ${col}`
-
-        socket.current.emit("send-game-update", {gameID, updateGame, socketEventMessage})
-      }
-    }
-  }
-
-
   // ============================== TAILWIND ==============================================
     const headerContainer = 'flex flex-row w-full h-[8rem] rounded-[1.5rem] p-10 pl-[5rem] justify-right'
 
