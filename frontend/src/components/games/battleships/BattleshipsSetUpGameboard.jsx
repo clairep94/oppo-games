@@ -3,7 +3,7 @@ import BattleshipsSetUpShipyard from "./setup_stage_components/BattleshipsSetUpS
 import BattleshipsSetupBoard from "./setup_stage_components/BattleshipsSetupBoard";
 import BattleshipsSetupButtons from "./setup_stage_components/BattleshipsSetupButtons";
 
-export default function BattleshipsSetUpGameboard({ game, sessionUserID, setErrorMessage, setGame, token, setToken, socket, gameID }) {
+export default function BattleshipsSetUpGameboard({ game, sessionUserID, setErrorMessage, setGame, token, setToken, socket }) {
 
     // ================ GAME DATA & VIEW ======================
     // Is the sessionUser an observer
@@ -20,10 +20,10 @@ export default function BattleshipsSetUpGameboard({ game, sessionUserID, setErro
     // Find the opponent's ship submission
     const opponentPlayerStr = sessionUserID === game.playerOne._id ? "playerTwo" : "playerOne";
     const opponentPlacementsVar = opponentPlayerStr + "Placements";
-    const opponentPlacements = game[opponentPlacementsVar]; // [] or "submitted"
+    const opponentPlacements = game[opponentPlacementsVar]; // [] or [["submitted"]]
 
     // Check if the opponent has already submitted placements:
-    const opponentSubmitted = opponentPlacements === "submitted"
+    const opponentSubmitted = opponentPlacements.length !== 0; //TODO figure out better comparison --> [["submitted"]] vs. []
 
     // ================= STATE VARIABLES =============================
     const emptyBoard =  Array.from({ length: 10 }, () =>

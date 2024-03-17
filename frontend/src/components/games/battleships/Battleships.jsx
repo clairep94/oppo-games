@@ -22,8 +22,6 @@ export default function Battleships({
     findWinMessage(game)
   }, [game])
 
-  // find the userPlayer string
-  // find if the user had submitted ships --> userPlayerStr+Placements.length === 0
 
   // =========================== LAUNCHING A MISSILE ============================
   const launchMissile = async(row, col) => {
@@ -75,12 +73,8 @@ export default function Battleships({
     {!attackStage ? (
       <>
       {/* PLACING SHIPS */}
-        {/* BOARD */}
-        {/* SHIPYARD */}
-        {/* TOGGLE SHIPS BUTTON */}
       <BattleshipsSetUpGameboard game={game} sessionUserID={sessionUserID} setErrorMessage={setErrorMessage} setGame={setGame} token={token}
       setToken={setToken} battleshipsAPI={battleshipsAPI} gameID={gameID} socket={socket}/>
-      {/* <UnderConstruction/> */}
       </>
     ):(
       <>
