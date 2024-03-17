@@ -25,36 +25,6 @@ export default function Battleships({
   // find the userPlayer string
   // find if the user had submitted ships --> userPlayerStr+Placements.length === 0
 
-
-  // =========================== SUBMITTING SHIP PLACEMENTS ============================
-
-//   const submitPlacements = async(placementBoard) => { // submitting the full gameboard to the backend
-//     if (token) {
-//         const shipPlacementsPayload = {placementBoard}
-//         const gameData = battleshipsAPI.submitShipPlacements(token, game._id, shipPlacementsPayload)
-//         window.localStorage.setItem("token", gameData.token);
-//         setToken(window.localStorage.getItem("token"));
-
-//         if (gameData.error) {
-//             setErrorMessage(gameData.error)
-//         } else {
-//             const updateGame = gameData.game;
-    
-//             setGame(updateGame);
-//             findWinMessage(updateGame);
-//             setErrorMessage("");
-//             const socketEventMessage = `user ${sessionUserID} submitted placements`
-    
-//             socket.current.emit("send-game-update", {gameID, updateGame, socketEventMessage})
-    
-//         }
-//     }
-
-
-// }
-
-
-
   // =========================== LAUNCHING A MISSILE ============================
   const launchMissile = async(row, col) => {
     console.log(`Coordinates: row:${row} col:${col}`)

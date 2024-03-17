@@ -1,10 +1,9 @@
 import React, {useState, useRef, useEffect} from "react";
 import BattleshipsSetUpShipyard from "./setup_stage_components/BattleshipsSetUpShipyard";
 import BattleshipsSetupBoard from "./setup_stage_components/BattleshipsSetupBoard";
+import BattleshipsSetupButtons from "./setup_stage_components/BattleshipsSetupButtons";
 
-export default function BattleshipsSetUpGameboard({game, sessionUserID, setErrorMessage,
-setGame, token, setToken, socket, gameID
-}) {
+export default function BattleshipsSetUpGameboard({ game, sessionUserID, setErrorMessage, setGame, token, setToken, socket, gameID }) {
 
     // ================ GAME DATA & VIEW ======================
     // Is the sessionUser an observer
@@ -50,8 +49,45 @@ setGame, token, setToken, socket, gameID
 
     const TWUnitSize = 8 // TAILWIND UNITS
 
+    // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
+    const submitPlacements = async () => {
+        if (token) {
+            try {
+                const response = await fetch(`/${game.endpoint}/${game._id}/submit_placements`, {
+                    method: 'put',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ placements: placementBoard }) // Send placementBoard instead of placementShipyard
+                });
 
-    // PROPS DRILLING:
+                const data = await response.json();
+    
+                if (response.status === 200) {
+                    console.log("Data success", data)
+                    const gameID = data.game._id;
+                    const updatedGame = data.game;
+    
+                    setGame(updatedGame);
+                    window.localStorage.setItem("token", data.token);
+                    setToken(window.localStorage.getItem("token"));
+                    const socketEventMessage =  `user ${sessionUserID} submitted their ships`
+                    socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+    
+                } else {
+                    console.log("Data error", data)
+                    console.log("Error submitting placements:", data.error);
+                    setErrorMessage(data.error);
+    
+                }
+            } catch (error) {
+                console.error(`Error submitting ${game.title} game:`, error);
+            }
+        }
+    }
+    
+    // ========== PROPS DRILLING: ====================
     const commonProps = {
         setErrorMessage,
         TWUnitSize,
@@ -71,106 +107,62 @@ setGame, token, setToken, socket, gameID
         placementBoard,
         setPlacementBoard,
     }
-    const apiAndButtonProps = {
+    const buttonProps = { // Keeping API calls & socket in the parent component.
         ...boardProps,
-        //BUTTON
         resetShipYard,
         emptyBoard,
-        //API
-        token,
-        setToken,
-        game,
-        setGame,
-        socket,
+        submitPlacements,
+        setShipDirectionHorizontal
     }
-
-
-    // ================= FUNCTIONS FOR SELECTION SHIP PLACEMENTS =============================
-
-
-
-    // RESETTING THE SHIP PLACEMENTS
-    const resetShipPlacements = () => {
-        console.log("Resetting ship placements")
-        setCurrentShip(null);
-        // placementBoard = resetShipPlacements
-        setPlacementBoard(emptyBoard);
-        setPlacementShipyard(resetShipYard);
-        setErrorMessage("")
-    }
-
-    // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
-    const submitPlacements = async () => {
-        if (token) {
-            try {
-                const response = await fetch(`/${game.endpoint}/${game._id}/submit_placements`, {
-                    method: 'put',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ placements: placementBoard }) // Send placementBoard instead of placementShipyard
-                });
-
-                const data = await response.json();
-    
-                if (response.status === 200) {
-                    console.log("Data success", data)
-                    const gameID = data.game._id;
-    
-                    setGame(data.game);
-                    window.localStorage.setItem("token", data.token);
-                    setToken(window.localStorage.getItem("token"));
-    
-                } else {
-                    console.log("Data error", data)
-
-
-                    console.log("Error submitting placements:", data.error);
-                    setErrorMessage(data.error);
-    
-                }
-            } catch (error) {
-                console.error(`Error submitting ${game.title} game:`, error);
-            }
-        }
-    }
-    
-    
 
     
   // =================================== JSX FOR UI ==============================================================
 
-  // OBSERVER
+  // --------------- OBSERVER VIEW ------------------
     if (isObserver) {
         return (
             <>
                 {/* SHIP PLACEMENTS BOARD */}
-                <div className="flex flex-row bg-red-200/30 w-full h-full">
-                    Players are placing their pieces
+                <div className="flex flex-col text-center justify-center bg-red-200/30 w-full h-full">
+                    <p className="font-bold text-[2.2rem]">
+                        Players are placing their ships ...
+                    </p>
+                    <p className="font-bold text-[1.5rem]">
+                        {/* TODO figure out better comparison --> [["submitted"]] vs. [] */}
+                        Player One: {game.playerOne.username} - {(game.playerOnePlacements.length === 0)? ("Not Ready"):("Ready")}
+                    </p>
+                    <p className="font-bold text-[1.5rem]">
+                        {/* TODO figure out better comparison --> [["submitted"]] vs. [] */}
+                        Player Two: {game.playerTwo.username} - {(game.playerTwoPlacements.length === 0)? ("Not Ready"):("Ready")}
+                    </p>
                 </div>
             </>
         )
     } 
 
-    // ALREADY SUBMITTED SHIPS:
+    // ------------- ALREADY SUBMITTED SHIPS: ---------------------
     if (alreadySubmitted) {
         return(
             <>
                 {/* SHIP PLACEMENTS BOARD */}
-                <div className="flex flex-row bg-red-200/30 w-full h-full">
-                    Already submitted ships. Please await opponent to submit their ships
+                <div className="flex flex-col text-center justify-center bg-red-200/30 w-full h-full">
+                    <p className="font-bold text-[2rem]">
+                        Ships submitted! 
+                    </p>
+                    <p className="font-bold text-[1.5rem]">
+                        Opponent is placing their ships ...
+                    </p>
                 </div>
             </>
         )
     }
 
-  // SESSIONUSER IS ONE OF THE PLAYERS
-  return (
+  // -------------- SESSIONUSER IS ONE OF THE PLAYERS --------------------
+    return (
     <>
     {/* SHIP PLACEMENTS BOARD */}
     <div className="flex flex-row bg-red-200/30 w-full h-full">
-                            
+                                
         {/* SHIPYARD */}
         <div className="flex flex-col w-full h-full">
             {/* SHIPYARD HEADER */}
@@ -189,34 +181,16 @@ setGame, token, setToken, socket, gameID
 
             {/* SETUP BOARD */}
             <BattleshipsSetupBoard {...boardProps}/>
-
-            <p>
-                {JSON.stringify(placementBoard)}
-            </p>
         </div>
-    
-
     </div>
 
     {/* SHIP PLACEMENTS BUTTONS */}
-    <div className="flex flex-row space-x-2">
-        {/* TOGGLE SHIPS BUTTON */}
-        <button onClick={() => {
-            setShipDirectionHorizontal(!shipDirectionHorizontal)
-            setErrorMessage("")
-            }} className="bg-black/70 p-4 w-[13rem] rounded-lg">
-            Toggle Ship Direction
-        </button>
-        {/* SUBMIT SHIP PLACEMENTS */}
-        <button onClick={() => {submitPlacements()}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
-          Submit ships
-        </button>
-        {/* SUBMIT SHIP PLACEMENTS */}
-        <button onClick={() => {resetShipPlacements()}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
-          Reset ship placements
-        </button>
+    <BattleshipsSetupButtons {...buttonProps}/>
 
+    {/* OPPONENT HAS SUBMITTED ANNOUNCEMENT */}
+    <div className="font-bold text-[1.5rem]">
+        {!opponentSubmitted ? ("Opponent is placing their ships ..."):("Opponent has placed their ships!")}
     </div>
-  </>
-  )
+    </>
+    )
 }
