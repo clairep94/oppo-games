@@ -5,13 +5,11 @@ import BattleshipsAttackBoard from "./attack_stage_components/BattleshipsAttackB
 export default function BattleshipsAttackGameboard({ game, sessionUserID, setErrorMessage, setGame, token, setToken, socket }) {
 
   // ================ GAME DATA & VIEW ======================
-  const [announcment, setAnnouncement] = useState("PLAYER HAS DONE XYZ");
+  const [announcment, setAnnouncement] = useState("");
   const TWUnitSize = 8;
 
   // ================ FUNCTION FOR SUBMITTING SHIP PLACEMENTS =========================
-
   const launchMissile = async(row, col, owner) => {
-
     if (owner){
       setErrorMessage("Cannot launch on own board!")
       return null;
@@ -45,6 +43,7 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
           socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
 
           setErrorMessage("");
+          findAnnouncement(gameData);
         } else {
           console.log(`Error launching missile`, gameData.error)
           setErrorMessage(gameData.error)
@@ -53,7 +52,17 @@ export default function BattleshipsAttackGameboard({ game, sessionUserID, setErr
         console.log(`Error launching missile`)
       }
     }
+  }
 
+  // =============== FUNCTION FOR FINDING THE GAME ANNOUNCEMENT: ====================
+  const findAnnouncement = (gameData) => {
+    const actorID = gameData.actor
+    const eventString = gameData.message
+    const playerString = (actorID === sessionUserID) ? ("You") : (
+      (actorID === gameData.game.playerOne._id) ? (gameData.game.playerOne.username) : (gameData.game.playerTwo.username)
+    )
+    const announcementString = `${playerString.toUpperCase()} ${eventString}!`
+    setAnnouncement(announcementString)
   }
 
 

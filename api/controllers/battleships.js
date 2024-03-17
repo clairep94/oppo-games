@@ -369,18 +369,18 @@ const BattleshipsController = {
 
           // ---- WIN CONDITION -------
           if (checkWin(targettedShipyard)) {
-            message = "WIN";
+            message = "WON";
             finished = true;
             winner = [userID];
 
             // ----- SANK CONDITION ------
           } else {
-            message = `SANK: ${hitShip.toUpperCase()}`;
+            message = `SANK THE ${hitShip.toUpperCase()}`;
           }
 
           // ---- HIT CONDITION --------
         } else {
-          message = "HIT";
+          message = "HIT A SHIP";
         }
 
         // -------- MISS CONDITION -----------------
