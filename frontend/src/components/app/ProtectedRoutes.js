@@ -10,8 +10,6 @@ import NavBar from "../navbar/NavBar";
 import GamesLobby from "../games_lobby/GamesLobby";
 import ProfilePage from "../profile_page/ProfilePage";
 import GamePage from "../game_pages_refactored/GamePage";
-import TTTGamePage from "../game_pages/TTTGamePage";
-import BSGamePage from "../game_pages/BSGamePage";
 
 const ProtectedRoutes = ({ navigate }) => {
   // =========== TOKEN & SESSION USER DATA =======================

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { forfeitGame, joinGame } from "../../api_calls/tictactoeAPI";
 
 const SingleGameCard = (props) => {
   // This card shows a link to the individual game,

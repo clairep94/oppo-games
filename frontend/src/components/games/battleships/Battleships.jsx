@@ -27,14 +27,32 @@ export default function Battleships({
 
 
   // =========================== SUBMITTING SHIP PLACEMENTS ============================
-  // const placeShip = async(row, col, element) => { // function for frontend selection of placements
-  //   console.log(`Clicked on row ${row} and column ${col}. Element: ${element}`);
-  // };
 
-  const submitPlacements = async(event) => { // submitting the full gameboard to the backend
-    // convert board buttons into an array
-    event.preventDefault();
-  }
+//   const submitPlacements = async(placementBoard) => { // submitting the full gameboard to the backend
+//     if (token) {
+//         const shipPlacementsPayload = {placementBoard}
+//         const gameData = battleshipsAPI.submitShipPlacements(token, game._id, shipPlacementsPayload)
+//         window.localStorage.setItem("token", gameData.token);
+//         setToken(window.localStorage.getItem("token"));
+
+//         if (gameData.error) {
+//             setErrorMessage(gameData.error)
+//         } else {
+//             const updateGame = gameData.game;
+    
+//             setGame(updateGame);
+//             findWinMessage(updateGame);
+//             setErrorMessage("");
+//             const socketEventMessage = `user ${sessionUserID} submitted placements`
+    
+//             socket.current.emit("send-game-update", {gameID, updateGame, socketEventMessage})
+    
+//         }
+//     }
+
+
+// }
+
 
 
   // =========================== LAUNCHING A MISSILE ============================
@@ -90,7 +108,8 @@ export default function Battleships({
         {/* BOARD */}
         {/* SHIPYARD */}
         {/* TOGGLE SHIPS BUTTON */}
-      <BattleshipsSetUpGameboard game={game} submitPlacements={submitPlacements} sessionUserID={sessionUserID} setErrorMessage={setErrorMessage}/>
+      <BattleshipsSetUpGameboard game={game} sessionUserID={sessionUserID} setErrorMessage={setErrorMessage} setGame={setGame} token={token}
+      setToken={setToken} battleshipsAPI={battleshipsAPI} gameID={gameID} socket={socket}/>
       {/* <UnderConstruction/> */}
       </>
     ):(

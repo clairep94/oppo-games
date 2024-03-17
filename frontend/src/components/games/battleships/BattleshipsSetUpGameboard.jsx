@@ -1,7 +1,9 @@
 import React, {useState, useRef, useEffect} from "react";
 import BattleshipsSetUpShipyard from "./BattleshipsSetUpShipyard";
 
-export default function BattleshipsSetUpGameboard({game, submitPlacements, sessionUserID, setErrorMessage}) {
+export default function BattleshipsSetUpGameboard({game, sessionUserID, setErrorMessage,
+setGame, token, setToken, battleshipsAPI, socket, gameID
+}) {
 
     // ================ GAME DATA & VIEW ======================
     // Is the sessionUser an observer
@@ -13,7 +15,7 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     const sessionUserPlacements = game[sessionUserPlacementsVar]; // [] or nested array
 
     // Check if the sessionUser has already submitted placements:
-    const alreadySubmitted = sessionUserPlacements === 0;
+    const alreadySubmitted = sessionUserPlacements.length !== 0;
     // const alreadySubmitted = sessionUserBoard === emptyBoard;
 
     // Find the opponent's ship submission
@@ -46,6 +48,7 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     const [shipDirectionHorizontal, setShipDirectionHorizontal] = useState(true);
     const [currentShip, setCurrentShip] = useState(null);
     const [hoveredUnits, setHoveredUnits] = useState([]);
+    const [hasIntersection, setHasIntersection] = useState(false);
 
 
     // ================= FUNCTIONS FOR SELECTION SHIP PLACEMENTS =============================
@@ -63,13 +66,8 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
 
     // PLACING A SHIP
     const placeShip = (row, col) => {
-
-        if (placementBoard[row][col] !== ""){
-            resetInvalidShip(row, col)
-        } else {
-
-            if (currentShip) {
-                const shipLength = currentShip.units;
+        if (currentShip) {
+            const shipLength = currentShip.units;
                 const code = currentShip.code;
                 let newBoard = [...placementBoard];
                 let currentRowIndex = row;
@@ -128,7 +126,11 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
                 } else {
                     setErrorMessage("Selected ship placement is out of bounds");
                 }
-            }
+        } else {
+            if (placementBoard[row][col] !== ""){
+                resetInvalidShip(row, col)
+        }
+        
         }
 
     };
@@ -156,34 +158,6 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
         setCurrentShip(null);
     };
 
-    // FINDING THE UNITS NEEDED
-    // const findTargetUnits = (startingRowIndex, startingColIndex) => {
-    //     const shipLength = currentShip.units;
-    //     let units = [];
-    //     let currentRowIndex = startingRowIndex;
-    //     let currentColIndex = startingColIndex;
-
-    //     while (units.length < shipLength) {
-    //         units.push([currentRowIndex, currentColIndex]);
-
-    //         if (shipDirectionHorizontal) {
-    //             currentColIndex++;
-    //         } else {
-    //             currentRowIndex++;
-    //         }
-    //         // Add a condition to catch if we are going beyond the array bounds
-    //         if (currentRowIndex >= 10 || currentColIndex >= 10) {
-    //             setErrorMessage("Selected ship placement is out of bounds")
-    //             return null;
-    //         }
-    //     }
-    //     console.log("Found units: ", units)
-    //     setErrorMessage("")
-    //     return units
-    // }
-
-
-    // ADD A HOVER FUNCTION --> on hover, change the colour of the units that will be selected
     const handleHoverEnter = (row, col) => {
         if (!currentShip) return; // If no ship is selected, do nothing
 
@@ -192,35 +166,35 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
         let currentRowIndex = row;
         let currentColIndex = col;
         let outOfBounds = false;
+        let hasIntersection = false;
 
         // Check if all units are valid (in bounds & empty)
-        for (let i = 0; i < shipLength; i++) {
-            if (currentRowIndex >= 10 || currentColIndex >= 10) {
-                outOfBounds = true;
-                break;
-            }
 
-            if (placementBoard[currentRowIndex][currentColIndex] !== "") {
-                // Overlapping with another ship
-                return;
-            }
+        while (!outOfBounds && newHoveredUnits.length < shipLength){
 
-            newHoveredUnits.push([currentRowIndex, currentColIndex]);
-
-            if (shipDirectionHorizontal) {
-                currentColIndex++;
+            if (currentColIndex === 10 || currentRowIndex === 10) {
+                outOfBounds = true
             } else {
-                currentRowIndex++;
+                if (placementBoard[currentRowIndex][currentColIndex] !== "") {
+                    // Overlapping with another ship
+                    hasIntersection = true;
+                }
+                newHoveredUnits.push([currentRowIndex, currentColIndex]);
+                if (shipDirectionHorizontal){
+                    currentColIndex ++;
+                } else {
+                    currentRowIndex ++;
+                }
             }
         }
+    setHoveredUnits(newHoveredUnits);
+    setHasIntersection(outOfBounds || hasIntersection);
 
-        if (!outOfBounds) {
-            setHoveredUnits(newHoveredUnits);
-        }
     };
 
     const handleHoverLeave = () => {
         setHoveredUnits([]);
+        setHasIntersection(false);
     };
 
     // RESETTING THE SHIP PLACEMENTS
@@ -234,9 +208,29 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
     }
 
     // ================= FUNCTION FOR SUBMITTING SHIP PLACEMENTS =============================
+    const submitPlacements = async() => { // submitting the full gameboard to the backend
+        if (placementShipyard.filter((ship) => ship.placed === false).length !== 0){
+            setErrorMessage("Incomplete ship placements")
+        } else {
+            if (token) {
+                const shipPlacementsPayload = {placements: placementBoard}
+                const gameData = battleshipsAPI.submitShipPlacements(token, game._id, shipPlacementsPayload)
+                window.localStorage.setItem("token", gameData.token);
+                setToken(window.localStorage.getItem("token"));
+                const updatedGame = gameData.game;
+                setGame(updatedGame);
+                setErrorMessage("");
+                const socketEventMessage = `user ${sessionUserID} submitted placements`
+        
+                socket.current.emit("send-game-update", {gameID, updatedGame, socketEventMessage})
+            }
+        }
+        
 
-    // SUBMITTING THE SHIP PLACEMENTS
+    }
+    
 
+    
   // =================================== JSX FOR UI ==============================================================
 
   // OBSERVER
@@ -291,7 +285,10 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
                         {placementBoard.map((row, rowIndex) => (
                             row.map((element, colIndex) => {
                                 const isHovered = hoveredUnits.some(([hoverRow, hoverCol]) => hoverRow === rowIndex && hoverCol === colIndex);
-                                const cellColor = isHovered ? "bg-green-500 hover:bg-green-600" : "";
+                                const cellColor = isHovered ? (
+                                    hasIntersection ?  "bg-red-500 hover:bg-red-600":
+                                    "bg-green-500 hover:bg-green-600"
+                                    ) : "";
                                 return (
                                     <div
                                         key={`${rowIndex}-${colIndex}`}
@@ -322,7 +319,7 @@ export default function BattleshipsSetUpGameboard({game, submitPlacements, sessi
             Toggle Ship Direction
         </button>
         {/* SUBMIT SHIP PLACEMENTS */}
-        <button onClick={() => {console.log("Submit Ships")}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
+        <button onClick={() => {submitPlacements()}} className="bg-black/70 p-4 w-[13rem] rounded-lg">
           Submit ships
         </button>
         {/* SUBMIT SHIP PLACEMENTS */}
